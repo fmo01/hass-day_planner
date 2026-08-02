@@ -1,0 +1,12 @@
+{
+  "domain": "day_planner",
+  "name": "Day Planner",
+  "version": "0.1.0",
+  "config_flow": true,
+  "documentation": "https://github.com/fmo01/hass-day-planner",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": [
+    "@<user>"
+  ]
+}
