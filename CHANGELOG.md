@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.2](https://github.com/fmo01/hass-day-planner/compare/0.0.1...0.0.2) (2026-08-03)
+
+### Bug Fixes
+
+*  add persistent storage and domain models ([d227fc2](https://github.com/fmo01/hass-day-planner/commit/d227fc2bfb969652ed771e95a05d5e0a2506b295))
+* add persistent storage and domain models ([7244cd0](https://github.com/fmo01/hass-day-planner/commit/7244cd01fd41b63efd93db8b75822361b3529430))
+
 ## 1.0.0 (2026-08-03)
 
 ### Bug Fixes
