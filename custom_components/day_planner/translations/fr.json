@@ -1,0 +1,10 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Day Planner",
+        "description": "Créer votre instance Day Planner."
+      }
+    }
+  }
+}
