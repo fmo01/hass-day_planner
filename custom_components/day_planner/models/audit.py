@@ -4,8 +4,7 @@ from datetime import datetime
 
 @dataclass
 class Audit:
-
-    version: int
+    """Audit information."""
 
     created_by: str
     created_at: datetime
@@ -13,4 +12,4 @@ class Audit:
     modified_by: str
     modified_at: datetime
 
-    source: str
+    source: str = "day_planner"

@@ -2,27 +2,22 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
+from .runtime import DayPlannerRuntimeData
+from .storage import DayPlannerStorage
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
 ) -> bool:
-    """Set up Day Planner from a config entry."""
 
-    hass.data.setdefault(DOMAIN, {})
+    storage = DayPlannerStorage(hass)
 
-    hass.data[DOMAIN][entry.entry_id] = {}
+    data = await storage.async_load()
 
-    return True
-
-
-async def async_unload_entry(
-    hass: HomeAssistant,
-    entry: ConfigEntry,
-) -> bool:
-    """Unload Day Planner."""
-
-    hass.data[DOMAIN].pop(entry.entry_id, None)
+    entry.runtime_data = DayPlannerRuntimeData(
+        storage=storage,
+        data=data,
+    )
 
     return True
