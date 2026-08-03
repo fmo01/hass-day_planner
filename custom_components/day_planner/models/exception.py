@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from datetime import date
+
+from .storage import DayPlannerStorage
 
 
-@dataclass
-class PlannerException:
-    """Calendar exception."""
+@dataclass(slots=True)
+class DayPlannerRuntimeData:
+    """Runtime data."""
 
-    date: date
-    day_type_id: str
-    description: str
+    storage: DayPlannerStorage
+

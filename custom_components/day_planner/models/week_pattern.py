@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(slots=True)
 class WeekPattern:
-    """A weekly schedule."""
+    """A weekly pattern."""
 
     id: str
     name: str

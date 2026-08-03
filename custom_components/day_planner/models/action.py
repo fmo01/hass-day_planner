@@ -1,10 +1,9 @@
 from dataclasses import dataclass
-from typing import Any
 
 
-@dataclass
+@dataclass(slots=True)
 class Action:
-    """Action executed by a moment."""
+    """An action executed during a moment."""
 
     service: str
-    data: dict[str, Any]
+    data: dict[str, str]

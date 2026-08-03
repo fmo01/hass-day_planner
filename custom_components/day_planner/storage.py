@@ -1,14 +1,13 @@
+from collections.abc import Mapping
+
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
-from .const import (
-    STORAGE_KEY,
-    STORAGE_VERSION,
-)
+from .const import STORAGE_KEY, STORAGE_VERSION
 
 
 class DayPlannerStorage:
-    """Persistent storage manager."""
+    """Persistent storage handler."""
 
     def __init__(
         self,
@@ -21,7 +20,6 @@ class DayPlannerStorage:
             STORAGE_KEY,
         )
 
-
     async def async_load(self) -> dict:
         """Load data."""
 
@@ -31,17 +29,19 @@ class DayPlannerStorage:
             return {
                 "moments": [],
                 "day_types": [],
+                "weeks": [],
                 "cycles": [],
                 "exceptions": [],
             }
 
         return data
 
-
     async def async_save(
         self,
-        data: dict,
+        data: Mapping,
     ) -> None:
         """Save data."""
 
-        await self._store.async_save(data)
+        await self._store.async_save(
+            dict(data)
+        )
