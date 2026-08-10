@@ -1,0 +1,15 @@
+# Development requirements for hass-eedomus
+# This file is for local development and testing purposes
+
+-r requirements.txt
+
+# Home Assistant development (compatible with Python 3.14)
+homeassistant>=2026.7.4
+
+# Development dependencies
+black==26.5.1
+flake8==7.3.0
+isort==8.0.1
+pytest==9.1.1
+pytest-asyncio==1.4.0
+vulture==2.16
