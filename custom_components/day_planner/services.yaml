@@ -1,0 +1,389 @@
+add_moment:
+  name: Add moment
+  description: Add a new moment to the planner.
+  fields:
+    id:
+      name: Identifier
+      description: Unique identifier of the moment.
+      required: true
+      example: reveil
+      selector:
+        text:
+    name:
+      name: Name
+      description: Display name of the moment.
+      required: true
+      example: Réveil
+      selector:
+        text:
+    icon:
+      name: Icon
+      description: Material Design Icons identifier.
+      required: false
+      example: mdi:alarm
+      selector:
+        icon:
+
+update_moment:
+  name: Update moment
+  description: Update an existing moment.
+  fields:
+    id:
+      name: Identifier
+      description: Identifier of the moment to update.
+      required: true
+      example: reveil
+      selector:
+        text:
+    name:
+      name: Name
+      description: New display name.
+      required: true
+      example: Petit déjeuner
+      selector:
+        text:
+    icon:
+      name: Icon
+      description: Material Design Icons identifier.
+      required: false
+      example: mdi:coffee
+      selector:
+        icon:
+
+remove_moment:
+  name: Remove moment
+  description: Remove an existing moment.
+  fields:
+    id:
+      name: Identifier
+      description: Identifier of the moment to remove.
+      required: true
+      example: reveil
+      selector:
+        text:
+
+add_day_type:
+  name: Add day type
+  description: Add a new day type to the planner.
+  fields:
+    id:
+      name: Identifier
+      description: Unique identifier of the day type.
+      required: true
+      example: travail
+      selector:
+        text:
+
+    name:
+      name: Name
+      description: Display name of the day type.
+      required: true
+      example: Travail
+      selector:
+        text:
+
+    scheduled_moments:
+      name: Scheduled moments
+      description: List of moment identifiers scheduled for this day type.
+      required: false
+      example:
+        - reveil
+        - depart
+      selector:
+        object:
+
+
+update_day_type:
+  name: Update day type
+  description: Update an existing day type.
+  fields:
+    id:
+      name: Identifier
+      description: Identifier of the day type to update.
+      required: true
+      example: travail
+      selector:
+        text:
+
+    name:
+      name: Name
+      description: New display name of the day type.
+      required: true
+      example: Bureau
+      selector:
+        text:
+
+    scheduled_moments:
+      name: Scheduled moments
+      description: List of moment identifiers scheduled for this day type.
+      required: false
+      example:
+        - reveil
+        - depart
+      selector:
+        object:
+
+
+remove_day_type:
+  name: Remove day type
+  description: Remove an existing day type from the planner.
+  fields:
+    id:
+      name: Identifier
+      description: Identifier of the day type to remove.
+      required: true
+      example: travail
+      selector:
+        text:
+
+add_week_schedule:
+  name: Add week schedule
+  description: Add a week schedule.
+
+  fields:
+    id:
+      required: true
+      selector:
+        text:
+
+    name:
+      required: true
+      selector:
+        text:
+
+    monday:
+      required: true
+      selector:
+        text:
+
+    tuesday:
+      required: true
+      selector:
+        text:
+
+    wednesday:
+      required: true
+      selector:
+        text:
+
+    thursday:
+      required: true
+      selector:
+        text:
+
+    friday:
+      required: true
+      selector:
+        text:
+
+    saturday:
+      required: true
+      selector:
+        text:
+
+    sunday:
+      required: true
+      selector:
+        text:
+
+update_week_schedule:
+  name: Update week schedule
+  description: Update a week schedule.
+
+  fields:
+    id:
+      required: true
+      selector:
+        text:
+
+    name:
+      required: true
+      selector:
+        text:
+
+    monday:
+      required: true
+      selector:
+        text:
+
+    tuesday:
+      required: true
+      selector:
+        text:
+
+    wednesday:
+      required: true
+      selector:
+        text:
+
+    thursday:
+      required: true
+      selector:
+        text:
+
+    friday:
+      required: true
+      selector:
+        text:
+
+    saturday:
+      required: true
+      selector:
+        text:
+
+    sunday:
+      required: true
+      selector:
+        text:
+
+remove_week_schedule:
+  name: Remove week schedule
+
+  fields:
+    id:
+      required: true
+      selector:
+        text:
+
+add_cycle:
+  name: Add cycle
+  description: Add a new cycle to the planner.
+  fields:
+    id:
+      name: Identifier
+      description: Unique identifier of the cycle.
+      required: true
+      example: reveil
+      selector:
+        text:
+    name:
+      name: Name
+      description: Display name of the cycle.
+      required: true
+      example: Réveil
+      selector:
+        text:
+    week_schedule_ids:
+      name: Scheduled ids
+      description: List of week identifiers scheduled for this cycle.
+      required: false
+      example:
+        - semaine1
+        - semaine2
+      selector:
+        object:
+
+update_cycle:
+  name: Update cycle
+  description: Update an existing cycle.
+  fields:
+    id:
+      name: Identifier
+      description: Identifier of the cycle to update.
+      required: true
+      example: reveil
+      selector:
+        text:
+    name:
+      name: Name
+      description: New display name.
+      required: true
+      example: Petit déjeuner
+      selector:
+        text:
+    week_schedule_ids:
+      name: Scheduled ids
+      description: List of week identifiers scheduled for this cycle.
+      required: false
+      example:
+        - semaine1
+        - semaine2
+      selector:
+        object:
+
+remove_cycle:
+  name: Remove cycle
+  description: Remove an existing cycle.
+  fields:
+    id:
+      name: Identifier
+      description: Identifier of the cycle to remove.
+      required: true
+      example: reveil
+      selector:
+        text:
+
+add_calendar_exception:
+  name: Add calendar_exception
+  description: Add a new calendar_exception to the planner.
+  fields:
+    id:
+      name: Identifier
+      description: Unique identifier of the calendar_exception.
+      required: true
+      example: reveil
+      selector:
+        text:
+    date:
+      name: date
+      description: Display date of the calendar_exception.
+      required: true
+      example: Réveil
+      selector:
+        text:
+    day_type_id:
+      name: day_type_id
+      description: Display day_type_id of the calendar_exception.
+      required: true
+      selector:
+        text:
+    description:
+      name: Name
+      description: Display description of the calendar exception.
+      example: Noël
+      selector:
+        text:
+
+update_calendar_exception:
+  name: Update calendar_exception
+  description: Update an existing calendar_exception.
+  fields:
+    id:
+      name: Identifier
+      description: Identifier of the calendar_exception to update.
+      required: true
+      example: reveil
+      selector:
+        text:
+    date:
+      name: date
+      description: Display date of the calendar_exception.
+      required: true
+      example: Réveil
+      selector:
+        text:
+    day_type_id:
+      name: day_type_id
+      description: Display day_type_id of the calendar_exception.
+      required: true
+      selector:
+        text:
+    description:
+      name: Name
+      description: Display description of the calendar exception.
+      required: true
+      example: Noël
+      selector:
+        text:
+
+remove_calendar_exception:
+  name: Remove calendar_exception
+  description: Remove an existing calendar_exception.
+  fields:
+    id:
+      name: Identifier
+      description: Identifier of the exception calendar to remove.
+      required: true
+      example: reveil
+      selector:
+        text:

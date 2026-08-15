@@ -1,18 +1,26 @@
-from collections.abc import Mapping
+"""Storage management for Day Planner."""
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
-from .const import STORAGE_KEY, STORAGE_VERSION
+from .domain.planner_configuration import (
+    PlannerConfiguration,
+)
+
+from .const import (
+    STORAGE_KEY,
+    STORAGE_VERSION,
+)
 
 
 class DayPlannerStorage:
-    """Persistent storage handler."""
+    """Handle persistent storage."""
 
     def __init__(
         self,
         hass: HomeAssistant,
     ) -> None:
+        """Initialize storage."""
 
         self._store = Store(
             hass,
@@ -20,28 +28,31 @@ class DayPlannerStorage:
             STORAGE_KEY,
         )
 
-    async def async_load(self) -> dict:
-        """Load data."""
+    async def async_load(
+        self,
+    ) -> PlannerConfiguration:
+        """Load configuration."""
 
         data = await self._store.async_load()
 
         if data is None:
-            return {
-                "moments": [],
-                "day_types": [],
-                "weeks": [],
-                "cycles": [],
-                "exceptions": [],
-            }
+            return PlannerConfiguration.empty()
 
-        return data
+        return PlannerConfiguration.from_dict(
+            data
+        )
 
     async def async_save(
         self,
-        data: Mapping,
+        configuration: PlannerConfiguration,
     ) -> None:
-        """Save data."""
+        """Save configuration."""
 
         await self._store.async_save(
-            dict(data)
+            configuration.to_dict()
         )
+
+    async def async_delete(self) -> None:
+        """Delete stored planner data."""
+
+        await self._store.async_remove()

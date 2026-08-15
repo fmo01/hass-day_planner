@@ -7,4 +7,18 @@
       }
     }
   }
+,
+  "options": {
+    "step": {
+      "init": {
+        "title": "Day Planner options",
+        "data": {
+          "delete_data_on_remove": "Supprimer les données lors de la suppression de l'intégration"
+        },
+        "data_description": {
+          "delete_data_on_remove": "Supprime toutes les données Day Planner lorsque l'intégration est supprimée."
+        }
+      }
+    }
+  }
 }

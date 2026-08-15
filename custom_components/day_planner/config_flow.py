@@ -1,5 +1,6 @@
 from homeassistant import config_entries
 
+from .options_flow import DayPlannerOptionsFlow
 from .const import DOMAIN, NAME
 
 
@@ -27,3 +28,9 @@ class DayPlannerConfigFlow(
             title=NAME,
             data={},
         )
+
+    @staticmethod
+    def async_get_options_flow(
+        config_entry,
+    ):
+        return DayPlannerOptionsFlow()
