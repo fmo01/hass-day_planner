@@ -24,6 +24,7 @@ from .protocols import HasId
 
 T = TypeVar("T", bound=HasId)
 
+
 class PlannerEngine:
     """Manipulate Day Planner configuration."""
     T = TypeVar("T")
@@ -88,8 +89,8 @@ class PlannerEngine:
         """Replace an item having the same identifier."""
 
         return tuple(
-            item 
-            if current.id == item.id 
+            item
+            if current.id == item.id
             else current
             for current in items
         )
@@ -127,7 +128,7 @@ class PlannerEngine:
     #
     # Moments
     #
-    
+
     def get_moment(
         self,
         moment_id: str,
@@ -211,7 +212,6 @@ class PlannerEngine:
             "Day type",
         )
 
-
     def add_day_type(
         self,
         day_type: DayType,
@@ -275,13 +275,12 @@ class PlannerEngine:
                     "Cannot remove a day type used by a calendar exception"
                 )
 
-
         self._replace_configuration(
             day_types=self._remove_by_id(
                 self._configuration.day_types,
                 day_type_id,
             ),
-        )                
+        )
 
     #
     # week_schedule
@@ -478,8 +477,6 @@ class PlannerEngine:
             ),
         )
 
-
-
     #
 
     def add_scheduled_moment(
@@ -523,4 +520,3 @@ class PlannerEngine:
         raise NotFoundError(
             f"Day type not found: {day_type_id}"
         )
-

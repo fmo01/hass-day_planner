@@ -110,7 +110,7 @@ REMOVE_CYCLE_SCHEMA = vol.Schema(
         vol.Required("id"): cv.string,
     }
 )
-            
+
 ADD_CALENDAR_EXCEPTION_SCHEMA = vol.Schema(
     {
         vol.Required("id"): cv.string,

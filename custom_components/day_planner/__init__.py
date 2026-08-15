@@ -10,6 +10,7 @@ from .const import (
     DEFAULT_DELETE_DATA_ON_REMOVE,
 )
 
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -49,6 +50,7 @@ async def async_unload_entry(
 
     return True
 
+
 async def async_remove_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -57,7 +59,7 @@ async def async_remove_entry(
 
     if entry.options.get(
         CONF_DELETE_DATA_ON_REMOVE,
-        DEFAULT_DELETE_DATA_ON_REMOVE ,
+        DEFAULT_DELETE_DATA_ON_REMOVE,
     ):
         storage = DayPlannerStorage(hass)
         await storage.async_delete()

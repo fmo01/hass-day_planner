@@ -3,12 +3,10 @@
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.const import CONF_NAME
 
 from .const import (
     CONF_DELETE_DATA_ON_REMOVE,
     DEFAULT_DELETE_DATA_ON_REMOVE,
-    DOMAIN,
 )
 
 

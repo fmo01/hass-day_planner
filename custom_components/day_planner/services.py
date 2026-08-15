@@ -1,7 +1,7 @@
 """Home Assistant services for Day Planner."""
 
 from typing import Any
-from datetime import ( 
+from datetime import (
       date,
       datetime,
 )
@@ -36,6 +36,7 @@ from .domain.week_schedule import WeekSchedule
 from .domain.cycle import Cycle
 from .domain.calendar_exception import CalendarException
 from .planner.errors import PlannerError
+from .runtime import DayPlannerRuntimeData
 from .schemas import (
     ADD_MOMENT_SCHEMA,
     UPDATE_MOMENT_SCHEMA,
@@ -56,6 +57,7 @@ from .schemas import (
 
 _LOGGER = logging.getLogger(__name__)
 
+
 def _get_runtime(
     hass: HomeAssistant,
 ) -> DayPlannerRuntimeData:
@@ -72,6 +74,7 @@ def _get_runtime(
         )
 
     return entry.runtime_data
+
 
 async def _execute(
     operation: Callable[[], Any],
@@ -100,6 +103,7 @@ async def _execute(
     except Exception:
         _LOGGER.exception(description)
         raise
+
 
 async def async_setup_services(
     hass: HomeAssistant,
@@ -164,7 +168,9 @@ async def async_setup_services(
             ),
         )
 
-    ### day type ###
+    #
+    # day type²
+    #
 
     async def add_day_type(
         call: ServiceCall,
@@ -180,7 +186,7 @@ async def async_setup_services(
             name=call.data["name"],
             scheduled_moments=(),
         )
-        
+
         await _execute(
             operation=lambda: runtime.engine.add_day_type(
                 day_type,
@@ -232,7 +238,7 @@ async def async_setup_services(
         )
 
     #
-    # week_schedule²
+    # week_schedule
     #
 
     async def add_week_schedule(
@@ -313,7 +319,9 @@ async def async_setup_services(
             ),
         )
 
-    ### cycle ###
+    #
+    # cycle
+    #
 
     async def add_cycle(
         call: ServiceCall,
@@ -331,7 +339,7 @@ async def async_setup_services(
                 call.data["week_schedule_ids"]
             )
         )
-        
+
         await _execute(
             operation=lambda: runtime.engine.add_cycle(
                 cycle,
@@ -384,7 +392,9 @@ async def async_setup_services(
             description=f"Unable to remove cycle '{cycle_id}'",
         )
 
-    ### calendar exception ###
+    #
+    # calendar exception
+    #
 
     async def add_calendar_exception(
         call: ServiceCall,
@@ -408,7 +418,7 @@ async def async_setup_services(
                 "description"
             ),
         )
-        
+
         await _execute(
             operation=lambda: runtime.engine.add_calendar_exception(
                 calendar_exception,
@@ -477,7 +487,7 @@ async def async_setup_services(
         add_moment,
         schema=ADD_MOMENT_SCHEMA,
     )
-    
+
     hass.services.async_register(
         DOMAIN,
         SERVICE_UPDATE_MOMENT,
@@ -573,4 +583,3 @@ async def async_setup_services(
         remove_calendar_exception,
         schema=REMOVE_CALENDAR_EXCEPTION_SCHEMA,
     )
-

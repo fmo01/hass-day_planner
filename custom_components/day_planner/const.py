@@ -2,7 +2,7 @@ DOMAIN = "day_planner"
 
 NAME = "Day Planner"
 
-VERSION="0.0.2"
+VERSION = "0.0.2"
 
 STORAGE_VERSION = 1
 STORAGE_KEY = "day_planner.storage"

@@ -6,7 +6,6 @@ from .cycle import Cycle
 from .day_type import DayType
 from .moment import Moment
 from .week_schedule import WeekSchedule
-from .calendar_exception import CalendarException
 
 
 @dataclass(frozen=True, slots=True)

@@ -30,4 +30,3 @@ class Moment:
             name=str(data["name"]),
             icon=data.get("icon"),
         )
-

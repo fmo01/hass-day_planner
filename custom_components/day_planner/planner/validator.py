@@ -3,6 +3,7 @@
 from .errors import ValidationError
 
 from ..domain.day_type import DayType
+from ..domain.cycle import Cycle
 from ..domain.planner_configuration import (
     PlannerConfiguration,
 )
@@ -186,4 +187,3 @@ class PlannerValidator:
                 f"Unknown day type: "
                 f"{calendar_exception.day_type_id}"
             )
-
