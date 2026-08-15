@@ -15,9 +15,7 @@ class Cycle:
         return {
             "id": self.id,
             "name": self.name,
-            "week_schedule_ids": list(
-                self.week_schedule_ids
-            ),
+            "week_schedule_ids": list(self.week_schedule_ids),
         }
 
     @classmethod

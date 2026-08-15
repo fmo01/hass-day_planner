@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-
 from .scheduled_moment import ScheduledMoment
 
 
@@ -18,10 +17,7 @@ class DayType:
         return {
             "id": self.id,
             "name": self.name,
-            "scheduled_moments": [
-                item.to_dict()
-                for item in self.scheduled_moments
-            ],
+            "scheduled_moments": [item.to_dict() for item in self.scheduled_moments],
         }
 
     @classmethod

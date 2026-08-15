@@ -22,8 +22,4 @@ class TimeDefinition:
     ) -> "TimeDefinition":
         """Deserialize object."""
 
-        return cls(
-            fixed_time=time.fromisoformat(
-                data["fixed_time"]
-            )
-        )
+        return cls(fixed_time=time.fromisoformat(data["fixed_time"]))

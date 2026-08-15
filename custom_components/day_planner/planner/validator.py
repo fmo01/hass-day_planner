@@ -1,13 +1,10 @@
 """Domain validation rules for Day Planner."""
 
-from .errors import ValidationError
-
-from ..domain.day_type import DayType
-from ..domain.cycle import Cycle
-from ..domain.planner_configuration import (
-    PlannerConfiguration,
-)
 from ..domain.calendar_exception import CalendarException
+from ..domain.cycle import Cycle
+from ..domain.day_type import DayType
+from ..domain.planner_configuration import PlannerConfiguration
+from .errors import ValidationError
 
 
 class PlannerValidator:
@@ -19,21 +16,13 @@ class PlannerValidator:
     ) -> None:
         """Validate complete configuration."""
 
-        PlannerValidator._validate_unique_ids(
-            configuration
-        )
+        PlannerValidator._validate_unique_ids(configuration)
 
-        PlannerValidator._validate_day_types(
-            configuration
-        )
+        PlannerValidator._validate_day_types(configuration)
 
-        PlannerValidator._validate_cycles(
-            configuration
-        )
+        PlannerValidator._validate_cycles(configuration)
 
-        PlannerValidator._validate_calendar_exceptions(
-            configuration
-        )
+        PlannerValidator._validate_calendar_exceptions(configuration)
 
     @staticmethod
     def _validate_unique_ids(
@@ -43,35 +32,18 @@ class PlannerValidator:
 
         ids: list[str] = []
 
-        ids.extend(
-            item.id
-            for item in configuration.moments
-        )
+        ids.extend(item.id for item in configuration.moments)
 
-        ids.extend(
-            item.id
-            for item in configuration.day_types
-        )
+        ids.extend(item.id for item in configuration.day_types)
 
-        ids.extend(
-            item.id
-            for item in configuration.week_schedules
-        )
+        ids.extend(item.id for item in configuration.week_schedules)
 
-        ids.extend(
-            item.id
-            for item in configuration.cycles
-        )
+        ids.extend(item.id for item in configuration.cycles)
 
-        ids.extend(
-            item.id
-            for item in configuration.calendar_exceptions
-        )
+        ids.extend(item.id for item in configuration.calendar_exceptions)
 
         if len(ids) != len(set(ids)):
-            raise ValidationError(
-                "Duplicate identifier detected"
-            )
+            raise ValidationError("Duplicate identifier detected")
 
     @staticmethod
     def _validate_day_types(
@@ -79,10 +51,7 @@ class PlannerValidator:
     ) -> None:
         """Validate day types."""
 
-        moment_ids = {
-            item.id
-            for item in configuration.moments
-        }
+        moment_ids = {item.id for item in configuration.moments}
 
         for day_type in configuration.day_types:
             PlannerValidator._validate_day_type(
@@ -101,20 +70,14 @@ class PlannerValidator:
 
         for scheduled in day_type.scheduled_moments:
             if scheduled.moment_id not in moment_ids:
-                raise ValidationError(
-                    f"Unknown moment: "
-                    f"{scheduled.moment_id}"
-                )
+                raise ValidationError(f"Unknown moment: " f"{scheduled.moment_id}")
 
             if scheduled.moment_id in used_moments:
                 raise ValidationError(
-                    f"Duplicate moment in "
-                    f"day type: {day_type.name}"
+                    f"Duplicate moment in " f"day type: {day_type.name}"
                 )
 
-            used_moments.add(
-                scheduled.moment_id
-            )
+            used_moments.add(scheduled.moment_id)
 
     @staticmethod
     def _validate_cycles(
@@ -122,10 +85,7 @@ class PlannerValidator:
     ) -> None:
         """Validate cycles."""
 
-        week_schedule_ids = {
-            item.id
-            for item in configuration.week_schedules
-        }
+        week_schedule_ids = {item.id for item in configuration.week_schedules}
 
         for cycle in configuration.cycles:
             PlannerValidator._validate_cycle(
@@ -143,15 +103,11 @@ class PlannerValidator:
         size = len(cycle.week_schedule_ids)
 
         if size < 1 or size > 4:
-            raise ValidationError(
-                "Cycle must contain between 1 and 4 weeks"
-            )
+            raise ValidationError("Cycle must contain between 1 and 4 weeks")
 
         for week_schedule_id in cycle.week_schedule_ids:
             if week_schedule_id not in week_schedule_ids:
-                raise ValidationError(
-                    f"Unknown week schedule: {week_schedule_id}"
-                )
+                raise ValidationError(f"Unknown week schedule: {week_schedule_id}")
 
     @staticmethod
     def _validate_calendar_exceptions(
@@ -159,14 +115,9 @@ class PlannerValidator:
     ) -> None:
         """Validate calendar exceptions."""
 
-        day_type_ids = {
-            item.id
-            for item in configuration.day_types
-        }
+        day_type_ids = {item.id for item in configuration.day_types}
 
-        for calendar_exception in (
-            configuration.calendar_exceptions
-        ):
+        for calendar_exception in configuration.calendar_exceptions:
             PlannerValidator._validate_calendar_exception(
                 calendar_exception,
                 day_type_ids,
@@ -179,11 +130,7 @@ class PlannerValidator:
     ) -> None:
         """Validate one calendar exception."""
 
-        if (
-            calendar_exception.day_type_id
-            not in day_type_ids
-        ):
+        if calendar_exception.day_type_id not in day_type_ids:
             raise ValidationError(
-                f"Unknown day type: "
-                f"{calendar_exception.day_type_id}"
+                f"Unknown day type: " f"{calendar_exception.day_type_id}"
             )

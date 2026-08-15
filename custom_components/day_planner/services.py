@@ -1,59 +1,38 @@
 """Home Assistant services for Day Planner."""
 
-from typing import Any
-from datetime import (
-      date,
-      datetime,
-)
-
+import logging
 from collections.abc import Callable
+from datetime import date, datetime
+from typing import Any
 
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
-import logging
 
-from .const import (
-    DOMAIN,
-    SERVICE_ADD_MOMENT,
-    SERVICE_UPDATE_MOMENT,
-    SERVICE_REMOVE_MOMENT,
-    SERVICE_ADD_DAY_TYPE,
-    SERVICE_UPDATE_DAY_TYPE,
-    SERVICE_REMOVE_DAY_TYPE,
-    SERVICE_ADD_WEEK_SCHEDULE,
-    SERVICE_UPDATE_WEEK_SCHEDULE,
-    SERVICE_REMOVE_WEEK_SCHEDULE,
-    SERVICE_ADD_CYCLE,
-    SERVICE_UPDATE_CYCLE,
-    SERVICE_REMOVE_CYCLE,
-    SERVICE_ADD_CALENDAR_EXCEPTION,
-    SERVICE_UPDATE_CALENDAR_EXCEPTION,
-    SERVICE_REMOVE_CALENDAR_EXCEPTION,
-)
-from .domain.moment import Moment
-from .domain.day_type import DayType
-from .domain.week_schedule import WeekSchedule
-from .domain.cycle import Cycle
+from .const import (DOMAIN, SERVICE_ADD_CALENDAR_EXCEPTION, SERVICE_ADD_CYCLE,
+                    SERVICE_ADD_DAY_TYPE, SERVICE_ADD_MOMENT,
+                    SERVICE_ADD_WEEK_SCHEDULE,
+                    SERVICE_REMOVE_CALENDAR_EXCEPTION, SERVICE_REMOVE_CYCLE,
+                    SERVICE_REMOVE_DAY_TYPE, SERVICE_REMOVE_MOMENT,
+                    SERVICE_REMOVE_WEEK_SCHEDULE,
+                    SERVICE_UPDATE_CALENDAR_EXCEPTION, SERVICE_UPDATE_CYCLE,
+                    SERVICE_UPDATE_DAY_TYPE, SERVICE_UPDATE_MOMENT,
+                    SERVICE_UPDATE_WEEK_SCHEDULE)
 from .domain.calendar_exception import CalendarException
+from .domain.cycle import Cycle
+from .domain.day_type import DayType
+from .domain.moment import Moment
+from .domain.week_schedule import WeekSchedule
 from .planner.errors import PlannerError
 from .runtime import DayPlannerRuntimeData
-from .schemas import (
-    ADD_MOMENT_SCHEMA,
-    UPDATE_MOMENT_SCHEMA,
-    REMOVE_MOMENT_SCHEMA,
-    ADD_DAY_TYPE_SCHEMA,
-    UPDATE_DAY_TYPE_SCHEMA,
-    REMOVE_DAY_TYPE_SCHEMA,
-    ADD_WEEK_SCHEDULE_SCHEMA,
-    UPDATE_WEEK_SCHEDULE_SCHEMA,
-    REMOVE_WEEK_SCHEDULE_SCHEMA,
-    ADD_CYCLE_SCHEMA,
-    UPDATE_CYCLE_SCHEMA,
-    REMOVE_CYCLE_SCHEMA,
-    ADD_CALENDAR_EXCEPTION_SCHEMA,
-    UPDATE_CALENDAR_EXCEPTION_SCHEMA,
-    REMOVE_CALENDAR_EXCEPTION_SCHEMA,
-)
+from .schemas import (ADD_CALENDAR_EXCEPTION_SCHEMA, ADD_CYCLE_SCHEMA,
+                      ADD_DAY_TYPE_SCHEMA, ADD_MOMENT_SCHEMA,
+                      ADD_WEEK_SCHEDULE_SCHEMA,
+                      REMOVE_CALENDAR_EXCEPTION_SCHEMA, REMOVE_CYCLE_SCHEMA,
+                      REMOVE_DAY_TYPE_SCHEMA, REMOVE_MOMENT_SCHEMA,
+                      REMOVE_WEEK_SCHEDULE_SCHEMA,
+                      UPDATE_CALENDAR_EXCEPTION_SCHEMA, UPDATE_CYCLE_SCHEMA,
+                      UPDATE_DAY_TYPE_SCHEMA, UPDATE_MOMENT_SCHEMA,
+                      UPDATE_WEEK_SCHEDULE_SCHEMA)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -69,9 +48,7 @@ def _get_runtime(
     )
 
     if entry is None:
-        raise HomeAssistantError(
-            "Day Planner is not configured."
-        )
+        raise HomeAssistantError("Day Planner is not configured.")
 
     return entry.runtime_data
 
@@ -143,9 +120,7 @@ async def async_setup_services(
         )
 
         await _execute(
-            lambda: runtime.engine.update_moment(
-                moment
-            ),
+            lambda: runtime.engine.update_moment(moment),
             runtime=runtime,
             description=f"Unable to update moment '{moment.id}'",
         )
@@ -158,14 +133,9 @@ async def async_setup_services(
         runtime = _get_runtime(hass)
 
         await _execute(
-            lambda: runtime.engine.remove_moment(
-                call.data["id"]
-            ),
+            lambda: runtime.engine.remove_moment(call.data["id"]),
             runtime=runtime,
-            description=(
-                f"Unable to remove moment "
-                f"'{call.data['id']}'"
-            ),
+            description=(f"Unable to remove moment " f"'{call.data['id']}'"),
         )
 
     #
@@ -313,10 +283,7 @@ async def async_setup_services(
                 call.data["id"],
             ),
             runtime=runtime,
-            description=(
-                f"Unable to remove week schedule "
-                f"'{call.data['id']}'"
-            ),
+            description=(f"Unable to remove week schedule " f"'{call.data['id']}'"),
         )
 
     #
@@ -335,9 +302,7 @@ async def async_setup_services(
         cycle = Cycle(
             id=call.data["id"],
             name=call.data["name"],
-            week_schedule_ids=tuple(
-                call.data["week_schedule_ids"]
-            )
+            week_schedule_ids=tuple(call.data["week_schedule_ids"]),
         )
 
         await _execute(
@@ -360,9 +325,7 @@ async def async_setup_services(
         cycle = Cycle(
             id=call.data["id"],
             name=call.data["name"],
-            week_schedule_ids=tuple(
-                call.data["week_schedule_ids"]
-            )
+            week_schedule_ids=tuple(call.data["week_schedule_ids"]),
         )
 
         await _execute(
@@ -411,12 +374,12 @@ async def async_setup_services(
                 datetime.strptime(
                     call.data["date"],
                     "%d/%m/%Y",
-                ).date().isoformat()
+                )
+                .date()
+                .isoformat()
             ),
             day_type_id=call.data["day_type_id"],
-            description=call.data.get(
-                "description"
-            ),
+            description=call.data.get("description"),
         )
 
         await _execute(
@@ -442,12 +405,12 @@ async def async_setup_services(
                 datetime.strptime(
                     call.data["date"],
                     "%d/%m/%Y",
-                ).date().isoformat()
+                )
+                .date()
+                .isoformat()
             ),
             day_type_id=call.data["day_type_id"],
-            description=call.data.get(
-                "description"
-            ),
+            description=call.data.get("description"),
         )
 
         await _execute(

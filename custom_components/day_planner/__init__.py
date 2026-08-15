@@ -1,14 +1,11 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
+from .const import CONF_DELETE_DATA_ON_REMOVE, DEFAULT_DELETE_DATA_ON_REMOVE
 from .planner.engine import PlannerEngine
 from .runtime import DayPlannerRuntimeData
-from .storage import DayPlannerStorage
 from .services import async_setup_services
-from .const import (
-    CONF_DELETE_DATA_ON_REMOVE,
-    DEFAULT_DELETE_DATA_ON_REMOVE,
-)
+from .storage import DayPlannerStorage
 
 
 async def async_setup_entry(
@@ -22,22 +19,16 @@ async def async_setup_entry(
     configuration = await storage.async_load()
 
     if not configuration.has_data():
-        await storage.async_save(
-            configuration
-        )
+        await storage.async_save(configuration)
 
-    engine = PlannerEngine(
-        configuration
-    )
+    engine = PlannerEngine(configuration)
 
     entry.runtime_data = DayPlannerRuntimeData(
         storage=storage,
         engine=engine,
     )
 
-    await async_setup_services(
-        hass
-    )
+    await async_setup_services(hass)
 
     return True
 

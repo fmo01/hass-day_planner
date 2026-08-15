@@ -1,7 +1,7 @@
 from homeassistant import config_entries
 
-from .options_flow import DayPlannerOptionsFlow
 from .const import DOMAIN, NAME
+from .options_flow import DayPlannerOptionsFlow
 
 
 class DayPlannerConfigFlow(
@@ -18,9 +18,7 @@ class DayPlannerConfigFlow(
     ):
         """Handle setup."""
 
-        await self.async_set_unique_id(
-            DOMAIN
-        )
+        await self.async_set_unique_id(DOMAIN)
 
         self._abort_if_unique_id_configured()
 

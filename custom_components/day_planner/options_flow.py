@@ -1,13 +1,9 @@
 """Options flow for Day Planner."""
 
 import voluptuous as vol
-
 from homeassistant import config_entries
 
-from .const import (
-    CONF_DELETE_DATA_ON_REMOVE,
-    DEFAULT_DELETE_DATA_ON_REMOVE,
-)
+from .const import CONF_DELETE_DATA_ON_REMOVE, DEFAULT_DELETE_DATA_ON_REMOVE
 
 
 class DayPlannerOptionsFlow(

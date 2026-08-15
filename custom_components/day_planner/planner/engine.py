@@ -3,30 +3,23 @@
 from dataclasses import replace
 from typing import TypeVar
 
+from ..domain.calendar_exception import CalendarException
+from ..domain.cycle import Cycle
 from ..domain.day_type import DayType
 from ..domain.moment import Moment
-from ..domain.planner_configuration import (
-    PlannerConfiguration,
-)
-from ..domain.scheduled_moment import (
-    ScheduledMoment,
-)
+from ..domain.planner_configuration import PlannerConfiguration
+from ..domain.scheduled_moment import ScheduledMoment
 from ..domain.week_schedule import WeekSchedule
-from ..domain.cycle import Cycle
-from ..domain.calendar_exception import CalendarException
-
-from .errors import (
-    NotFoundError,
-    ValidationError,
-)
-from .validator import PlannerValidator
+from .errors import NotFoundError, ValidationError
 from .protocols import HasId
+from .validator import PlannerValidator
 
 T = TypeVar("T", bound=HasId)
 
 
 class PlannerEngine:
     """Manipulate Day Planner configuration."""
+
     T = TypeVar("T")
 
     def __init__(
@@ -37,9 +30,7 @@ class PlannerEngine:
 
         self._configuration = configuration
 
-        PlannerValidator.validate_configuration(
-            configuration
-        )
+        PlannerValidator.validate_configuration(configuration)
 
     @property
     def configuration(
@@ -65,9 +56,7 @@ class PlannerEngine:
             if item.id == object_id:
                 return item
 
-        raise NotFoundError(
-            f"{object_name} not found: {object_id}"
-        )
+        raise NotFoundError(f"{object_name} not found: {object_id}")
 
     def _append(
         self,
@@ -88,12 +77,7 @@ class PlannerEngine:
     ) -> tuple[T, ...]:
         """Replace an item having the same identifier."""
 
-        return tuple(
-            item
-            if current.id == item.id
-            else current
-            for current in items
-        )
+        return tuple(item if current.id == item.id else current for current in items)
 
     def _remove_by_id(
         self,
@@ -102,11 +86,7 @@ class PlannerEngine:
     ) -> tuple[T, ...]:
         """Remove an item by identifier."""
 
-        return tuple(
-            item
-            for item in items
-            if item.id != object_id
-        )
+        return tuple(item for item in items if item.id != object_id)
 
     def _replace_configuration(
         self,
@@ -185,9 +165,7 @@ class PlannerEngine:
                 scheduled.moment_id == moment_id
                 for scheduled in day_type.scheduled_moments
             ):
-                raise ValidationError(
-                    "Cannot remove a moment used by a day type"
-                )
+                raise ValidationError("Cannot remove a moment used by a day type")
 
         self._replace_configuration(
             moments=self._remove_by_id(
@@ -250,7 +228,7 @@ class PlannerEngine:
 
         self.get_day_type(
             day_type_id,
-            )
+        )
 
         for week_schedule in self._configuration.week_schedules:
             if day_type_id in (
@@ -263,13 +241,10 @@ class PlannerEngine:
                 week_schedule.sunday,
             ):
                 raise ValidationError(
-                    "Cannot remove a day type "
-                    "used by a week schedule"
+                    "Cannot remove a day type " "used by a week schedule"
                 )
 
-        for calendar_exception in (
-            self._configuration.calendar_exceptions
-        ):
+        for calendar_exception in self._configuration.calendar_exceptions:
             if calendar_exception.day_type_id == day_type_id:
                 raise ValidationError(
                     "Cannot remove a day type used by a calendar exception"
@@ -340,9 +315,7 @@ class PlannerEngine:
 
         for cycle in self._configuration.cycles:
             if week_schedule_id in cycle.week_schedule_ids:
-                raise ValidationError(
-                    "Cannot remove a week schedule used by a cycle"
-                )
+                raise ValidationError("Cannot remove a week schedule used by a cycle")
 
         self._replace_configuration(
             week_schedules=self._remove_by_id(
@@ -486,13 +459,9 @@ class PlannerEngine:
     ) -> None:
         """Add scheduled moment to day type."""
 
-        day_types = list(
-            self._configuration.day_types
-        )
+        day_types = list(self._configuration.day_types)
 
-        for index, day_type in enumerate(
-            day_types
-        ):
+        for index, day_type in enumerate(day_types):
             if day_type.id == day_type_id:
                 day_types[index] = replace(
                     day_type,
@@ -507,16 +476,10 @@ class PlannerEngine:
                     day_types=tuple(day_types),
                 )
 
-                PlannerValidator.validate_configuration(
-                    configuration
-                )
+                PlannerValidator.validate_configuration(configuration)
 
-                self._configuration = (
-                    configuration
-                )
+                self._configuration = configuration
 
                 return
 
-        raise NotFoundError(
-            f"Day type not found: {day_type_id}"
-        )
+        raise NotFoundError(f"Day type not found: {day_type_id}")

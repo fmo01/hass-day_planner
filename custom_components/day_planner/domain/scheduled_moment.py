@@ -15,9 +15,7 @@ class ScheduledMoment:
 
         return {
             "moment_id": self.moment_id,
-            "time_definition": (
-                self.time_definition.to_dict()
-            ),
+            "time_definition": (self.time_definition.to_dict()),
         }
 
     @classmethod
@@ -29,9 +27,5 @@ class ScheduledMoment:
 
         return cls(
             moment_id=str(data["moment_id"]),
-            time_definition=(
-                TimeDefinition.from_dict(
-                    data["time_definition"]
-                )
-            ),
+            time_definition=(TimeDefinition.from_dict(data["time_definition"])),
         )

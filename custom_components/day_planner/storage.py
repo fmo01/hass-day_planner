@@ -3,14 +3,8 @@
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
-from .domain.planner_configuration import (
-    PlannerConfiguration,
-)
-
-from .const import (
-    STORAGE_KEY,
-    STORAGE_VERSION,
-)
+from .const import STORAGE_KEY, STORAGE_VERSION
+from .domain.planner_configuration import PlannerConfiguration
 
 
 class DayPlannerStorage:
@@ -38,9 +32,7 @@ class DayPlannerStorage:
         if data is None:
             return PlannerConfiguration.empty()
 
-        return PlannerConfiguration.from_dict(
-            data
-        )
+        return PlannerConfiguration.from_dict(data)
 
     async def async_save(
         self,
@@ -48,9 +40,7 @@ class DayPlannerStorage:
     ) -> None:
         """Save configuration."""
 
-        await self._store.async_save(
-            configuration.to_dict()
-        )
+        await self._store.async_save(configuration.to_dict())
 
     async def async_delete(self) -> None:
         """Delete stored planner data."""

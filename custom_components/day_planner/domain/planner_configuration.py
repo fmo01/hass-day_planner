@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-
 from .calendar_exception import CalendarException
 from .cycle import Cycle
 from .day_type import DayType
@@ -22,25 +21,12 @@ class PlannerConfiguration:
         """Serialize object."""
 
         return {
-            "moments": [
-                item.to_dict()
-                for item in self.moments
-            ],
-            "day_types": [
-                item.to_dict()
-                for item in self.day_types
-            ],
-            "week_schedules": [
-                item.to_dict()
-                for item in self.week_schedules
-            ],
-            "cycles": [
-                item.to_dict()
-                for item in self.cycles
-            ],
+            "moments": [item.to_dict() for item in self.moments],
+            "day_types": [item.to_dict() for item in self.day_types],
+            "week_schedules": [item.to_dict() for item in self.week_schedules],
+            "cycles": [item.to_dict() for item in self.cycles],
             "calendar_exceptions": [
-                item.to_dict()
-                for item in self.calendar_exceptions
+                item.to_dict() for item in self.calendar_exceptions
             ],
         }
 

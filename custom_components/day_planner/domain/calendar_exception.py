@@ -30,13 +30,7 @@ class CalendarException:
 
         return cls(
             id=str(data["id"]),
-            date=date.fromisoformat(
-                str(data["date"])
-            ),
-            day_type_id=str(
-                data["day_type_id"]
-            ),
-            description=data.get(
-                "description"
-            ),
+            date=date.fromisoformat(str(data["date"])),
+            day_type_id=str(data["day_type_id"]),
+            description=data.get("description"),
         )
