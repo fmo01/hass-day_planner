@@ -19,10 +19,7 @@ class Moment:
             "id": self.id,
             "name": self.name,
             "icon": self.icon,
-            "actions": [
-                action.to_dict()
-                for action in self.actions
-            ]
+            "actions": [action.to_dict() for action in self.actions],
         }
 
     @classmethod
@@ -37,7 +34,6 @@ class Moment:
             name=str(data["name"]),
             icon=data.get("icon"),
             actions=tuple(
-                Action.from_dict(action)
-                for action in data.get("actions", [])
+                Action.from_dict(action) for action in data.get("actions", [])
             ),
         )

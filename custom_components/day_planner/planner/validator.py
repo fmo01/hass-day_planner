@@ -61,7 +61,6 @@ class PlannerValidator:
                     action,
                 )
 
-
     @staticmethod
     def _validate_action(
         action,
@@ -69,9 +68,7 @@ class PlannerValidator:
         """Validate one action."""
 
         if not action.service.strip():
-            raise ValidationError(
-                "Action service cannot be empty"
-            )
+            raise ValidationError("Action service cannot be empty")
 
     @staticmethod
     def _validate_day_types(
@@ -129,9 +126,7 @@ class PlannerValidator:
         """Validate one cycle."""
 
         if cycle.start_date.weekday() != 0:
-            raise ValidationError(
-                "Cycle start date must be a Monday"
-            )
+            raise ValidationError("Cycle start date must be a Monday")
 
         size = len(cycle.week_schedule_ids)
 
@@ -149,9 +144,7 @@ class PlannerValidator:
         """Ensure only one cycle exists."""
 
         if len(configuration.cycles) > 1:
-            raise ValidationError(
-                "Only one cycle is allowed"
-            )
+            raise ValidationError("Only one cycle is allowed")
 
     @staticmethod
     def _validate_calendar_exceptions(

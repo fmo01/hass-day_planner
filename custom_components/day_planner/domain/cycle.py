@@ -18,9 +18,7 @@ class Cycle:
             "id": self.id,
             "name": self.name,
             "start_date": self.start_date.isoformat(),
-            "week_schedule_ids": list(
-                self.week_schedule_ids
-            ),
+            "week_schedule_ids": list(self.week_schedule_ids),
         }
 
     @classmethod
@@ -33,9 +31,7 @@ class Cycle:
         return cls(
             id=data["id"],
             name=data["name"],
-            start_date=date.fromisoformat(
-                data["start_date"]
-            ),
+            start_date=date.fromisoformat(data["start_date"]),
             week_schedule_ids=tuple(
                 data.get(
                     "week_schedule_ids",

@@ -12,4 +12,3 @@ class ScheduledEvent:
 
     scheduled_at: datetime
     moment: Moment
-
