@@ -17,6 +17,8 @@ from custom_components.day_planner.const import (
 from custom_components.day_planner.planner.errors import PlannerError
 from custom_components.day_planner.services import (_execute, _get_runtime,
                                                     async_setup_services)
+from custom_components.day_planner.domain.action import Action
+from custom_components.day_planner.domain.moment import Moment
 
 
 class FakeStorage:
@@ -34,11 +36,33 @@ class FakeEngine:
         self.configuration = object()
 
 
+class FakeResolver:
+    def __init__(self):
+        self.configuration = None
+        self.update_count = 0
+
+    def update_configuration(
+        self,
+        configuration,
+    ):
+        self.configuration = configuration
+        self.update_count += 1
+
+
+class FakeHAScheduler:
+    def __init__(self):
+        self.schedule_count = 0
+
+    async def async_schedule_next(self):
+        self.schedule_count += 1
+
+
 class FakeRuntime:
     def __init__(self):
         self.storage = FakeStorage()
         self.engine = FakeEngine()
-
+        self.resolver = FakeResolver()
+        self.ha_scheduler = FakeHAScheduler()
 
 def test_execute_success():
     runtime = FakeRuntime()
@@ -57,9 +81,20 @@ def test_execute_success():
     )
 
     assert executed is True
-    assert runtime.storage.save_count == 1
-    assert runtime.storage.saved_configuration is runtime.engine.configuration
 
+    assert runtime.storage.save_count == 1
+    assert (
+        runtime.storage.saved_configuration
+        is runtime.engine.configuration
+    )
+
+    assert runtime.resolver.update_count == 1
+    assert (
+        runtime.resolver.configuration
+        is runtime.engine.configuration
+    )
+
+    assert runtime.ha_scheduler.schedule_count == 1
 
 def test_execute_planner_error():
     runtime = FakeRuntime()
@@ -80,6 +115,8 @@ def test_execute_planner_error():
         )
 
     assert runtime.storage.save_count == 0
+    assert runtime.resolver.update_count == 0
+    assert runtime.ha_scheduler.schedule_count == 0
 
 
 def test_execute_unexpected_error():
@@ -101,6 +138,8 @@ def test_execute_unexpected_error():
         )
 
     assert runtime.storage.save_count == 0
+    assert runtime.resolver.update_count == 0
+    assert runtime.ha_scheduler.schedule_count == 0
 
 
 def test_service_add_moment():
@@ -113,6 +152,8 @@ def test_service_add_moment():
     runtime.engine.add_moment = MagicMock()
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -132,6 +173,15 @@ def test_service_add_moment():
                 "id": "m2",
                 "name": "Moment 2",
                 "icon": "mdi:home",
+                "actions": [
+                    {
+                        "service": "light.turn_on",
+                        "data": {
+                            "entity_id": "light.salon",
+                            "brightness_pct": 50,
+                        },
+                    },
+                ],
             },
         )
 
@@ -144,6 +194,15 @@ def test_service_add_moment():
     assert moment.id == "m2"
     assert moment.name == "Moment 2"
     assert moment.icon == "mdi:home"
+    assert moment.actions == (
+        Action(
+            service="light.turn_on",
+            data={
+                "entity_id": "light.salon",
+                "brightness_pct": 50,
+            },
+        ),
+    )
 
     runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
 
@@ -156,8 +215,27 @@ def test_service_update_moment():
 
     runtime = MagicMock()
     runtime.engine.update_moment = MagicMock()
+
+    existing_action = Action(
+        service="light.turn_on",
+        data={
+            "entity_id": "light.salon",
+        },
+    )
+
+    runtime.engine.get_moment = MagicMock(
+        return_value=Moment(
+            id="m1",
+            name="Moment 1",
+            icon="mdi:coffee",
+            actions=(existing_action,),
+        )
+    )
+
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -189,9 +267,90 @@ def test_service_update_moment():
     assert moment.id == "m1"
     assert moment.name == "Moment modifié"
     assert moment.icon == "mdi:home"
+    assert moment.actions == (
+        existing_action,
+    )
+
+    runtime.engine.get_moment.assert_called_once_with(
+        "m1"
+    )
+
 
     runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
 
+
+def test_service_update_moment_clear_actions():
+    hass = MagicMock(spec=HomeAssistant)
+
+    hass.services = MagicMock()
+    hass.services.async_register = MagicMock()
+
+    runtime = MagicMock()
+
+    existing_action = Action(
+        service="light.turn_on",
+        data={
+            "entity_id": "light.salon",
+        },
+    )
+
+    runtime.engine.get_moment = MagicMock(
+        return_value=Moment(
+            id="m1",
+            name="Moment 1",
+            actions=(existing_action,),
+        )
+    )
+
+    runtime.engine.update_moment = MagicMock()
+    runtime.engine.configuration = object()
+    runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    entry = MagicMock()
+    entry.runtime_data = runtime
+
+    hass.config_entries.async_entries.return_value = [
+        entry
+    ]
+
+    async def run():
+        await async_setup_services(hass)
+
+        service = (
+            hass.services.async_register
+            .call_args_list[1]
+            .args[2]
+        )
+
+        call = ServiceCall(
+            hass=hass,
+            domain=DOMAIN,
+            service=SERVICE_UPDATE_MOMENT,
+            data={
+                "id": "m1",
+                "name": "Moment modifié",
+                "icon": "mdi:home",
+                "actions": [],
+            },
+        )
+
+        await service(call)
+
+    asyncio.run(run())
+
+    moment = (
+        runtime.engine.update_moment
+        .call_args.args[0]
+    )
+
+    assert moment.id == "m1"
+    assert moment.actions == ()
+
+    runtime.storage.async_save.assert_awaited_once_with(
+        runtime.engine.configuration
+    )
 
 def test_service_remove_moment():
     hass = MagicMock(spec=HomeAssistant)
@@ -203,6 +362,8 @@ def test_service_remove_moment():
     runtime.engine.remove_moment = MagicMock()
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -242,6 +403,8 @@ def test_service_add_day_type():
     runtime.engine.add_day_type = MagicMock()
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -286,6 +449,8 @@ def test_service_update_day_type():
     runtime.engine.update_day_type = MagicMock()
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -330,6 +495,8 @@ def test_service_remove_day_type():
     runtime.engine.remove_day_type = MagicMock()
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -369,6 +536,8 @@ def test_service_add_week_schedule():
     runtime.engine.add_week_schedule = MagicMock()
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -426,6 +595,8 @@ def test_service_update_week_schedule():
     runtime.engine.update_week_schedule = MagicMock()
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -483,6 +654,8 @@ def test_service_remove_week_schedule():
     runtime.engine.remove_week_schedule = MagicMock()
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -522,6 +695,8 @@ def test_service_add_cycle():
     runtime.engine.add_cycle = MagicMock()
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -540,6 +715,7 @@ def test_service_add_cycle():
             data={
                 "id": "c2",
                 "name": "Cycle 2",
+                "start_date": "2026-08-31",
                 "week_schedule_ids": ["ws1", "ws2"],
             },
         )
@@ -552,6 +728,7 @@ def test_service_add_cycle():
 
     assert cycle.id == "c2"
     assert cycle.name == "Cycle 2"
+    assert cycle.start_date == date(2026, 8, 31)
     assert cycle.week_schedule_ids == ("ws1", "ws2")
 
     runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
@@ -567,6 +744,8 @@ def test_service_update_cycle():
     runtime.engine.update_cycle = MagicMock()
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -585,6 +764,7 @@ def test_service_update_cycle():
             data={
                 "id": "c1",
                 "name": "Cycle modifié",
+                "start_date": "2026-08-31",
                 "week_schedule_ids": ["ws1", "ws2"],
             },
         )
@@ -597,6 +777,7 @@ def test_service_update_cycle():
 
     assert cycle.id == "c1"
     assert cycle.name == "Cycle modifié"
+    assert cycle.start_date == date(2026, 8, 31)
     assert cycle.week_schedule_ids == ("ws1", "ws2")
 
     runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
@@ -612,6 +793,8 @@ def test_service_remove_cycle():
     runtime.engine.remove_cycle = MagicMock()
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -651,6 +834,8 @@ def test_service_add_calendar_exception():
     runtime.engine.add_calendar_exception = MagicMock()
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -698,6 +883,8 @@ def test_service_update_calendar_exception():
     runtime.engine.update_calendar_exception = MagicMock()
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -745,6 +932,8 @@ def test_service_remove_calendar_exception():
     runtime.engine.remove_calendar_exception = MagicMock()
     runtime.engine.configuration = object()
     runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -784,3 +973,29 @@ def test_get_runtime_not_configured():
         match="Day Planner is not configured.",
     ):
         _get_runtime(hass)
+
+def test_execute_storage_error():
+    runtime = FakeRuntime()
+
+    async def failing_save(configuration):
+        raise RuntimeError("Storage failure")
+
+    runtime.storage.async_save = failing_save
+
+    def operation():
+        pass
+
+    with pytest.raises(
+        RuntimeError,
+        match="Storage failure",
+    ):
+        asyncio.run(
+            _execute(
+                operation=operation,
+                runtime=runtime,
+                description="test operation",
+            )
+        )
+
+    assert runtime.resolver.update_count == 0
+    assert runtime.ha_scheduler.schedule_count == 0

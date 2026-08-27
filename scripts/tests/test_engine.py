@@ -2,21 +2,24 @@ from datetime import date, time
 
 import pytest
 
-from custom_components.day_planner.domain.calendar_exception import \
-    CalendarException
+from custom_components.day_planner.domain.calendar_exception import (
+     CalendarException,
+)
 from custom_components.day_planner.domain.cycle import Cycle
 from custom_components.day_planner.domain.day_type import DayType
 from custom_components.day_planner.domain.moment import Moment
-from custom_components.day_planner.domain.planner_configuration import \
-    PlannerConfiguration
-from custom_components.day_planner.domain.scheduled_moment import \
-    ScheduledMoment
+from custom_components.day_planner.domain.planner_configuration import (
+    PlannerConfiguration,
+)
+from custom_components.day_planner.domain.scheduled_moment import (
+    ScheduledMoment,
+)
 from custom_components.day_planner.domain.time_definition import TimeDefinition
 from custom_components.day_planner.domain.week_schedule import WeekSchedule
 from custom_components.day_planner.planner.engine import PlannerEngine
 from custom_components.day_planner.planner.errors import (NotFoundError,
                                                           ValidationError)
-
+from custom_components.day_planner.domain.action import Action
 
 def test_engine_get_moment(moment):
     engine = PlannerEngine(
@@ -71,6 +74,58 @@ def test_engine_update_moment(
     engine.update_moment(updated_moment)
 
     assert engine.configuration.moments == (updated_moment,)
+
+
+def test_engine_add_moment_with_action():
+    action = Action(
+        service="light.turn_on",
+        data={
+            "entity_id": "light.salon",
+        },
+    )
+
+    moment = Moment(
+        id="m1",
+        name="Réveil",
+        icon="mdi:alarm",
+        actions=(action,),
+    )
+
+    engine = PlannerEngine(
+        PlannerConfiguration.empty()
+    )
+
+    engine.add_moment(moment)
+
+    assert engine.get_moment("m1") == moment
+    assert engine.get_moment("m1").actions == (
+        action,
+    )
+
+
+def test_engine_rejects_moment_with_invalid_action():
+    moment = Moment(
+        id="m1",
+        name="Réveil",
+        actions=(
+            Action(
+                service="",
+                data={},
+            ),
+        ),
+    )
+
+    engine = PlannerEngine(
+        PlannerConfiguration.empty()
+    )
+
+    with pytest.raises(
+        ValidationError,
+        match="Action service cannot be empty",
+    ):
+        engine.add_moment(moment)
+
+    assert engine.configuration.moments == ()
 
 
 def test_engine_remove_moment(moment):
@@ -447,6 +502,7 @@ def test_engine_update_cycle(cycle, week_schedule):
     updated = Cycle(
         id=cycle.id,
         name="Cycle modifié",
+        start_date=date(2026, 8, 31),
         week_schedule_ids=cycle.week_schedule_ids,
     )
 
@@ -492,6 +548,7 @@ def test_engine_add_cycle_with_week_schedule(
     cycle = Cycle(
         id="c2",
         name="Cycle 2",
+        start_date=date(2026, 8, 31),
         week_schedule_ids=(week_schedule.id,),
     )
 
@@ -514,6 +571,7 @@ def test_engine_add_cycle_unknown_week_schedule():
     cycle = Cycle(
         id="c2",
         name="Cycle 2",
+        start_date=date(2026, 8, 31),
         week_schedule_ids=("unknown",),
     )
 

@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import date, datetime, time
 
 from custom_components.day_planner.domain.action import Action
 from custom_components.day_planner.domain.calendar_exception import \
@@ -23,6 +23,64 @@ def test_moment_roundtrip(moment):
     assert restored == moment
 
 
+def test_action_roundtrip():
+    action = Action(
+        service="light.turn_on",
+        data={
+            "entity_id": "light.salon",
+        },
+    )
+
+    data = action.to_dict()
+
+    assert data == {
+        "service": "light.turn_on",
+        "data": {
+            "entity_id": "light.salon",
+        },
+    }
+
+    restored = Action.from_dict(data)
+
+    assert restored == action
+
+
+def test_moment_with_actions_roundtrip():
+    action = Action(
+        service="light.turn_on",
+        data={
+            "entity_id": "light.salon",
+        },
+    )
+
+    moment = Moment(
+        id="m1",
+        name="Réveil",
+        icon="mdi:alarm",
+        actions=(action,),
+    )
+
+    data = moment.to_dict()
+
+    assert data == {
+        "id": "m1",
+        "name": "Réveil",
+        "icon": "mdi:alarm",
+        "actions": [
+            {
+                "service": "light.turn_on",
+                "data": {
+                    "entity_id": "light.salon",
+                },
+            },
+        ],
+    }
+
+    restored = Moment.from_dict(data)
+
+    assert restored == moment
+
+
 def test_day_type_roundtrip(day_type):
     data = day_type.to_dict()
 
@@ -41,10 +99,16 @@ def test_week_schedule_roundtrip(week_schedule):
 
 def test_cycle_roundtrip(cycle):
     data = cycle.to_dict()
+    assert data["start_date"] == "2026-08-31"
 
     restored = Cycle.from_dict(data)
 
     assert restored == cycle
+    assert restored.start_date == date(
+        2026,
+        8,
+        31,
+    )
 
 
 def test_calendar_exception_roundtrip(calendar_exception):

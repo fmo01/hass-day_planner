@@ -14,6 +14,8 @@ from custom_components.day_planner.domain.time_definition import TimeDefinition
 from custom_components.day_planner.domain.week_schedule import WeekSchedule
 from custom_components.day_planner.planner.validator import (PlannerValidator,
                                                              ValidationError)
+from custom_components.day_planner.domain.action import Action
+from custom_components.day_planner.domain.moment import Moment
 
 
 def test_validator_accepts_valid_configuration(
@@ -157,6 +159,7 @@ def test_validator_accepts_cycle_with_one_week_schedule(
     cycle = Cycle(
         id="c1",
         name="Cycle 1",
+        start_date=date(2026, 8, 31),
         week_schedule_ids=(week_schedule.id,),
     )
 
@@ -190,6 +193,7 @@ def test_validator_accepts_cycle_with_four_week_schedules():
     cycle = Cycle(
         id="c1",
         name="Cycle 1",
+        start_date=date(2026, 8, 31),
         week_schedule_ids=tuple(item.id for item in week_schedules),
     )
 
@@ -208,6 +212,7 @@ def test_validator_rejects_cycle_without_week_schedule():
     cycle = Cycle(
         id="c1",
         name="Cycle 1",
+        start_date=date(2026, 8, 31),
         week_schedule_ids=(),
     )
 
@@ -245,6 +250,7 @@ def test_validator_rejects_cycle_with_five_week_schedules():
     cycle = Cycle(
         id="c1",
         name="Cycle 1",
+        start_date=date(2026, 8, 31),
         week_schedule_ids=tuple(item.id for item in week_schedules),
     )
 
@@ -267,6 +273,7 @@ def test_validator_rejects_unknown_week_schedule():
     cycle = Cycle(
         id="c1",
         name="Cycle 1",
+        start_date=date(2026, 8, 31),
         week_schedule_ids=("unknown",),
     )
 
@@ -327,3 +334,156 @@ def test_validator_rejects_unknown_day_type_in_calendar_exception():
         match="Unknown day type: unknown",
     ):
         PlannerValidator.validate_configuration(configuration)
+
+def test_validator_accepts_moment_with_action():
+    moment = Moment(
+        id="m1",
+        name="Réveil",
+        actions=(
+            Action(
+                service="light.turn_on",
+                data={
+                    "entity_id": "light.salon",
+                },
+            ),
+        ),
+    )
+
+    configuration = PlannerConfiguration(
+        moments=(moment,),
+        day_types=(),
+        week_schedules=(),
+        cycles=(),
+        calendar_exceptions=(),
+    )
+
+    PlannerValidator.validate_configuration(
+        configuration
+    )
+
+
+def test_validator_rejects_action_without_service():
+    moment = Moment(
+        id="m1",
+        name="Réveil",
+        actions=(
+            Action(
+                service="",
+                data={},
+            ),
+        ),
+    )
+
+    configuration = PlannerConfiguration(
+        moments=(moment,),
+        day_types=(),
+        week_schedules=(),
+        cycles=(),
+        calendar_exceptions=(),
+    )
+
+    with pytest.raises(
+        ValidationError,
+        match="Action service cannot be empty",
+    ):
+        PlannerValidator.validate_configuration(
+            configuration
+        )
+
+
+def test_validator_rejects_cycle_start_date_not_monday(
+    week_schedule,
+):
+    cycle = Cycle(
+        id="c1",
+        name="Cycle 1",
+        start_date=date(2026, 9, 1),
+        week_schedule_ids=(
+            week_schedule.id,
+        ),
+    )
+
+    configuration = PlannerConfiguration(
+        moments=(),
+        day_types=(),
+        week_schedules=(week_schedule,),
+        cycles=(cycle,),
+        calendar_exceptions=(),
+    )
+
+    with pytest.raises(
+        ValidationError,
+        match="Cycle start date must be a Monday",
+    ):
+        PlannerValidator.validate_configuration(
+            configuration
+        )
+
+def test_validator_rejects_multiple_cycles(
+    week_schedule,
+):
+    cycle1 = Cycle(
+        id="c1",
+        name="Cycle 1",
+        start_date=date(2026, 8, 31),
+        week_schedule_ids=(
+            week_schedule.id,
+        ),
+    )
+
+    cycle2 = Cycle(
+        id="c2",
+        name="Cycle 2",
+        start_date=date(2026, 8, 31),
+        week_schedule_ids=(
+            week_schedule.id,
+        ),
+    )
+
+    configuration = PlannerConfiguration(
+        moments=(),
+        day_types=(),
+        week_schedules=(week_schedule,),
+        cycles=(cycle1, cycle2),
+        calendar_exceptions=(),
+    )
+
+    with pytest.raises(
+        ValidationError,
+        match="Only one cycle is allowed",
+    ):
+        PlannerValidator.validate_configuration(
+            configuration
+        )
+
+
+def test_validator_rejects_cycle_not_starting_monday(
+    week_schedule,
+):
+    cycle = Cycle(
+        id="c1",
+        name="Cycle 1",
+        start_date=date(2026, 9, 1),  # mardi
+        week_schedule_ids=(
+            week_schedule.id,
+        ),
+    )
+
+    configuration = PlannerConfiguration(
+        moments=(),
+        day_types=(),
+        week_schedules=(week_schedule,),
+        cycles=(cycle,),
+        calendar_exceptions=(),
+    )
+
+    with pytest.raises(
+        ValidationError,
+        match="Cycle start date must be a Monday",
+    ):
+        PlannerValidator.validate_configuration(
+            configuration
+        )
+
+
+

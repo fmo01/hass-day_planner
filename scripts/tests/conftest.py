@@ -63,6 +63,7 @@ def cycle():
     return Cycle(
         id="c1",
         name="Cycle 1",
+        start_date=date(2026, 8, 31),
         week_schedule_ids=("ws1",),
     )
 
