@@ -2,10 +2,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .action_executor import ActionExecutor
-from .const import (
-    CONF_DELETE_DATA_ON_REMOVE,
-    DEFAULT_DELETE_DATA_ON_REMOVE,
-)
+from .const import CONF_DELETE_DATA_ON_REMOVE, DEFAULT_DELETE_DATA_ON_REMOVE
 from .ha_scheduler import HomeAssistantScheduler
 from .planner.engine import PlannerEngine
 from .planner.resolver import PlannerResolver
@@ -30,17 +27,11 @@ async def async_setup_entry(
 
     engine = PlannerEngine(configuration)
 
-    resolver = PlannerResolver(
-        engine.configuration
-    )
+    resolver = PlannerResolver(engine.configuration)
 
-    scheduler = PlannerScheduler(
-        resolver
-    )
+    scheduler = PlannerScheduler(resolver)
 
-    action_executor = ActionExecutor(
-        hass
-    )
+    action_executor = ActionExecutor(hass)
 
     ha_scheduler = HomeAssistantScheduler(
         hass=hass,
@@ -87,4 +78,3 @@ async def async_remove_entry(
     ):
         storage = DayPlannerStorage(hass)
         await storage.async_delete()
-
