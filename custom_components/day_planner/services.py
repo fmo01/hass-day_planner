@@ -90,6 +90,7 @@ async def _execute(
         _LOGGER.exception(description)
         raise
 
+
 async def async_setup_services(
     hass: HomeAssistant,
 ) -> None:
@@ -116,10 +117,7 @@ async def async_setup_services(
                         )
                     ),
                 )
-                for action in call.data.get(
-                    "actions",
-                    []
-                )
+                for action in call.data.get("actions", [])
             ),
         )
 
@@ -136,9 +134,7 @@ async def async_setup_services(
 
         runtime = _get_runtime(hass)
 
-        current_moment = runtime.engine.get_moment(
-            call.data["id"]
-        )
+        current_moment = runtime.engine.get_moment(call.data["id"])
 
         if "actions" in call.data:
             actions = tuple(
@@ -346,9 +342,7 @@ async def async_setup_services(
         cycle = Cycle(
             id=call.data["id"],
             name=call.data["name"],
-            start_date=date.fromisoformat(
-                 call.data["start_date"]
-            ),
+            start_date=date.fromisoformat(call.data["start_date"]),
             week_schedule_ids=tuple(call.data["week_schedule_ids"]),
         )
 
@@ -372,9 +366,7 @@ async def async_setup_services(
         cycle = Cycle(
             id=call.data["id"],
             name=call.data["name"],
-            start_date=date.fromisoformat(
-                 call.data["start_date"]
-            ),
+            start_date=date.fromisoformat(call.data["start_date"]),
             week_schedule_ids=tuple(call.data["week_schedule_ids"]),
         )
 

@@ -25,9 +25,7 @@ class PlannerScheduler:
 
         events = []
 
-        for scheduled, moment in self._resolver.resolve_schedule(
-            target_date
-        ):
+        for scheduled, moment in self._resolver.resolve_schedule(target_date):
             scheduled_at = datetime.combine(
                 target_date,
                 scheduled.time_definition.fixed_time,
@@ -55,14 +53,9 @@ class PlannerScheduler:
         """Return the next scheduled event."""
 
         for day_offset in range(max_days + 1):
-            target_date = (
-                now.date()
-                + timedelta(days=day_offset)
-            )
+            target_date = now.date() + timedelta(days=day_offset)
 
-            for event in self.events_for_date(
-                target_date
-            ):
+            for event in self.events_for_date(target_date):
                 if event.scheduled_at > now:
                     return event
 

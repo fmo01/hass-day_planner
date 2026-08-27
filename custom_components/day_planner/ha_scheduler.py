@@ -48,9 +48,7 @@ class HomeAssistantScheduler:
 
             self._cancel = None
 
-            await self._action_executor.async_execute(
-                event.moment
-            )
+            await self._action_executor.async_execute(event.moment)
 
             await self.async_schedule_next()
 
@@ -68,4 +66,3 @@ class HomeAssistantScheduler:
 
         self._cancel()
         self._cancel = None
-

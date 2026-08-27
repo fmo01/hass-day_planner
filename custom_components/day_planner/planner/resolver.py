@@ -3,8 +3,8 @@
 from datetime import date
 
 from ..domain.day_type import DayType
-from ..domain.planner_configuration import PlannerConfiguration
 from ..domain.moment import Moment
+from ..domain.planner_configuration import PlannerConfiguration
 from ..domain.scheduled_moment import ScheduledMoment
 
 
@@ -35,9 +35,7 @@ class PlannerResolver:
         )
 
         if calendar_exception is not None:
-            return self._find_day_type(
-                calendar_exception.day_type_id
-            )
+            return self._find_day_type(calendar_exception.day_type_id)
 
         if not self._configuration.cycles:
             return None
@@ -47,17 +45,11 @@ class PlannerResolver:
         if target_date < cycle.start_date:
             return None
 
-        days_since_start = (
-            target_date - cycle.start_date
-        ).days
+        days_since_start = (target_date - cycle.start_date).days
 
-        week_index = (
-            days_since_start // 7
-        ) % len(cycle.week_schedule_ids)
+        week_index = (days_since_start // 7) % len(cycle.week_schedule_ids)
 
-        week_schedule_id = cycle.week_schedule_ids[
-            week_index
-        ]
+        week_schedule_id = cycle.week_schedule_ids[week_index]
 
         week_schedule = next(
             item
@@ -79,9 +71,7 @@ class PlannerResolver:
         """Find a day type."""
 
         return next(
-            item
-            for item in self._configuration.day_types
-            if item.id == day_type_id
+            item for item in self._configuration.day_types if item.id == day_type_id
         )
 
     def resolve_scheduled_moments(
@@ -90,15 +80,12 @@ class PlannerResolver:
     ) -> tuple[ScheduledMoment, ...]:
         """Resolve scheduled moments for a date."""
 
-        day_type = self.resolve_day_type(
-            target_date
-        )
+        day_type = self.resolve_day_type(target_date)
 
         if day_type is None:
             return ()
 
         return day_type.scheduled_moments
-
 
     def resolve_moment(
         self,
@@ -107,11 +94,8 @@ class PlannerResolver:
         """Resolve a moment by id."""
 
         return next(
-            item
-            for item in self._configuration.moments
-            if item.id == moment_id
+            item for item in self._configuration.moments if item.id == moment_id
         )
-
 
     def resolve_schedule(
         self,
@@ -122,13 +106,9 @@ class PlannerResolver:
         return tuple(
             (
                 scheduled,
-                self.resolve_moment(
-                    scheduled.moment_id
-                ),
+                self.resolve_moment(scheduled.moment_id),
             )
-            for scheduled in self.resolve_scheduled_moments(
-                target_date
-            )
+            for scheduled in self.resolve_scheduled_moments(target_date)
         )
 
     def update_configuration(
@@ -138,4 +118,3 @@ class PlannerResolver:
         """Update resolver configuration."""
 
         self._configuration = configuration
-
