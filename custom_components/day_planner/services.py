@@ -17,6 +17,7 @@ from .const import (DOMAIN, SERVICE_ADD_CALENDAR_EXCEPTION, SERVICE_ADD_CYCLE,
                     SERVICE_UPDATE_CALENDAR_EXCEPTION, SERVICE_UPDATE_CYCLE,
                     SERVICE_UPDATE_DAY_TYPE, SERVICE_UPDATE_MOMENT,
                     SERVICE_UPDATE_WEEK_SCHEDULE)
+from .domain.action import Action
 from .domain.calendar_exception import CalendarException
 from .domain.cycle import Cycle
 from .domain.day_type import DayType
@@ -63,9 +64,17 @@ async def _execute(
     try:
         operation()
 
+        configuration = runtime.engine.configuration
+
         await runtime.storage.async_save(
-            runtime.engine.configuration,
+            configuration,
         )
+
+        runtime.resolver.update_configuration(
+            configuration,
+        )
+
+        await runtime.ha_scheduler.async_schedule_next()
 
     except PlannerError as err:
         _LOGGER.warning(
@@ -80,7 +89,6 @@ async def _execute(
     except Exception:
         _LOGGER.exception(description)
         raise
-
 
 async def async_setup_services(
     hass: HomeAssistant,
@@ -98,6 +106,21 @@ async def async_setup_services(
             id=call.data["id"],
             name=call.data["name"],
             icon=call.data["icon"],
+            actions=tuple(
+                Action(
+                    service=action["service"],
+                    data=dict(
+                        action.get(
+                            "data",
+                            {},
+                        )
+                    ),
+                )
+                for action in call.data.get(
+                    "actions",
+                    []
+                )
+            ),
         )
 
         await _execute(
@@ -113,10 +136,31 @@ async def async_setup_services(
 
         runtime = _get_runtime(hass)
 
+        current_moment = runtime.engine.get_moment(
+            call.data["id"]
+        )
+
+        if "actions" in call.data:
+            actions = tuple(
+                Action(
+                    service=action["service"],
+                    data=dict(
+                        action.get(
+                            "data",
+                            {},
+                        )
+                    ),
+                )
+                for action in call.data["actions"]
+            )
+        else:
+            actions = current_moment.actions
+
         moment = Moment(
             id=call.data["id"],
             name=call.data["name"],
             icon=call.data.get("icon"),
+            actions=actions,
         )
 
         await _execute(
@@ -302,6 +346,9 @@ async def async_setup_services(
         cycle = Cycle(
             id=call.data["id"],
             name=call.data["name"],
+            start_date=date.fromisoformat(
+                 call.data["start_date"]
+            ),
             week_schedule_ids=tuple(call.data["week_schedule_ids"]),
         )
 
@@ -325,6 +372,9 @@ async def async_setup_services(
         cycle = Cycle(
             id=call.data["id"],
             name=call.data["name"],
+            start_date=date.fromisoformat(
+                 call.data["start_date"]
+            ),
             week_schedule_ids=tuple(call.data["week_schedule_ids"]),
         )
 

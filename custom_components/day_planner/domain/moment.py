@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from .action import Action
+
 
 @dataclass(frozen=True, slots=True)
 class Moment:
@@ -8,6 +10,7 @@ class Moment:
     id: str
     name: str
     icon: str | None = None
+    actions: tuple[Action, ...] = ()
 
     def to_dict(self) -> dict[str, str | None]:
         """Serialize object."""
@@ -16,6 +19,10 @@ class Moment:
             "id": self.id,
             "name": self.name,
             "icon": self.icon,
+            "actions": [
+                action.to_dict()
+                for action in self.actions
+            ]
         }
 
     @classmethod
@@ -29,4 +36,8 @@ class Moment:
             id=str(data["id"]),
             name=str(data["name"]),
             icon=data.get("icon"),
+            actions=tuple(
+                Action.from_dict(action)
+                for action in data.get("actions", [])
+            ),
         )

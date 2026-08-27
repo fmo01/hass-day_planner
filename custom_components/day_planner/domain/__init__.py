@@ -6,6 +6,7 @@ from .planner_configuration import PlannerConfiguration
 from .scheduled_moment import ScheduledMoment
 from .time_definition import TimeDefinition
 from .week_schedule import WeekSchedule
+from .scheduled_event import ScheduledEvent
 
 __all__ = [
     "CalendarException",
@@ -16,4 +17,5 @@ __all__ = [
     "ScheduledMoment",
     "TimeDefinition",
     "WeekSchedule",
+    "ScheduledEvent",
 ]

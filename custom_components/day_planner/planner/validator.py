@@ -18,9 +18,13 @@ class PlannerValidator:
 
         PlannerValidator._validate_unique_ids(configuration)
 
+        PlannerValidator._validate_moments(configuration)
+
         PlannerValidator._validate_day_types(configuration)
 
         PlannerValidator._validate_cycles(configuration)
+
+        PlannerValidator._validate_cycle_count(configuration)
 
         PlannerValidator._validate_calendar_exceptions(configuration)
 
@@ -44,6 +48,30 @@ class PlannerValidator:
 
         if len(ids) != len(set(ids)):
             raise ValidationError("Duplicate identifier detected")
+
+    @staticmethod
+    def _validate_moments(
+        configuration: PlannerConfiguration,
+    ) -> None:
+        """Validate moments."""
+
+        for moment in configuration.moments:
+            for action in moment.actions:
+                PlannerValidator._validate_action(
+                    action,
+                )
+
+
+    @staticmethod
+    def _validate_action(
+        action,
+    ) -> None:
+        """Validate one action."""
+
+        if not action.service.strip():
+            raise ValidationError(
+                "Action service cannot be empty"
+            )
 
     @staticmethod
     def _validate_day_types(
@@ -100,6 +128,11 @@ class PlannerValidator:
     ) -> None:
         """Validate one cycle."""
 
+        if cycle.start_date.weekday() != 0:
+            raise ValidationError(
+                "Cycle start date must be a Monday"
+            )
+
         size = len(cycle.week_schedule_ids)
 
         if size < 1 or size > 4:
@@ -108,6 +141,17 @@ class PlannerValidator:
         for week_schedule_id in cycle.week_schedule_ids:
             if week_schedule_id not in week_schedule_ids:
                 raise ValidationError(f"Unknown week schedule: {week_schedule_id}")
+
+    @staticmethod
+    def _validate_cycle_count(
+        configuration: PlannerConfiguration,
+    ) -> None:
+        """Ensure only one cycle exists."""
+
+        if len(configuration.cycles) > 1:
+            raise ValidationError(
+                "Only one cycle is allowed"
+            )
 
     @staticmethod
     def _validate_calendar_exceptions(

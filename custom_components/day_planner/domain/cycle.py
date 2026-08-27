@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date
 
 
 @dataclass(frozen=True, slots=True)
@@ -7,6 +8,7 @@ class Cycle:
 
     id: str
     name: str
+    start_date: date
     week_schedule_ids: tuple[str, ...]
 
     def to_dict(self) -> dict:
@@ -15,7 +17,10 @@ class Cycle:
         return {
             "id": self.id,
             "name": self.name,
-            "week_schedule_ids": list(self.week_schedule_ids),
+            "start_date": self.start_date.isoformat(),
+            "week_schedule_ids": list(
+                self.week_schedule_ids
+            ),
         }
 
     @classmethod
@@ -28,6 +33,9 @@ class Cycle:
         return cls(
             id=data["id"],
             name=data["name"],
+            start_date=date.fromisoformat(
+                data["start_date"]
+            ),
             week_schedule_ids=tuple(
                 data.get(
                     "week_schedule_ids",

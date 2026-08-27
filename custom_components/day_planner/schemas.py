@@ -1,6 +1,16 @@
 import voluptuous as vol
 from homeassistant.helpers import config_validation as cv
 
+ACTION_SCHEMA = vol.Schema(
+    {
+        vol.Required("service"): cv.string,
+        vol.Optional(
+            "data",
+            default={},
+        ): dict,
+    }
+)
+
 ADD_MOMENT_SCHEMA = vol.Schema(
     {
         vol.Required("id"): cv.string,
@@ -12,6 +22,10 @@ ADD_MOMENT_SCHEMA = vol.Schema(
             cv.string,
             None,
         ),
+        vol.Optional(
+            "actions",
+            default=[],
+        ): [ACTION_SCHEMA],
     }
 )
 
@@ -26,6 +40,9 @@ UPDATE_MOMENT_SCHEMA = vol.Schema(
             cv.string,
             None,
         ),
+        vol.Optional(
+            "actions",
+        ): [ACTION_SCHEMA],
     }
 )
 
@@ -93,6 +110,7 @@ ADD_CYCLE_SCHEMA = vol.Schema(
     {
         vol.Required("id"): cv.string,
         vol.Required("name"): cv.string,
+        vol.Required("start_date"): cv.string,
         vol.Required("week_schedule_ids"): [cv.string],
     }
 )
@@ -101,6 +119,7 @@ UPDATE_CYCLE_SCHEMA = vol.Schema(
     {
         vol.Required("id"): cv.string,
         vol.Required("name"): cv.string,
+        vol.Required("start_date"): cv.string,
         vol.Required("week_schedule_ids"): [cv.string],
     }
 )
