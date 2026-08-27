@@ -1,35 +1,19 @@
-from datetime import (
-    date,
-    time,
-    datetime,
-)
+from datetime import datetime, time
 
-import pytest
-
-from custom_components.day_planner.domain.calendar_exception import (
-    CalendarException,
-)
+from custom_components.day_planner.domain.action import Action
+from custom_components.day_planner.domain.calendar_exception import \
+    CalendarException
 from custom_components.day_planner.domain.cycle import Cycle
 from custom_components.day_planner.domain.day_type import DayType
-from custom_components.day_planner.domain.moment import Moment
-from custom_components.day_planner.domain.scheduled_moment import (
-    ScheduledMoment,
-)
-from custom_components.day_planner.domain.time_definition import TimeDefinition
-
-from custom_components.day_planner.domain.planner_configuration import (
-    PlannerConfiguration,
-)
-from custom_components.day_planner.domain.week_schedule import (
-    WeekSchedule,
-)
-from custom_components.day_planner.planner.validator import (
-    PlannerValidator,
-    ValidationError,
-)
-from custom_components.day_planner.domain.action import Action
-
 from custom_components.day_planner.domain.metadata import Audit
+from custom_components.day_planner.domain.moment import Moment
+from custom_components.day_planner.domain.planner_configuration import \
+    PlannerConfiguration
+from custom_components.day_planner.domain.scheduled_moment import \
+    ScheduledMoment
+from custom_components.day_planner.domain.time_definition import TimeDefinition
+from custom_components.day_planner.domain.week_schedule import WeekSchedule
+
 
 def test_moment_roundtrip(moment):
     data = moment.to_dict()
@@ -38,12 +22,14 @@ def test_moment_roundtrip(moment):
 
     assert restored == moment
 
+
 def test_day_type_roundtrip(day_type):
     data = day_type.to_dict()
 
     restored = DayType.from_dict(data)
 
     assert restored == day_type
+
 
 def test_week_schedule_roundtrip(week_schedule):
     data = week_schedule.to_dict()
@@ -52,12 +38,14 @@ def test_week_schedule_roundtrip(week_schedule):
 
     assert restored == week_schedule
 
+
 def test_cycle_roundtrip(cycle):
     data = cycle.to_dict()
 
     restored = Cycle.from_dict(data)
 
     assert restored == cycle
+
 
 def test_calendar_exception_roundtrip(calendar_exception):
     data = calendar_exception.to_dict()
@@ -67,6 +55,7 @@ def test_calendar_exception_roundtrip(calendar_exception):
     restored = CalendarException.from_dict(data)
 
     assert restored == calendar_exception
+
 
 def test_time_definition_roundtrip():
     time_definition = TimeDefinition(
@@ -82,6 +71,7 @@ def test_time_definition_roundtrip():
     restored = TimeDefinition.from_dict(data)
 
     assert restored == time_definition
+
 
 def test_scheduled_moment_roundtrip():
     scheduled_moment = ScheduledMoment(
@@ -104,6 +94,7 @@ def test_scheduled_moment_roundtrip():
 
     assert restored == scheduled_moment
 
+
 def test_planner_configuration_empty():
     configuration = PlannerConfiguration.empty()
 
@@ -112,6 +103,7 @@ def test_planner_configuration_empty():
     assert configuration.week_schedules == ()
     assert configuration.cycles == ()
     assert configuration.calendar_exceptions == ()
+
 
 def test_planner_configuration_roundtrip(
     moment,
@@ -134,6 +126,7 @@ def test_planner_configuration_roundtrip(
 
     assert restored == configuration
 
+
 def test_planner_configuration_has_data(
     moment,
 ):
@@ -151,6 +144,7 @@ def test_planner_configuration_has_data(
 
     assert configuration.has_data() is True
 
+
 def test_action():
     action = Action(
         service="light.turn_on",
@@ -161,6 +155,7 @@ def test_action():
     assert action.data == {
         "entity_id": "light.salon",
     }
+
 
 def test_audit():
     now = datetime.now()
@@ -176,5 +171,3 @@ def test_audit():
     assert audit.created_at == now
     assert audit.modified_by == "user"
     assert audit.modified_at == now
-
-

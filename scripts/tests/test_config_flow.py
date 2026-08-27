@@ -1,14 +1,8 @@
+import asyncio
 from unittest.mock import MagicMock, patch
 
-import asyncio
-
-from custom_components.day_planner.config_flow import (
-    DayPlannerConfigFlow,
-)
-from custom_components.day_planner.const import (
-    DOMAIN,
-    NAME,
-)
+from custom_components.day_planner.config_flow import DayPlannerConfigFlow
+from custom_components.day_planner.const import DOMAIN, NAME
 
 
 def test_config_flow_user():
@@ -25,7 +19,6 @@ def test_config_flow_user():
             flow,
             "async_create_entry",
         ) as create_entry:
-
             create_entry.return_value = {
                 "type": "create_entry",
             }
@@ -51,11 +44,6 @@ def test_config_flow_options_flow():
 
     flow = DayPlannerConfigFlow()
 
-    options_flow = flow.async_get_options_flow(
-        config_entry
-    )
+    options_flow = flow.async_get_options_flow(config_entry)
 
-    assert options_flow.__class__.__name__ == (
-        "DayPlannerOptionsFlow"
-    )
-
+    assert options_flow.__class__.__name__ == ("DayPlannerOptionsFlow")

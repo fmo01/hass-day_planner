@@ -1,14 +1,11 @@
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from custom_components.day_planner import (
-    async_remove_entry,
-    async_setup_entry,
-    async_unload_entry,
-)
-from custom_components.day_planner.domain.planner_configuration import (
-    PlannerConfiguration,
-)
+from custom_components.day_planner import (async_remove_entry,
+                                           async_setup_entry,
+                                           async_unload_entry)
+from custom_components.day_planner.domain.planner_configuration import \
+    PlannerConfiguration
 
 
 def test_async_setup_entry_empty_configuration():
@@ -19,21 +16,15 @@ def test_async_setup_entry_empty_configuration():
         configuration = PlannerConfiguration.empty()
 
         with (
-            patch(
-                "custom_components.day_planner.DayPlannerStorage"
-            ) as storage_class,
-            patch(
-                "custom_components.day_planner.PlannerEngine"
-            ) as engine_class,
+            patch("custom_components.day_planner.DayPlannerStorage") as storage_class,
+            patch("custom_components.day_planner.PlannerEngine") as engine_class,
             patch(
                 "custom_components.day_planner.async_setup_services",
                 new=AsyncMock(),
             ),
         ):
             storage = storage_class.return_value
-            storage.async_load = AsyncMock(
-                return_value=configuration
-            )
+            storage.async_load = AsyncMock(return_value=configuration)
             storage.async_save = AsyncMock()
 
             result = await async_setup_entry(
@@ -44,13 +35,9 @@ def test_async_setup_entry_empty_configuration():
         assert result is True
 
         storage.async_load.assert_awaited_once_with()
-        storage.async_save.assert_awaited_once_with(
-            configuration
-        )
+        storage.async_save.assert_awaited_once_with(configuration)
 
-        engine_class.assert_called_once_with(
-            configuration
-        )
+        engine_class.assert_called_once_with(configuration)
 
         assert entry.runtime_data is not None
 
@@ -66,21 +53,15 @@ def test_async_setup_entry_existing_configuration():
         configuration.has_data.return_value = True
 
         with (
-            patch(
-                "custom_components.day_planner.DayPlannerStorage"
-            ) as storage_class,
-            patch(
-                "custom_components.day_planner.PlannerEngine"
-            ),
+            patch("custom_components.day_planner.DayPlannerStorage") as storage_class,
+            patch("custom_components.day_planner.PlannerEngine"),
             patch(
                 "custom_components.day_planner.async_setup_services",
                 new=AsyncMock(),
             ),
         ):
             storage = storage_class.return_value
-            storage.async_load = AsyncMock(
-                return_value=configuration
-            )
+            storage.async_load = AsyncMock(return_value=configuration)
             storage.async_save = AsyncMock()
 
             result = await async_setup_entry(
@@ -120,9 +101,7 @@ def test_async_remove_entry_delete_enabled():
             "delete_data_on_remove": True,
         }
 
-        with patch(
-            "custom_components.day_planner.DayPlannerStorage"
-        ) as storage_class:
+        with patch("custom_components.day_planner.DayPlannerStorage") as storage_class:
             storage = storage_class.return_value
             storage.async_delete = AsyncMock()
 
@@ -135,6 +114,7 @@ def test_async_remove_entry_delete_enabled():
 
     asyncio.run(run())
 
+
 def test_async_remove_entry_delete_disabled():
     async def run():
         hass = MagicMock()
@@ -144,9 +124,7 @@ def test_async_remove_entry_delete_disabled():
             "delete_data_on_remove": False,
         }
 
-        with patch(
-            "custom_components.day_planner.DayPlannerStorage"
-        ) as storage_class:
+        with patch("custom_components.day_planner.DayPlannerStorage") as storage_class:
             storage = storage_class.return_value
             storage.async_delete = AsyncMock()
 
@@ -158,5 +136,3 @@ def test_async_remove_entry_delete_disabled():
             storage.async_delete.assert_not_awaited()
 
     asyncio.run(run())
-
-

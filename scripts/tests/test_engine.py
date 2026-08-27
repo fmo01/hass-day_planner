@@ -1,37 +1,22 @@
+from datetime import date, time
+
 import pytest
 
-from datetime import (
-    date,
-    time
-)
-from custom_components.day_planner.domain.planner_configuration import (
-    PlannerConfiguration,
-)
-from custom_components.day_planner.domain.moment import (
-    Moment,
-)
-from custom_components.day_planner.planner.engine import (
-    PlannerEngine,
-)
-from custom_components.day_planner.planner.errors import (
-    NotFoundError,
-    ValidationError,
-)
-from custom_components.day_planner.domain.day_type import DayType
-
-from custom_components.day_planner.domain.scheduled_moment import (
-    ScheduledMoment,
-)
-from custom_components.day_planner.domain.week_schedule import (
-    WeekSchedule,
-)
-from custom_components.day_planner.domain.time_definition import (
-    TimeDefinition,
-)
-from custom_components.day_planner.domain.calendar_exception import (
-    CalendarException,
-)
+from custom_components.day_planner.domain.calendar_exception import \
+    CalendarException
 from custom_components.day_planner.domain.cycle import Cycle
+from custom_components.day_planner.domain.day_type import DayType
+from custom_components.day_planner.domain.moment import Moment
+from custom_components.day_planner.domain.planner_configuration import \
+    PlannerConfiguration
+from custom_components.day_planner.domain.scheduled_moment import \
+    ScheduledMoment
+from custom_components.day_planner.domain.time_definition import TimeDefinition
+from custom_components.day_planner.domain.week_schedule import WeekSchedule
+from custom_components.day_planner.planner.engine import PlannerEngine
+from custom_components.day_planner.planner.errors import (NotFoundError,
+                                                          ValidationError)
+
 
 def test_engine_get_moment(moment):
     engine = PlannerEngine(
@@ -46,10 +31,9 @@ def test_engine_get_moment(moment):
 
     assert engine.get_moment("m1") == moment
 
+
 def test_engine_get_moment_not_found():
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     with pytest.raises(
         NotFoundError,
@@ -57,16 +41,14 @@ def test_engine_get_moment_not_found():
     ):
         engine.get_moment("unknown")
 
+
 def test_engine_add_moment(moment):
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     engine.add_moment(moment)
 
-    assert engine.configuration.moments == (
-        moment,
-    )
+    assert engine.configuration.moments == (moment,)
+
 
 def test_engine_update_moment(
     moment,
@@ -88,9 +70,8 @@ def test_engine_update_moment(
     )
     engine.update_moment(updated_moment)
 
-    assert engine.configuration.moments == (
-        updated_moment,
-    )
+    assert engine.configuration.moments == (updated_moment,)
+
 
 def test_engine_remove_moment(moment):
     engine = PlannerEngine(
@@ -107,16 +88,16 @@ def test_engine_remove_moment(moment):
 
     assert engine.configuration.moments == ()
 
+
 def test_engine_remove_moment_not_found():
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     with pytest.raises(
         NotFoundError,
         match="Moment not found: unknown",
     ):
         engine.remove_moment("unknown")
+
 
 def test_engine_remove_moment_used_by_day_type(moment):
     scheduled = ScheduledMoment(
@@ -148,6 +129,7 @@ def test_engine_remove_moment_used_by_day_type(moment):
     ):
         engine.remove_moment(moment.id)
 
+
 def test_engine_get_day_type(day_type):
     engine = PlannerEngine(
         PlannerConfiguration(
@@ -161,10 +143,9 @@ def test_engine_get_day_type(day_type):
 
     assert engine.get_day_type("dt1") == day_type
 
+
 def test_engine_get_day_type_not_found():
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     with pytest.raises(
         NotFoundError,
@@ -172,16 +153,14 @@ def test_engine_get_day_type_not_found():
     ):
         engine.get_day_type("unknown")
 
+
 def test_engine_add_day_type(day_type):
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     engine.add_day_type(day_type)
 
-    assert engine.configuration.day_types == (
-        day_type,
-    )
+    assert engine.configuration.day_types == (day_type,)
+
 
 def test_engine_update_day_type(day_type):
     engine = PlannerEngine(
@@ -202,9 +181,8 @@ def test_engine_update_day_type(day_type):
 
     engine.update_day_type(updated_day_type)
 
-    assert engine.configuration.day_types == (
-        updated_day_type,
-    )
+    assert engine.configuration.day_types == (updated_day_type,)
+
 
 def test_engine_remove_day_type(day_type):
     engine = PlannerEngine(
@@ -221,10 +199,9 @@ def test_engine_remove_day_type(day_type):
 
     assert engine.configuration.day_types == ()
 
+
 def test_engine_remove_day_type_not_found():
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     with pytest.raises(
         NotFoundError,
@@ -264,9 +241,8 @@ def test_engine_remove_day_type_used_by_week_schedule(
     ):
         engine.remove_day_type(day_type.id)
 
-    assert engine.configuration.day_types == (
-        day_type,
-    )
+    assert engine.configuration.day_types == (day_type,)
+
 
 def test_engine_remove_day_type_used_by_calendar_exception(
     day_type,
@@ -284,9 +260,7 @@ def test_engine_remove_day_type_used_by_calendar_exception(
             day_types=(day_type,),
             week_schedules=(),
             cycles=(),
-            calendar_exceptions=(
-                calendar_exception,
-            ),
+            calendar_exceptions=(calendar_exception,),
         )
     )
 
@@ -296,9 +270,8 @@ def test_engine_remove_day_type_used_by_calendar_exception(
     ):
         engine.remove_day_type(day_type.id)
 
-    assert engine.configuration.day_types == (
-        day_type,
-    )
+    assert engine.configuration.day_types == (day_type,)
+
 
 def test_engine_get_week_schedule1(week_schedule):
     engine = PlannerEngine(
@@ -311,9 +284,8 @@ def test_engine_get_week_schedule1(week_schedule):
         )
     )
 
-    assert engine.get_week_schedule(
-        week_schedule.id
-    ) == week_schedule
+    assert engine.get_week_schedule(week_schedule.id) == week_schedule
+
 
 def test_engine_get_week_schedule2(
     day_type,
@@ -329,20 +301,18 @@ def test_engine_get_week_schedule2(
         )
     )
 
-    assert engine.get_week_schedule(
-        week_schedule.id
-    ) == week_schedule
+    assert engine.get_week_schedule(week_schedule.id) == week_schedule
+
 
 def test_engine_get_week_schedule_not_found():
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     with pytest.raises(
         NotFoundError,
         match="Week schedule not found: unknown",
     ):
         engine.get_week_schedule("unknown")
+
 
 def test_engine_add_week_schedule(
     day_type,
@@ -360,9 +330,8 @@ def test_engine_add_week_schedule(
 
     engine.add_week_schedule(week_schedule)
 
-    assert engine.configuration.week_schedules == (
-        week_schedule,
-    )
+    assert engine.configuration.week_schedules == (week_schedule,)
+
 
 def test_engine_update_week_schedule(
     day_type,
@@ -392,40 +361,8 @@ def test_engine_update_week_schedule(
 
     engine.update_week_schedule(updated)
 
-    assert engine.configuration.week_schedules == (
-        updated,
-    )
-def test_engine_update_week_schedule(
-    day_type,
-    week_schedule,
-):
-    engine = PlannerEngine(
-        PlannerConfiguration(
-            moments=(),
-            day_types=(day_type,),
-            week_schedules=(week_schedule,),
-            cycles=(),
-            calendar_exceptions=(),
-        )
-    )
+    assert engine.configuration.week_schedules == (updated,)
 
-    updated = WeekSchedule(
-        id=week_schedule.id,
-        name="Semaine modifiée",
-        monday=week_schedule.monday,
-        tuesday=week_schedule.tuesday,
-        wednesday=week_schedule.wednesday,
-        thursday=week_schedule.thursday,
-        friday=week_schedule.friday,
-        saturday=week_schedule.saturday,
-        sunday=week_schedule.sunday,
-    )
-
-    engine.update_week_schedule(updated)
-
-    assert engine.configuration.week_schedules == (
-        updated,
-    )
 
 def test_engine_remove_week_schedule(
     day_type,
@@ -441,22 +378,20 @@ def test_engine_remove_week_schedule(
         )
     )
 
-    engine.remove_week_schedule(
-        week_schedule.id
-    )
+    engine.remove_week_schedule(week_schedule.id)
 
     assert engine.configuration.week_schedules == ()
 
+
 def test_engine_remove_week_schedule_not_found():
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     with pytest.raises(
         NotFoundError,
         match="Week schedule not found: unknown",
     ):
         engine.remove_week_schedule("unknown")
+
 
 def test_engine_get_cycle(cycle, week_schedule):
     engine = PlannerEngine(
@@ -471,16 +406,16 @@ def test_engine_get_cycle(cycle, week_schedule):
 
     assert engine.get_cycle(cycle.id) == cycle
 
+
 def test_engine_get_cycle_not_found():
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     with pytest.raises(
         NotFoundError,
         match="Cycle not found: unknown",
     ):
         engine.get_cycle("unknown")
+
 
 def test_engine_add_cycle(cycle, week_schedule):
     engine = PlannerEngine(
@@ -496,6 +431,7 @@ def test_engine_add_cycle(cycle, week_schedule):
     engine.add_cycle(cycle)
 
     assert engine.get_cycle(cycle.id) == cycle
+
 
 def test_engine_update_cycle(cycle, week_schedule):
     engine = PlannerEngine(
@@ -518,6 +454,7 @@ def test_engine_update_cycle(cycle, week_schedule):
 
     assert engine.get_cycle(cycle.id) == updated
 
+
 def test_engine_remove_cycle(cycle, week_schedule):
     engine = PlannerEngine(
         PlannerConfiguration(
@@ -537,16 +474,16 @@ def test_engine_remove_cycle(cycle, week_schedule):
     ):
         engine.get_cycle(cycle.id)
 
+
 def test_engine_remove_cycle_not_found():
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     with pytest.raises(
         NotFoundError,
         match="Cycle not found: unknown",
     ):
         engine.remove_cycle("unknown")
+
 
 def test_engine_add_cycle_with_week_schedule(
     cycle,
@@ -572,6 +509,7 @@ def test_engine_add_cycle_with_week_schedule(
 
     assert engine.get_cycle(cycle.id) == cycle
 
+
 def test_engine_add_cycle_unknown_week_schedule():
     cycle = Cycle(
         id="c2",
@@ -579,15 +517,14 @@ def test_engine_add_cycle_unknown_week_schedule():
         week_schedule_ids=("unknown",),
     )
 
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     with pytest.raises(
         ValidationError,
         match="Unknown week schedule: unknown",
     ):
         engine.add_cycle(cycle)
+
 
 def test_engine_get_calendar_exception(
     day_type,
@@ -603,15 +540,13 @@ def test_engine_get_calendar_exception(
         )
     )
 
-    assert (
-        engine.get_calendar_exception(calendar_exception.id)
-        == calendar_exception
-    )
+    assert engine.get_calendar_exception(calendar_exception.id) == calendar_exception
 
-def test_engine_get_calendar_exception_not_found(day_type,):
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+
+def test_engine_get_calendar_exception_not_found(
+    day_type,
+):
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     with pytest.raises(
         NotFoundError,
@@ -619,16 +554,6 @@ def test_engine_get_calendar_exception_not_found(day_type,):
     ):
         engine.get_calendar_exception("unknown")
 
-def test_engine_get_calendar_exception_not_found():
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
-
-    with pytest.raises(
-        NotFoundError,
-        match="Calendar exception not found: unknown",
-    ):
-        engine.get_calendar_exception("unknown")
 
 def test_engine_add_calendar_exception(
     calendar_exception,
@@ -646,10 +571,8 @@ def test_engine_add_calendar_exception(
 
     engine.add_calendar_exception(calendar_exception)
 
-    assert (
-        engine.get_calendar_exception(calendar_exception.id)
-        == calendar_exception
-    )
+    assert engine.get_calendar_exception(calendar_exception.id) == calendar_exception
+
 
 def test_engine_update_calendar_exception(
     calendar_exception,
@@ -674,10 +597,8 @@ def test_engine_update_calendar_exception(
 
     engine.update_calendar_exception(updated)
 
-    assert (
-        engine.get_calendar_exception(calendar_exception.id)
-        == updated
-    )
+    assert engine.get_calendar_exception(calendar_exception.id) == updated
+
 
 def test_engine_remove_calendar_exception(
     calendar_exception,
@@ -693,29 +614,24 @@ def test_engine_remove_calendar_exception(
         )
     )
 
-    engine.remove_calendar_exception(
-        calendar_exception.id
-    )
+    engine.remove_calendar_exception(calendar_exception.id)
 
     with pytest.raises(
         NotFoundError,
-        match=f"Calendar exception not found: "
-              f"{calendar_exception.id}",
+        match=f"Calendar exception not found: " f"{calendar_exception.id}",
     ):
-        engine.get_calendar_exception(
-            calendar_exception.id
-        )
+        engine.get_calendar_exception(calendar_exception.id)
+
 
 def test_engine_remove_calendar_exception_not_found():
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     with pytest.raises(
         NotFoundError,
         match="Calendar exception not found: unknown",
     ):
         engine.remove_calendar_exception("unknown")
+
 
 def test_engine_add_calendar_exception_unknown_day_type():
     exception = CalendarException(
@@ -725,15 +641,14 @@ def test_engine_add_calendar_exception_unknown_day_type():
         description="Test",
     )
 
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     with pytest.raises(
         ValidationError,
         match="Unknown day type: unknown",
     ):
         engine.add_calendar_exception(exception)
+
 
 def test_engine_update_calendar_exception_unknown_day_type(
     calendar_exception,
@@ -781,9 +696,8 @@ def test_engine_remove_week_schedule_used_by_cycle(
         ValidationError,
         match="Cannot remove a week schedule used by a cycle",
     ):
-        engine.remove_week_schedule(
-            week_schedule.id
-        )
+        engine.remove_week_schedule(week_schedule.id)
+
 
 def test_engine_add_scheduled_moment(
     moment,
@@ -805,21 +719,15 @@ def test_engine_add_scheduled_moment(
         scheduled_moment,
     )
 
-    updated_day_type = engine.get_day_type(
-        day_type.id
-    )
+    updated_day_type = engine.get_day_type(day_type.id)
 
-    assert scheduled_moment in (
-        updated_day_type.scheduled_moments
-    )
+    assert scheduled_moment in (updated_day_type.scheduled_moments)
 
 
 def test_engine_add_scheduled_moment_day_type_not_found(
     scheduled_moment,
 ):
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     with pytest.raises(
         NotFoundError,
@@ -829,5 +737,3 @@ def test_engine_add_scheduled_moment_day_type_not_found(
             "unknown",
             scheduled_moment,
         )
-
-

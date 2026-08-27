@@ -1,17 +1,12 @@
-from unittest.mock import MagicMock
-
 import asyncio
+from unittest.mock import MagicMock
 
 from homeassistant.config_entries import ConfigEntry
 
-from custom_components.day_planner.options_flow import (
-    DayPlannerOptionsFlow,
-)
-from custom_components.day_planner.const import (
-    DOMAIN,
-    CONF_DELETE_DATA_ON_REMOVE,
-    DEFAULT_DELETE_DATA_ON_REMOVE,
-)
+from custom_components.day_planner.const import (CONF_DELETE_DATA_ON_REMOVE,
+                                                 DEFAULT_DELETE_DATA_ON_REMOVE,
+                                                 DOMAIN)
+from custom_components.day_planner.options_flow import DayPlannerOptionsFlow
 
 
 def create_flow(options=None):
@@ -31,9 +26,7 @@ def create_flow(options=None):
 
     hass = MagicMock()
 
-    hass.config_entries.async_get_known_entry.return_value = (
-        config_entry
-    )
+    hass.config_entries.async_get_known_entry.return_value = config_entry
 
     flow = DayPlannerOptionsFlow()
 
@@ -47,9 +40,7 @@ def test_options_flow_show_form():
     async def run():
         flow = create_flow()
 
-        flow.async_show_form = MagicMock(
-            return_value={"type": "form"}
-        )
+        flow.async_show_form = MagicMock(return_value={"type": "form"})
 
         result = await flow.async_step_init()
 
@@ -64,13 +55,10 @@ def test_options_flow_show_form():
         result_schema = schema({})
 
         assert (
-            result_schema[CONF_DELETE_DATA_ON_REMOVE]
-            == DEFAULT_DELETE_DATA_ON_REMOVE
+            result_schema[CONF_DELETE_DATA_ON_REMOVE] == DEFAULT_DELETE_DATA_ON_REMOVE
         )
 
-        assert result == {
-            "type": "form"
-        }
+        assert result == {"type": "form"}
 
     asyncio.run(run())
 
@@ -92,9 +80,7 @@ def test_options_flow_create_entry():
             CONF_DELETE_DATA_ON_REMOVE: True,
         }
 
-        result = await flow.async_step_init(
-            user_input
-        )
+        result = await flow.async_step_init(user_input)
 
         flow.async_create_entry.assert_called_once_with(
             title="",

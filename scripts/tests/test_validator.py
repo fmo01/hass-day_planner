@@ -1,31 +1,20 @@
-from datetime import (
-    date,
-    time,
-)
+from datetime import date, time
 
 import pytest
 
-from custom_components.day_planner.domain.calendar_exception import (
-    CalendarException,
-)
+from custom_components.day_planner.domain.calendar_exception import \
+    CalendarException
 from custom_components.day_planner.domain.cycle import Cycle
 from custom_components.day_planner.domain.day_type import DayType
-from custom_components.day_planner.domain.moment import Moment
-from custom_components.day_planner.domain.scheduled_moment import (
-    ScheduledMoment,
-)
+from custom_components.day_planner.domain.planner_configuration import \
+    PlannerConfiguration
+from custom_components.day_planner.domain.scheduled_moment import \
+    ScheduledMoment
 from custom_components.day_planner.domain.time_definition import TimeDefinition
+from custom_components.day_planner.domain.week_schedule import WeekSchedule
+from custom_components.day_planner.planner.validator import (PlannerValidator,
+                                                             ValidationError)
 
-from custom_components.day_planner.domain.planner_configuration import (
-    PlannerConfiguration,
-)
-from custom_components.day_planner.domain.week_schedule import (
-    WeekSchedule,
-)
-from custom_components.day_planner.planner.validator import (
-    PlannerValidator,
-    ValidationError,
-)
 
 def test_validator_accepts_valid_configuration(
     moment,
@@ -42,9 +31,8 @@ def test_validator_accepts_valid_configuration(
         calendar_exceptions=(calendar_exception,),
     )
 
-    PlannerValidator.validate_configuration(
-        configuration
-    )
+    PlannerValidator.validate_configuration(configuration)
+
 
 def test_validator_rejects_duplicate_ids(
     moment,
@@ -67,9 +55,7 @@ def test_validator_rejects_duplicate_ids(
         ValidationError,
         match="Duplicate identifier detected",
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
+        PlannerValidator.validate_configuration(configuration)
 
 
 def test_validator_accepts_day_type_with_moments(
@@ -96,9 +82,8 @@ def test_validator_accepts_day_type_with_moments(
         calendar_exceptions=(),
     )
 
-    PlannerValidator.validate_configuration(
-        configuration
-    )
+    PlannerValidator.validate_configuration(configuration)
+
 
 def test_validator_rejects_unknown_moment():
     day_type = DayType(
@@ -126,9 +111,8 @@ def test_validator_rejects_unknown_moment():
         ValidationError,
         match="Unknown moment: unknown",
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
+        PlannerValidator.validate_configuration(configuration)
+
 
 def test_validator_rejects_duplicate_moment_in_day_type(
     moment,
@@ -164,9 +148,8 @@ def test_validator_rejects_duplicate_moment_in_day_type(
         ValidationError,
         match="Duplicate moment in day type: Télétravail",
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
+        PlannerValidator.validate_configuration(configuration)
+
 
 def test_validator_accepts_cycle_with_one_week_schedule(
     week_schedule,
@@ -185,9 +168,8 @@ def test_validator_accepts_cycle_with_one_week_schedule(
         calendar_exceptions=(),
     )
 
-    PlannerValidator.validate_configuration(
-        configuration
-    )
+    PlannerValidator.validate_configuration(configuration)
+
 
 def test_validator_accepts_cycle_with_four_week_schedules():
     week_schedules = tuple(
@@ -208,9 +190,7 @@ def test_validator_accepts_cycle_with_four_week_schedules():
     cycle = Cycle(
         id="c1",
         name="Cycle 1",
-        week_schedule_ids=tuple(
-            item.id for item in week_schedules
-        ),
+        week_schedule_ids=tuple(item.id for item in week_schedules),
     )
 
     configuration = PlannerConfiguration(
@@ -221,9 +201,8 @@ def test_validator_accepts_cycle_with_four_week_schedules():
         calendar_exceptions=(),
     )
 
-    PlannerValidator.validate_configuration(
-        configuration
-    )
+    PlannerValidator.validate_configuration(configuration)
+
 
 def test_validator_rejects_cycle_without_week_schedule():
     cycle = Cycle(
@@ -244,9 +223,8 @@ def test_validator_rejects_cycle_without_week_schedule():
         ValidationError,
         match="Cycle must contain between 1 and 4 weeks",
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
+        PlannerValidator.validate_configuration(configuration)
+
 
 def test_validator_rejects_cycle_with_five_week_schedules():
     week_schedules = tuple(
@@ -267,9 +245,7 @@ def test_validator_rejects_cycle_with_five_week_schedules():
     cycle = Cycle(
         id="c1",
         name="Cycle 1",
-        week_schedule_ids=tuple(
-            item.id for item in week_schedules
-        ),
+        week_schedule_ids=tuple(item.id for item in week_schedules),
     )
 
     configuration = PlannerConfiguration(
@@ -284,9 +260,8 @@ def test_validator_rejects_cycle_with_five_week_schedules():
         ValidationError,
         match="Cycle must contain between 1 and 4 weeks",
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
+        PlannerValidator.validate_configuration(configuration)
+
 
 def test_validator_rejects_unknown_week_schedule():
     cycle = Cycle(
@@ -307,9 +282,8 @@ def test_validator_rejects_unknown_week_schedule():
         ValidationError,
         match="Unknown week schedule: unknown",
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
+        PlannerValidator.validate_configuration(configuration)
+
 
 def test_validator_accepts_calendar_exception(
     day_type,
@@ -326,14 +300,12 @@ def test_validator_accepts_calendar_exception(
         day_types=(day_type,),
         week_schedules=(),
         cycles=(),
-        calendar_exceptions=(
-            calendar_exception,
-        ),
+        calendar_exceptions=(calendar_exception,),
     )
 
-    PlannerValidator.validate_configuration(
-        configuration
-    )
+    PlannerValidator.validate_configuration(configuration)
+
+
 def test_validator_rejects_unknown_day_type_in_calendar_exception():
     calendar_exception = CalendarException(
         id="ce1",
@@ -347,16 +319,11 @@ def test_validator_rejects_unknown_day_type_in_calendar_exception():
         day_types=(),
         week_schedules=(),
         cycles=(),
-        calendar_exceptions=(
-            calendar_exception,
-        ),
+        calendar_exceptions=(calendar_exception,),
     )
 
     with pytest.raises(
         ValidationError,
         match="Unknown day type: unknown",
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
-
+        PlannerValidator.validate_configuration(configuration)

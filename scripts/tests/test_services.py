@@ -1,43 +1,22 @@
 import asyncio
+from datetime import date
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
-from unittest.mock import AsyncMock, MagicMock
-from datetime import (
-    date,
-    time
-)
-
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 
-from custom_components.day_planner.planner.errors import PlannerError
-from custom_components.day_planner.services import (
-    _execute,
-    _get_runtime,
-    async_setup_services,
-)
-from custom_components.day_planner import services
-
-
 from custom_components.day_planner.const import (
-    DOMAIN,
-    SERVICE_ADD_MOMENT,
-    SERVICE_UPDATE_MOMENT,
-    SERVICE_REMOVE_MOMENT,
-    SERVICE_ADD_DAY_TYPE,
-    SERVICE_UPDATE_DAY_TYPE,
-    SERVICE_REMOVE_DAY_TYPE,
-    SERVICE_ADD_WEEK_SCHEDULE,
-    SERVICE_UPDATE_WEEK_SCHEDULE,
-    SERVICE_REMOVE_WEEK_SCHEDULE,
-    SERVICE_ADD_CYCLE,
-    SERVICE_UPDATE_CYCLE,
-    SERVICE_REMOVE_CYCLE,
-    SERVICE_ADD_CALENDAR_EXCEPTION,
-    SERVICE_UPDATE_CALENDAR_EXCEPTION,
-    SERVICE_REMOVE_CALENDAR_EXCEPTION,
-)
+    DOMAIN, SERVICE_ADD_CALENDAR_EXCEPTION, SERVICE_ADD_CYCLE,
+    SERVICE_ADD_DAY_TYPE, SERVICE_ADD_MOMENT, SERVICE_ADD_WEEK_SCHEDULE,
+    SERVICE_REMOVE_CALENDAR_EXCEPTION, SERVICE_REMOVE_CYCLE,
+    SERVICE_REMOVE_DAY_TYPE, SERVICE_REMOVE_MOMENT,
+    SERVICE_REMOVE_WEEK_SCHEDULE, SERVICE_UPDATE_CALENDAR_EXCEPTION,
+    SERVICE_UPDATE_CYCLE, SERVICE_UPDATE_DAY_TYPE, SERVICE_UPDATE_MOMENT,
+    SERVICE_UPDATE_WEEK_SCHEDULE)
+from custom_components.day_planner.planner.errors import PlannerError
+from custom_components.day_planner.services import (_execute, _get_runtime,
+                                                    async_setup_services)
 
 
 class FakeStorage:
@@ -79,10 +58,7 @@ def test_execute_success():
 
     assert executed is True
     assert runtime.storage.save_count == 1
-    assert (
-        runtime.storage.saved_configuration
-        is runtime.engine.configuration
-    )
+    assert runtime.storage.saved_configuration is runtime.engine.configuration
 
 
 def test_execute_planner_error():
@@ -126,6 +102,7 @@ def test_execute_unexpected_error():
 
     assert runtime.storage.save_count == 0
 
+
 def test_service_add_moment():
     hass = MagicMock(spec=HomeAssistant)
 
@@ -168,9 +145,8 @@ def test_service_add_moment():
     assert moment.name == "Moment 2"
     assert moment.icon == "mdi:home"
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_update_moment():
     hass = MagicMock(spec=HomeAssistant)
@@ -214,9 +190,8 @@ def test_service_update_moment():
     assert moment.name == "Moment modifié"
     assert moment.icon == "mdi:home"
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_remove_moment():
     hass = MagicMock(spec=HomeAssistant)
@@ -254,9 +229,8 @@ def test_service_remove_moment():
 
     runtime.engine.remove_moment.assert_called_once_with("m1")
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_add_day_type():
     hass = MagicMock(spec=HomeAssistant)
@@ -299,9 +273,8 @@ def test_service_add_day_type():
     assert day_type.name == "Weekend"
     assert day_type.scheduled_moments == ()
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_update_day_type():
     hass = MagicMock(spec=HomeAssistant)
@@ -344,9 +317,8 @@ def test_service_update_day_type():
     assert day_type.name == "Télétravail modifié"
     assert day_type.scheduled_moments == ()
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_remove_day_type():
     hass = MagicMock(spec=HomeAssistant)
@@ -384,9 +356,8 @@ def test_service_remove_day_type():
 
     runtime.engine.remove_day_type.assert_called_once_with("dt1")
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_add_week_schedule():
     hass = MagicMock(spec=HomeAssistant)
@@ -430,9 +401,7 @@ def test_service_add_week_schedule():
 
     asyncio.run(run())
 
-    week_schedule = (
-        runtime.engine.add_week_schedule.call_args.args[0]
-    )
+    week_schedule = runtime.engine.add_week_schedule.call_args.args[0]
 
     assert week_schedule.id == "ws2"
     assert week_schedule.name == "Semaine 2"
@@ -444,9 +413,8 @@ def test_service_add_week_schedule():
     assert week_schedule.saturday == "dt1"
     assert week_schedule.sunday == "dt1"
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_update_week_schedule():
     hass = MagicMock(spec=HomeAssistant)
@@ -490,9 +458,7 @@ def test_service_update_week_schedule():
 
     asyncio.run(run())
 
-    week_schedule = (
-        runtime.engine.update_week_schedule.call_args.args[0]
-    )
+    week_schedule = runtime.engine.update_week_schedule.call_args.args[0]
 
     assert week_schedule.id == "ws1"
     assert week_schedule.name == "Semaine modifiée"
@@ -504,9 +470,8 @@ def test_service_update_week_schedule():
     assert week_schedule.saturday == "dt2"
     assert week_schedule.sunday == "dt2"
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_remove_week_schedule():
     hass = MagicMock(spec=HomeAssistant)
@@ -542,13 +507,10 @@ def test_service_remove_week_schedule():
 
     asyncio.run(run())
 
-    runtime.engine.remove_week_schedule.assert_called_once_with(
-        "ws1"
-    )
+    runtime.engine.remove_week_schedule.assert_called_once_with("ws1")
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_add_cycle():
     hass = MagicMock(spec=HomeAssistant)
@@ -592,9 +554,8 @@ def test_service_add_cycle():
     assert cycle.name == "Cycle 2"
     assert cycle.week_schedule_ids == ("ws1", "ws2")
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_update_cycle():
     hass = MagicMock(spec=HomeAssistant)
@@ -638,9 +599,8 @@ def test_service_update_cycle():
     assert cycle.name == "Cycle modifié"
     assert cycle.week_schedule_ids == ("ws1", "ws2")
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_remove_cycle():
     hass = MagicMock(spec=HomeAssistant)
@@ -678,9 +638,8 @@ def test_service_remove_cycle():
 
     runtime.engine.remove_cycle.assert_called_once_with("c1")
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_add_calendar_exception():
     hass = MagicMock(spec=HomeAssistant)
@@ -719,19 +678,15 @@ def test_service_add_calendar_exception():
 
     asyncio.run(run())
 
-    exception = (
-        runtime.engine.add_calendar_exception
-        .call_args.args[0]
-    )
+    exception = runtime.engine.add_calendar_exception.call_args.args[0]
 
     assert exception.id == "ce2"
     assert exception.date == date(2026, 8, 15)
     assert exception.day_type_id == "dt1"
     assert exception.description == "Férié"
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_update_calendar_exception():
     hass = MagicMock(spec=HomeAssistant)
@@ -770,19 +725,15 @@ def test_service_update_calendar_exception():
 
     asyncio.run(run())
 
-    exception = (
-        runtime.engine.update_calendar_exception
-        .call_args.args[0]
-    )
+    exception = runtime.engine.update_calendar_exception.call_args.args[0]
 
     assert exception.id == "ce1"
     assert exception.date == date(2026, 8, 20)
     assert exception.day_type_id == "dt2"
     assert exception.description == "Congé modifié"
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_remove_calendar_exception():
     hass = MagicMock(spec=HomeAssistant)
@@ -818,13 +769,10 @@ def test_service_remove_calendar_exception():
 
     asyncio.run(run())
 
-    runtime.engine.remove_calendar_exception.assert_called_once_with(
-        "ce1"
-    )
+    runtime.engine.remove_calendar_exception.assert_called_once_with("ce1")
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_get_runtime_not_configured():
     hass = MagicMock(spec=HomeAssistant)
@@ -836,4 +784,3 @@ def test_get_runtime_not_configured():
         match="Day Planner is not configured.",
     ):
         _get_runtime(hass)
-
