@@ -2,15 +2,10 @@
 
 from datetime import datetime, timedelta
 
-from homeassistant.components.calendar import (
-    CalendarEntity,
-    CalendarEvent,
-)
+from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.dispatcher import (
-    async_dispatcher_connect,
-)
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
@@ -29,9 +24,7 @@ async def async_setup_entry(
 
     async_add_entities(
         [
-            DayPlannerCalendar(
-                runtime
-            ),
+            DayPlannerCalendar(runtime),
         ]
     )
 
@@ -49,9 +42,7 @@ class DayPlannerCalendar(CalendarEntity):
         """Initialize calendar."""
 
         self._runtime = runtime
-        self._attr_unique_id = (
-            f"{DOMAIN}_calendar"
-        )
+        self._attr_unique_id = f"{DOMAIN}_calendar"
 
     async def async_added_to_hass(self) -> None:
         """Register update listener."""
@@ -78,11 +69,7 @@ class DayPlannerCalendar(CalendarEntity):
 
         now = dt_util.now()
 
-        scheduled_event = (
-            self._runtime.scheduler.next_event(
-                now
-            )
-        )
+        scheduled_event = self._runtime.scheduler.next_event(now)
 
         if scheduled_event is None:
             return None
@@ -105,28 +92,19 @@ class DayPlannerCalendar(CalendarEntity):
         current_date = start_date.date()
 
         while current_date <= end_date.date():
-            for scheduled_event in (
-                self._runtime.scheduler.events_for_date(
-                    current_date
-                )
+            for scheduled_event in self._runtime.scheduler.events_for_date(
+                current_date
             ):
                 scheduled_at = scheduled_event.scheduled_at
 
                 if scheduled_at.tzinfo is None:
                     scheduled_at = dt_util.as_local(
-                        scheduled_at.replace(
-                            tzinfo=dt_util.DEFAULT_TIME_ZONE
-                        )
+                        scheduled_at.replace(tzinfo=dt_util.DEFAULT_TIME_ZONE)
                     )
 
-                event_end = scheduled_at + timedelta(
-                    minutes=1
-                )
+                event_end = scheduled_at + timedelta(minutes=1)
 
-                if (
-                    event_end > start_date
-                    and scheduled_at < end_date
-                ):
+                if event_end > start_date and scheduled_at < end_date:
                     events.append(
                         self._to_calendar_event(
                             scheduled_at,
@@ -149,9 +127,7 @@ class DayPlannerCalendar(CalendarEntity):
         """Convert scheduled event to Home Assistant event."""
 
         if scheduled_at.tzinfo is None:
-            scheduled_at = scheduled_at.replace(
-                tzinfo=dt_util.DEFAULT_TIME_ZONE
-            )
+            scheduled_at = scheduled_at.replace(tzinfo=dt_util.DEFAULT_TIME_ZONE)
 
         return CalendarEvent(
             start=scheduled_at,

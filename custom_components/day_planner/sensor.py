@@ -5,8 +5,8 @@ from datetime import datetime
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN, SIGNAL_PLANNER_UPDATED
@@ -24,9 +24,7 @@ async def async_setup_entry(
 
     async_add_entities(
         [
-            DayPlannerNextEventSensor(
-                runtime
-            ),
+            DayPlannerNextEventSensor(runtime),
         ]
     )
 
@@ -44,9 +42,7 @@ class DayPlannerNextEventSensor(SensorEntity):
         """Initialize sensor."""
 
         self._runtime = runtime
-        self._attr_unique_id = (
-            f"{DOMAIN}_next_event"
-        )
+        self._attr_unique_id = f"{DOMAIN}_next_event"
 
     @property
     def native_value(
@@ -82,9 +78,7 @@ class DayPlannerNextEventSensor(SensorEntity):
 
         now: datetime = dt_util.now()
 
-        return self._runtime.scheduler.next_event(
-            now
-        )
+        return self._runtime.scheduler.next_event(now)
 
     async def async_added_to_hass(self) -> None:
         """Register update listener."""
@@ -101,4 +95,3 @@ class DayPlannerNextEventSensor(SensorEntity):
         """Handle planner configuration update."""
 
         self.async_write_ha_state()
-
