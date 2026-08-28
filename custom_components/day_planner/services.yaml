@@ -331,25 +331,35 @@ add_cycle:
       name: Identifier
       description: Unique identifier of the cycle.
       required: true
-      example: reveil
+      example: test_cycle
       selector:
         text:
+
     name:
       name: Name
       description: Display name of the cycle.
       required: true
-      example: Réveil
+      example: Cycle test
       selector:
         text:
+
+    start_date:
+      name: Start date
+      description: First day of the cycle.
+      required: true
+      example: "2026-08-28"
+      selector:
+        date:
+
     week_schedule_ids:
-      name: Scheduled ids
-      description: List of week identifiers scheduled for this cycle.
-      required: false
+      name: Week schedules
+      description: List of week schedule identifiers scheduled for this cycle.
+      required: true
       example:
-        - semaine1
-        - semaine2
+        - test_week
       selector:
         object:
+
 
 update_cycle:
   name: Update cycle
@@ -369,6 +379,15 @@ update_cycle:
       example: Petit déjeuner
       selector:
         text:
+
+    start_date:
+      name: Start date
+      description: First day of the cycle.
+      required: true
+      example: "2026-08-28"
+      selector:
+        date:
+
     week_schedule_ids:
       name: Scheduled ids
       description: List of week identifiers scheduled for this cycle.

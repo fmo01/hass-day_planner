@@ -69,7 +69,18 @@ class DayPlannerCalendar(CalendarEntity):
 
         now = dt_util.now()
 
-        scheduled_event = self._runtime.scheduler.next_event(now)
+        scheduled_event = (
+            self._runtime.scheduler.current_event(
+                now
+            )
+        )
+
+        if scheduled_event is None:
+            scheduled_event = (
+                self._runtime.scheduler.next_event(
+                    now
+                )
+            )
 
         if scheduled_event is None:
             return None
