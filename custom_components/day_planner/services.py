@@ -10,44 +10,36 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 
 from .const import (DOMAIN, SERVICE_ADD_CALENDAR_EXCEPTION, SERVICE_ADD_CYCLE,
-                    SERVICE_ADD_DAY_TYPE, 
-                    SERVICE_ADD_SCHEDULED_MOMENT,
-                    SERVICE_UPDATE_SCHEDULED_MOMENT,
-                    SERVICE_REMOVE_SCHEDULED_MOMENT,
-                    SERVICE_ADD_MOMENT,
-                    SERVICE_ADD_WEEK_SCHEDULE,
-                    SERVICE_UPDATE_WEEK_SCHEDULE,
-                    SERVICE_REMOVE_WEEK_SCHEDULE,
+                    SERVICE_ADD_DAY_TYPE, SERVICE_ADD_MOMENT,
+                    SERVICE_ADD_SCHEDULED_MOMENT, SERVICE_ADD_WEEK_SCHEDULE,
                     SERVICE_REMOVE_CALENDAR_EXCEPTION, SERVICE_REMOVE_CYCLE,
                     SERVICE_REMOVE_DAY_TYPE, SERVICE_REMOVE_MOMENT,
+                    SERVICE_REMOVE_SCHEDULED_MOMENT,
                     SERVICE_REMOVE_WEEK_SCHEDULE,
                     SERVICE_UPDATE_CALENDAR_EXCEPTION, SERVICE_UPDATE_CYCLE,
                     SERVICE_UPDATE_DAY_TYPE, SERVICE_UPDATE_MOMENT,
+                    SERVICE_UPDATE_SCHEDULED_MOMENT,
                     SERVICE_UPDATE_WEEK_SCHEDULE, SIGNAL_PLANNER_UPDATED)
 from .domain.action import Action
 from .domain.calendar_exception import CalendarException
 from .domain.cycle import Cycle
 from .domain.day_type import DayType
+from .domain.moment import Moment
 from .domain.scheduled_moment import ScheduledMoment
 from .domain.time_definition import TimeDefinition
-from .domain.moment import Moment
 from .domain.week_schedule import WeekSchedule
 from .planner.errors import PlannerError
 from .runtime import DayPlannerRuntimeData
 from .schemas import (ADD_CALENDAR_EXCEPTION_SCHEMA, ADD_CYCLE_SCHEMA,
-                      ADD_DAY_TYPE_SCHEMA, 
-                      ADD_SCHEDULED_MOMENT_SCHEMA, 
-                      UPDATE_SCHEDULED_MOMENT_SCHEMA, 
-                      REMOVE_SCHEDULED_MOMENT_SCHEMA, 
-                      ADD_MOMENT_SCHEMA,
-                      ADD_WEEK_SCHEDULE_SCHEMA,
-                      UPDATE_WEEK_SCHEDULE_SCHEMA,
-                      REMOVE_WEEK_SCHEDULE_SCHEMA,
+                      ADD_DAY_TYPE_SCHEMA, ADD_MOMENT_SCHEMA,
+                      ADD_SCHEDULED_MOMENT_SCHEMA, ADD_WEEK_SCHEDULE_SCHEMA,
                       REMOVE_CALENDAR_EXCEPTION_SCHEMA, REMOVE_CYCLE_SCHEMA,
                       REMOVE_DAY_TYPE_SCHEMA, REMOVE_MOMENT_SCHEMA,
+                      REMOVE_SCHEDULED_MOMENT_SCHEMA,
                       REMOVE_WEEK_SCHEDULE_SCHEMA,
                       UPDATE_CALENDAR_EXCEPTION_SCHEMA, UPDATE_CYCLE_SCHEMA,
                       UPDATE_DAY_TYPE_SCHEMA, UPDATE_MOMENT_SCHEMA,
+                      UPDATE_SCHEDULED_MOMENT_SCHEMA,
                       UPDATE_WEEK_SCHEDULE_SCHEMA)
 
 _LOGGER = logging.getLogger(__name__)
@@ -283,9 +275,7 @@ async def async_setup_services(
         scheduled_moment = ScheduledMoment(
             moment_id=call.data["moment_id"],
             time_definition=TimeDefinition(
-                fixed_time=time.fromisoformat(
-                    call.data["time"]
-                ),
+                fixed_time=time.fromisoformat(call.data["time"]),
             ),
         )
 
@@ -314,9 +304,7 @@ async def async_setup_services(
         scheduled_moment = ScheduledMoment(
             moment_id=call.data["moment_id"],
             time_definition=TimeDefinition(
-                fixed_time=time.fromisoformat(
-                    call.data["time"]
-                ),
+                fixed_time=time.fromisoformat(call.data["time"]),
             ),
         )
 
@@ -332,7 +320,6 @@ async def async_setup_services(
                 f"in day type '{call.data['day_type_id']}'"
             ),
         )
-
 
     async def remove_scheduled_moment(
         call: ServiceCall,
@@ -355,7 +342,6 @@ async def async_setup_services(
                 f"from day type '{call.data['day_type_id']}'"
             ),
         )
-
 
     #
     # week_schedule

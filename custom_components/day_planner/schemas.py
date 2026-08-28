@@ -189,4 +189,3 @@ REMOVE_SCHEDULED_MOMENT_SCHEMA = vol.Schema(
         vol.Required("moment_id"): cv.string,
     }
 )
-

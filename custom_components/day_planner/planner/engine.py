@@ -491,41 +491,30 @@ class PlannerEngine:
     ) -> None:
         """Update a scheduled moment in a day type."""
 
-        day_type = self.get_day_type(
-            day_type_id
-        )
+        day_type = self.get_day_type(day_type_id)
 
         found = False
         scheduled_moments = []
 
         for item in day_type.scheduled_moments:
             if item.moment_id == scheduled_moment.moment_id:
-                scheduled_moments.append(
-                    scheduled_moment
-                )
+                scheduled_moments.append(scheduled_moment)
                 found = True
             else:
-                scheduled_moments.append(
-                    item
-                )
+                scheduled_moments.append(item)
 
         if not found:
             raise NotFoundError(
-                "Scheduled moment not found: "
-                f"{scheduled_moment.moment_id}"
+                "Scheduled moment not found: " f"{scheduled_moment.moment_id}"
             )
 
         updated_day_type = DayType(
             id=day_type.id,
             name=day_type.name,
-            scheduled_moments=tuple(
-                scheduled_moments
-            ),
+            scheduled_moments=tuple(scheduled_moments),
         )
 
-        self.update_day_type(
-            updated_day_type
-        )
+        self.update_day_type(updated_day_type)
 
     def remove_scheduled_moment(
         self,
@@ -534,23 +523,14 @@ class PlannerEngine:
     ) -> None:
         """Remove a scheduled moment from a day type."""
 
-        day_type = self.get_day_type(
-            day_type_id
-        )
+        day_type = self.get_day_type(day_type_id)
 
         scheduled_moments = tuple(
-            item
-            for item in day_type.scheduled_moments
-            if item.moment_id != moment_id
+            item for item in day_type.scheduled_moments if item.moment_id != moment_id
         )
 
-        if len(scheduled_moments) == len(
-            day_type.scheduled_moments
-        ):
-            raise NotFoundError(
-                "Scheduled moment not found: "
-                f"{moment_id}"
-            )
+        if len(scheduled_moments) == len(day_type.scheduled_moments):
+            raise NotFoundError("Scheduled moment not found: " f"{moment_id}")
 
         updated_day_type = DayType(
             id=day_type.id,
@@ -558,7 +538,4 @@ class PlannerEngine:
             scheduled_moments=scheduled_moments,
         )
 
-        self.update_day_type(
-            updated_day_type
-        )
-
+        self.update_day_type(updated_day_type)
