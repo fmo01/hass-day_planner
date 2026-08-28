@@ -2,11 +2,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .action_executor import ActionExecutor
-from .const import (
-    CONF_DELETE_DATA_ON_REMOVE, 
-    DEFAULT_DELETE_DATA_ON_REMOVE,
-    PLATFORMS,
-)
+from .const import (CONF_DELETE_DATA_ON_REMOVE, DEFAULT_DELETE_DATA_ON_REMOVE,
+                    PLATFORMS)
 from .ha_scheduler import HomeAssistantScheduler
 from .planner.engine import PlannerEngine
 from .planner.resolver import PlannerResolver
@@ -58,7 +55,6 @@ async def async_setup_entry(
         entry,
         PLATFORMS,
     )
-
 
     await ha_scheduler.async_schedule_next()
 
