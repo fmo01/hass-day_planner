@@ -2,7 +2,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .action_executor import ActionExecutor
-from .const import CONF_DELETE_DATA_ON_REMOVE, DEFAULT_DELETE_DATA_ON_REMOVE
+from .const import (
+    CONF_DELETE_DATA_ON_REMOVE, 
+    DEFAULT_DELETE_DATA_ON_REMOVE,
+    PLATFORMS,
+)
 from .ha_scheduler import HomeAssistantScheduler
 from .planner.engine import PlannerEngine
 from .planner.resolver import PlannerResolver
@@ -40,6 +44,7 @@ async def async_setup_entry(
     )
 
     entry.runtime_data = DayPlannerRuntimeData(
+        hass=hass,
         storage=storage,
         engine=engine,
         resolver=resolver,
@@ -49,6 +54,11 @@ async def async_setup_entry(
     )
 
     await async_setup_services(hass)
+    await hass.config_entries.async_forward_entry_setups(
+        entry,
+        PLATFORMS,
+    )
+
 
     await ha_scheduler.async_schedule_next()
 
@@ -61,9 +71,15 @@ async def async_unload_entry(
 ) -> bool:
     """Unload Day Planner."""
 
-    entry.runtime_data.ha_scheduler.cancel()
+    unload_ok = await hass.config_entries.async_unload_platforms(
+        entry,
+        PLATFORMS,
+    )
 
-    return True
+    if unload_ok:
+        entry.runtime_data.ha_scheduler.cancel()
+
+    return unload_ok
 
 
 async def async_remove_entry(

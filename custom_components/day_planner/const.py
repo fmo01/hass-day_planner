@@ -4,6 +4,8 @@ NAME = "Day Planner"
 
 VERSION = "0.0.2"
 
+SIGNAL_PLANNER_UPDATED = "day_planner_updated"
+
 STORAGE_VERSION = 1
 STORAGE_KEY = "day_planner.storage"
 

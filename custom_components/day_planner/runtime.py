@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 
+from homeassistant.core import HomeAssistant
+
 from .action_executor import ActionExecutor
 from .ha_scheduler import HomeAssistantScheduler
 from .planner.engine import PlannerEngine
@@ -14,6 +16,7 @@ from .storage import DayPlannerStorage
 class DayPlannerRuntimeData:
     """Runtime data for a Day Planner instance."""
 
+    hass: HomeAssistant
     storage: DayPlannerStorage
     engine: PlannerEngine
     resolver: PlannerResolver
