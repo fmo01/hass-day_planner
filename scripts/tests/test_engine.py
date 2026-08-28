@@ -795,3 +795,175 @@ def test_engine_add_scheduled_moment_day_type_not_found(
             "unknown",
             scheduled_moment,
         )
+
+def test_engine_update_scheduled_moment(
+    moment,
+):
+    moment2 = Moment(
+        id="m2",
+        name="Moment 2",
+        icon="mdi:home",
+    )
+
+    original = ScheduledMoment(
+        moment_id=moment.id,
+        time_definition=TimeDefinition(
+            fixed_time=time(8, 0),
+        ),
+    )
+
+    other = ScheduledMoment(
+        moment_id=moment2.id,
+        time_definition=TimeDefinition(
+            fixed_time=time(12, 0),
+        ),
+    )
+
+    updated = ScheduledMoment(
+        moment_id=moment.id,
+        time_definition=TimeDefinition(
+            fixed_time=time(9, 30),
+        ),
+    )
+
+    day_type = DayType(
+        id="dt1",
+        name="Travail",
+        scheduled_moments=(
+            original,
+            other,
+        ),
+    )
+
+    engine = PlannerEngine(
+        PlannerConfiguration(
+            moments=(
+                moment,
+                moment2,
+            ),
+            day_types=(day_type,),
+            week_schedules=(),
+            cycles=(),
+            calendar_exceptions=(),
+        )
+    )
+
+    engine.update_scheduled_moment(
+        day_type.id,
+        updated,
+    )
+
+    result = engine.get_day_type(
+        day_type.id
+    )
+
+    assert result.scheduled_moments == (
+        updated,
+        other,
+    )
+
+
+
+def test_engine_update_scheduled_moment_not_found(
+    moment,
+):
+    day_type = DayType(
+        id="dt1",
+        name="Travail",
+        scheduled_moments=(),
+    )
+
+    scheduled = ScheduledMoment(
+        moment_id=moment.id,
+        time_definition=TimeDefinition(
+            fixed_time=time(9, 30),
+        ),
+    )
+
+    engine = PlannerEngine(
+        PlannerConfiguration(
+            moments=(moment,),
+            day_types=(day_type,),
+            week_schedules=(),
+            cycles=(),
+            calendar_exceptions=(),
+        )
+    )
+
+    with pytest.raises(
+        NotFoundError,
+        match="Scheduled moment not found: m1",
+    ):
+        engine.update_scheduled_moment(
+            day_type.id,
+            scheduled,
+        )
+
+
+def test_engine_remove_scheduled_moment(
+    moment,
+):
+    scheduled = ScheduledMoment(
+        moment_id=moment.id,
+        time_definition=TimeDefinition(
+            fixed_time=time(8, 0),
+        ),
+    )
+
+    day_type = DayType(
+        id="dt1",
+        name="Travail",
+        scheduled_moments=(scheduled,),
+    )
+
+    engine = PlannerEngine(
+        PlannerConfiguration(
+            moments=(moment,),
+            day_types=(day_type,),
+            week_schedules=(),
+            cycles=(),
+            calendar_exceptions=(),
+        )
+    )
+
+    engine.remove_scheduled_moment(
+        day_type.id,
+        moment.id,
+    )
+
+    result = engine.get_day_type(
+        day_type.id
+    )
+
+    assert result.scheduled_moments == ()
+
+
+def test_engine_remove_scheduled_moment_not_found(
+    moment,
+):
+    day_type = DayType(
+        id="dt1",
+        name="Travail",
+        scheduled_moments=(),
+    )
+
+    engine = PlannerEngine(
+        PlannerConfiguration(
+            moments=(moment,),
+            day_types=(day_type,),
+            week_schedules=(),
+            cycles=(),
+            calendar_exceptions=(),
+        )
+    )
+
+    with pytest.raises(
+        NotFoundError,
+        match="Scheduled moment not found: m1",
+    ):
+        engine.remove_scheduled_moment(
+            day_type.id,
+            moment.id,
+        )
+
+

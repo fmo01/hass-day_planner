@@ -1,5 +1,5 @@
 import asyncio
-from datetime import date
+from datetime import date, time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -12,6 +12,11 @@ from custom_components.day_planner.const import (
     SERVICE_ADD_CALENDAR_EXCEPTION,
     SERVICE_ADD_CYCLE,
     SERVICE_ADD_DAY_TYPE,
+    SERVICE_ADD_SCHEDULED_MOMENT,
+    SERVICE_UPDATE_SCHEDULED_MOMENT,
+    SERVICE_REMOVE_SCHEDULED_MOMENT,
+    SERVICE_UPDATE_SCHEDULED_MOMENT,
+    SERVICE_REMOVE_SCHEDULED_MOMENT,
     SERVICE_ADD_MOMENT,
     SERVICE_ADD_WEEK_SCHEDULE,
     SERVICE_REMOVE_CALENDAR_EXCEPTION,
@@ -75,6 +80,19 @@ class FakeRuntime:
         self.engine = FakeEngine()
         self.resolver = FakeResolver()
         self.ha_scheduler = FakeHAScheduler()
+
+
+def get_registered_service(
+    hass,
+    service_name,
+):
+    """Return a registered service handler by name."""
+
+    return next(
+        call.args[2]
+        for call in hass.services.async_register.call_args_list
+        if call.args[1] == service_name
+    )
 
 def test_execute_success():
     runtime = FakeRuntime()
@@ -183,7 +201,10 @@ def test_service_add_moment():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[0].args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_ADD_MOMENT,
+        )
 
         call = ServiceCall(
             hass=hass,
@@ -265,7 +286,10 @@ def test_service_update_moment():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[1].args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_UPDATE_MOMENT,
+        )
 
         call = ServiceCall(
             hass=hass,
@@ -338,10 +362,9 @@ def test_service_update_moment_clear_actions():
     async def run():
         await async_setup_services(hass)
 
-        service = (
-            hass.services.async_register
-            .call_args_list[1]
-            .args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_UPDATE_MOMENT,
         )
 
         call = ServiceCall(
@@ -393,7 +416,10 @@ def test_service_remove_moment():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[2].args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_REMOVE_MOMENT,
+        )
 
         call = ServiceCall(
             hass=hass,
@@ -434,7 +460,10 @@ def test_service_add_day_type():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[3].args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_ADD_DAY_TYPE,
+        )
 
         call = ServiceCall(
             hass=hass,
@@ -480,7 +509,10 @@ def test_service_update_day_type():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[4].args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_UPDATE_DAY_TYPE,
+        )
 
         call = ServiceCall(
             hass=hass,
@@ -526,7 +558,10 @@ def test_service_remove_day_type():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[5].args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_REMOVE_DAY_TYPE,
+        )
 
         call = ServiceCall(
             hass=hass,
@@ -567,8 +602,10 @@ def test_service_add_week_schedule():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[6].args[2]
-
+        service = get_registered_service(
+            hass,
+            SERVICE_ADD_WEEK_SCHEDULE,
+        )
         call = ServiceCall(
             hass=hass,
             domain=DOMAIN,
@@ -626,7 +663,10 @@ def test_service_update_week_schedule():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[7].args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_UPDATE_WEEK_SCHEDULE,
+        )
 
         call = ServiceCall(
             hass=hass,
@@ -685,7 +725,10 @@ def test_service_remove_week_schedule():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[8].args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_REMOVE_WEEK_SCHEDULE,
+        )
 
         call = ServiceCall(
             hass=hass,
@@ -726,7 +769,10 @@ def test_service_add_cycle():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[9].args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_ADD_CYCLE,
+        )
 
         call = ServiceCall(
             hass=hass,
@@ -775,7 +821,10 @@ def test_service_update_cycle():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[10].args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_UPDATE_CYCLE,
+        )
 
         call = ServiceCall(
             hass=hass,
@@ -824,7 +873,10 @@ def test_service_remove_cycle():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[11].args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_REMOVE_CYCLE,
+        )
 
         call = ServiceCall(
             hass=hass,
@@ -865,7 +917,10 @@ def test_service_add_calendar_exception():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[12].args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_ADD_CALENDAR_EXCEPTION,
+        )
 
         call = ServiceCall(
             hass=hass,
@@ -914,7 +969,10 @@ def test_service_update_calendar_exception():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[13].args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_UPDATE_CALENDAR_EXCEPTION,
+        )
 
         call = ServiceCall(
             hass=hass,
@@ -963,7 +1021,10 @@ def test_service_remove_calendar_exception():
     async def run():
         await async_setup_services(hass)
 
-        service = hass.services.async_register.call_args_list[14].args[2]
+        service = get_registered_service(
+            hass,
+            SERVICE_REMOVE_CALENDAR_EXCEPTION,
+        )
 
         call = ServiceCall(
             hass=hass,
@@ -1019,3 +1080,292 @@ def test_execute_storage_error():
 
     assert runtime.resolver.update_count == 0
     assert runtime.ha_scheduler.schedule_count == 0
+
+def test_service_add_scheduled_moment():
+    hass = MagicMock(spec=HomeAssistant)
+
+    hass.services = MagicMock()
+    hass.services.async_register = MagicMock()
+
+    runtime = MagicMock()
+    runtime.engine.add_scheduled_moment = MagicMock()
+    runtime.engine.configuration = object()
+    runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    entry = MagicMock()
+    entry.runtime_data = runtime
+
+    hass.config_entries.async_entries.return_value = [
+        entry
+    ]
+
+    async def run():
+        await async_setup_services(hass)
+
+        service = next(
+            call.args[2]
+            for call in hass.services.async_register.call_args_list
+            if call.args[1] == SERVICE_ADD_SCHEDULED_MOMENT
+        )
+
+        call = ServiceCall(
+            hass=hass,
+            domain=DOMAIN,
+            service=SERVICE_ADD_SCHEDULED_MOMENT,
+            data={
+                "day_type_id": "test_day",
+                "moment_id": "test",
+                "time": "17:00:00",
+            },
+        )
+
+        await service(call)
+
+    asyncio.run(run())
+
+    runtime.engine.add_scheduled_moment.assert_called_once()
+
+    args = runtime.engine.add_scheduled_moment.call_args.args
+
+    assert args[0] == "test_day"
+
+    scheduled_moment = args[1]
+
+    assert scheduled_moment.moment_id == "test"
+    assert scheduled_moment.time_definition.fixed_time == time(
+        17,
+        0,
+    )
+
+    runtime.storage.async_save.assert_awaited_once_with(
+        runtime.engine.configuration
+    )
+
+def test_service_update_scheduled_moment():
+    hass = MagicMock(spec=HomeAssistant)
+
+    hass.services = MagicMock()
+    hass.services.async_register = MagicMock()
+
+    runtime = MagicMock()
+    runtime.engine.update_scheduled_moment = MagicMock()
+    runtime.engine.configuration = object()
+    runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    entry = MagicMock()
+    entry.runtime_data = runtime
+
+    hass.config_entries.async_entries.return_value = [
+        entry
+    ]
+
+    async def run():
+        await async_setup_services(hass)
+
+        service = get_registered_service(
+            hass,
+            SERVICE_UPDATE_SCHEDULED_MOMENT,
+        )
+
+        call = ServiceCall(
+            hass=hass,
+            domain=DOMAIN,
+            service=SERVICE_UPDATE_SCHEDULED_MOMENT,
+            data={
+                "day_type_id": "test_day",
+                "moment_id": "test",
+                "time": "18:30:00",
+            },
+        )
+
+        await service(call)
+
+    asyncio.run(run())
+
+    args = (
+        runtime.engine.update_scheduled_moment
+        .call_args.args
+    )
+
+    assert args[0] == "test_day"
+
+    scheduled_moment = args[1]
+
+    assert scheduled_moment.moment_id == "test"
+    assert (
+        scheduled_moment.time_definition.fixed_time
+        == time(18, 30)
+    )
+
+    runtime.storage.async_save.assert_awaited_once_with(
+        runtime.engine.configuration
+    )
+
+def test_service_remove_scheduled_moment():
+    hass = MagicMock(spec=HomeAssistant)
+
+    hass.services = MagicMock()
+    hass.services.async_register = MagicMock()
+
+    runtime = MagicMock()
+    runtime.engine.remove_scheduled_moment = MagicMock()
+    runtime.engine.configuration = object()
+    runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    entry = MagicMock()
+    entry.runtime_data = runtime
+
+    hass.config_entries.async_entries.return_value = [
+        entry
+    ]
+
+    async def run():
+        await async_setup_services(hass)
+
+        service = get_registered_service(
+            hass,
+            SERVICE_REMOVE_SCHEDULED_MOMENT,
+        )
+
+        call = ServiceCall(
+            hass=hass,
+            domain=DOMAIN,
+            service=SERVICE_REMOVE_SCHEDULED_MOMENT,
+            data={
+                "day_type_id": "test_day",
+                "moment_id": "test",
+            },
+        )
+
+        await service(call)
+
+    asyncio.run(run())
+
+    runtime.engine.remove_scheduled_moment.assert_called_once_with(
+        "test_day",
+        "test",
+    )
+
+    runtime.storage.async_save.assert_awaited_once_with(
+        runtime.engine.configuration
+    )
+
+def test_service_update_scheduled_moment():
+    hass = MagicMock(spec=HomeAssistant)
+
+    hass.services = MagicMock()
+    hass.services.async_register = MagicMock()
+
+    runtime = MagicMock()
+    runtime.engine.update_scheduled_moment = MagicMock()
+    runtime.engine.configuration = object()
+    runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    entry = MagicMock()
+    entry.runtime_data = runtime
+
+    hass.config_entries.async_entries.return_value = [
+        entry
+    ]
+
+    async def run():
+        await async_setup_services(hass)
+
+        service = get_registered_service(
+            hass,
+            SERVICE_UPDATE_SCHEDULED_MOMENT,
+        )
+
+        call = ServiceCall(
+            hass=hass,
+            domain=DOMAIN,
+            service=SERVICE_UPDATE_SCHEDULED_MOMENT,
+            data={
+                "day_type_id": "test_day",
+                "moment_id": "test",
+                "time": "18:30:00",
+            },
+        )
+
+        await service(call)
+
+    asyncio.run(run())
+
+    args = (
+        runtime.engine.update_scheduled_moment
+        .call_args.args
+    )
+
+    assert args[0] == "test_day"
+
+    scheduled_moment = args[1]
+
+    assert scheduled_moment.moment_id == "test"
+    assert (
+        scheduled_moment.time_definition.fixed_time
+        == time(18, 30)
+    )
+
+    runtime.storage.async_save.assert_awaited_once_with(
+        runtime.engine.configuration
+    )
+
+def test_service_remove_scheduled_moment():
+    hass = MagicMock(spec=HomeAssistant)
+
+    hass.services = MagicMock()
+    hass.services.async_register = MagicMock()
+
+    runtime = MagicMock()
+    runtime.engine.remove_scheduled_moment = MagicMock()
+    runtime.engine.configuration = object()
+    runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    entry = MagicMock()
+    entry.runtime_data = runtime
+
+    hass.config_entries.async_entries.return_value = [
+        entry
+    ]
+
+    async def run():
+        await async_setup_services(hass)
+
+        service = get_registered_service(
+            hass,
+            SERVICE_REMOVE_SCHEDULED_MOMENT,
+        )
+
+        call = ServiceCall(
+            hass=hass,
+            domain=DOMAIN,
+            service=SERVICE_REMOVE_SCHEDULED_MOMENT,
+            data={
+                "day_type_id": "test_day",
+                "moment_id": "test",
+            },
+        )
+
+        await service(call)
+
+    asyncio.run(run())
+
+    runtime.engine.remove_scheduled_moment.assert_called_once_with(
+        "test_day",
+        "test",
+    )
+
+    runtime.storage.async_save.assert_awaited_once_with(
+        runtime.engine.configuration
+    )
+
