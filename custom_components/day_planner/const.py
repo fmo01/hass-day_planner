@@ -24,6 +24,9 @@ SERVICE_REMOVE_MOMENT = "remove_moment"
 SERVICE_ADD_DAY_TYPE = "add_day_type"
 SERVICE_UPDATE_DAY_TYPE = "update_day_type"
 SERVICE_REMOVE_DAY_TYPE = "remove_day_type"
+SERVICE_ADD_SCHEDULED_MOMENT = "add_scheduled_moment"
+SERVICE_UPDATE_SCHEDULED_MOMENT = "update_scheduled_moment"
+SERVICE_REMOVE_SCHEDULED_MOMENT = "remove_scheduled_moment"
 SERVICE_ADD_WEEK_SCHEDULE = "add_week_schedule"
 SERVICE_UPDATE_WEEK_SCHEDULE = "update_week_schedule"
 SERVICE_REMOVE_WEEK_SCHEDULE = "remove_week_schedule"
@@ -33,6 +36,7 @@ SERVICE_REMOVE_CYCLE = "remove_cycle"
 SERVICE_ADD_CALENDAR_EXCEPTION = "add_calendar_exception"
 SERVICE_UPDATE_CALENDAR_EXCEPTION = "update_calendar_exception"
 SERVICE_REMOVE_CALENDAR_EXCEPTION = "remove_calendar_exception"
+
 
 DEFAULT_MOMENTS = [
     {

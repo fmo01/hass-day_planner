@@ -136,6 +136,84 @@ remove_day_type:
       selector:
         text:
 
+add_scheduled_moment:
+  name: Add scheduled moment
+  description: Add a moment with a fixed time to a day type.
+  fields:
+    day_type_id:
+      name: Day type ID
+      description: ID of the day type.
+      required: true
+      example: test_day
+      selector:
+        text:
+
+    moment_id:
+      name: Moment ID
+      description: ID of the moment.
+      required: true
+      example: test
+      selector:
+        text:
+
+    time:
+      name: Time
+      description: Fixed time in HH:MM or HH:MM:SS format.
+      required: true
+      example: "17:00:00"
+      selector:
+        time:
+
+
+update_scheduled_moment:
+  name: Update scheduled moment
+  description: Update a moment with a fixed time to a day type.
+  fields:
+    day_type_id:
+      name: Day type ID
+      description: ID of the day type.
+      required: true
+      example: test_day
+      selector:
+        text:
+
+    moment_id:
+      name: Moment ID
+      description: ID of the moment.
+      required: true
+      example: test
+      selector:
+        text:
+
+    time:
+      name: Time
+      description: Fixed time in HH:MM or HH:MM:SS format.
+      required: true
+      example: "17:00:00"
+      selector:
+        time:
+
+remove_scheduled_moment:
+  name: Remove scheduled moment
+  description: Remove a scheduled moment from a day type.
+  fields:
+    day_type_id:
+      name: Day type ID
+      description: ID of the day type.
+      required: true
+      example: test_day
+      selector:
+        text:
+
+    moment_id:
+      name: Moment ID
+      description: ID of the moment to remove.
+      required: true
+      example: test
+      selector:
+        text:
+
+
 add_week_schedule:
   name: Add week schedule
   description: Add a week schedule.

@@ -165,3 +165,28 @@ REMOVE_CALENDAR_EXCEPTION_SCHEMA = vol.Schema(
         vol.Required("id"): cv.string,
     }
 )
+
+ADD_SCHEDULED_MOMENT_SCHEMA = vol.Schema(
+    {
+        vol.Required("day_type_id"): cv.string,
+        vol.Required("moment_id"): cv.string,
+        vol.Required("time"): cv.string,
+    }
+)
+
+UPDATE_SCHEDULED_MOMENT_SCHEMA = vol.Schema(
+    {
+        vol.Required("day_type_id"): cv.string,
+        vol.Required("moment_id"): cv.string,
+        vol.Required("time"): cv.string,
+    }
+)
+
+
+REMOVE_SCHEDULED_MOMENT_SCHEMA = vol.Schema(
+    {
+        vol.Required("day_type_id"): cv.string,
+        vol.Required("moment_id"): cv.string,
+    }
+)
+
