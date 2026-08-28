@@ -6,6 +6,7 @@ from custom_components.day_planner.runtime import (
 
 
 def test_runtime_data():
+    hass = MagicMock()
     storage = MagicMock()
     engine = MagicMock()
     resolver = MagicMock()
@@ -14,6 +15,7 @@ def test_runtime_data():
     ha_scheduler = MagicMock()
 
     runtime = DayPlannerRuntimeData(
+        hass=hass,
         storage=storage,
         engine=engine,
         resolver=resolver,
@@ -22,6 +24,7 @@ def test_runtime_data():
         ha_scheduler=ha_scheduler,
     )
 
+    assert runtime.hass is hass
     assert runtime.storage is storage
     assert runtime.engine is engine
     assert runtime.resolver is resolver

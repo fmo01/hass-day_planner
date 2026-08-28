@@ -1,19 +1,30 @@
 import asyncio
 from datetime import date
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.day_planner.const import (
-    DOMAIN, SERVICE_ADD_CALENDAR_EXCEPTION, SERVICE_ADD_CYCLE,
-    SERVICE_ADD_DAY_TYPE, SERVICE_ADD_MOMENT, SERVICE_ADD_WEEK_SCHEDULE,
-    SERVICE_REMOVE_CALENDAR_EXCEPTION, SERVICE_REMOVE_CYCLE,
-    SERVICE_REMOVE_DAY_TYPE, SERVICE_REMOVE_MOMENT,
-    SERVICE_REMOVE_WEEK_SCHEDULE, SERVICE_UPDATE_CALENDAR_EXCEPTION,
-    SERVICE_UPDATE_CYCLE, SERVICE_UPDATE_DAY_TYPE, SERVICE_UPDATE_MOMENT,
-    SERVICE_UPDATE_WEEK_SCHEDULE)
+    DOMAIN,
+    SIGNAL_PLANNER_UPDATED,
+    SERVICE_ADD_CALENDAR_EXCEPTION,
+    SERVICE_ADD_CYCLE,
+    SERVICE_ADD_DAY_TYPE,
+    SERVICE_ADD_MOMENT,
+    SERVICE_ADD_WEEK_SCHEDULE,
+    SERVICE_REMOVE_CALENDAR_EXCEPTION,
+    SERVICE_REMOVE_CYCLE,
+    SERVICE_REMOVE_DAY_TYPE,
+    SERVICE_REMOVE_MOMENT,
+    SERVICE_REMOVE_WEEK_SCHEDULE,
+    SERVICE_UPDATE_CALENDAR_EXCEPTION,
+    SERVICE_UPDATE_CYCLE,
+    SERVICE_UPDATE_DAY_TYPE,
+    SERVICE_UPDATE_MOMENT,
+    SERVICE_UPDATE_WEEK_SCHEDULE,
+)
 from custom_components.day_planner.planner.errors import PlannerError
 from custom_components.day_planner.services import (_execute, _get_runtime,
                                                     async_setup_services)
@@ -59,6 +70,7 @@ class FakeHAScheduler:
 
 class FakeRuntime:
     def __init__(self):
+        self.hass = MagicMock()
         self.storage = FakeStorage()
         self.engine = FakeEngine()
         self.resolver = FakeResolver()
@@ -72,13 +84,16 @@ def test_execute_success():
         nonlocal executed
         executed = True
 
-    asyncio.run(
-        _execute(
-            operation=operation,
-            runtime=runtime,
-            description="test operation",
+    with patch(
+        "custom_components.day_planner.services.async_dispatcher_send"
+    ) as dispatcher_send:
+        asyncio.run(
+            _execute(
+                operation=operation,
+                runtime=runtime,
+                description="test operation",
+            )
         )
-    )
 
     assert executed is True
 
@@ -95,6 +110,11 @@ def test_execute_success():
     )
 
     assert runtime.ha_scheduler.schedule_count == 1
+
+    dispatcher_send.assert_called_once_with(
+        runtime.hass,
+        SIGNAL_PLANNER_UPDATED,
+    )
 
 def test_execute_planner_error():
     runtime = FakeRuntime()

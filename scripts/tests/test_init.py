@@ -6,12 +6,18 @@ from custom_components.day_planner import (async_remove_entry,
                                            async_unload_entry)
 from custom_components.day_planner.domain.planner_configuration import \
     PlannerConfiguration
+from custom_components.day_planner.const import (
+    CONF_DELETE_DATA_ON_REMOVE,
+    PLATFORMS,
+)
 
 
 def test_async_setup_entry_empty_configuration():
     async def run():
         hass = MagicMock()
         entry = MagicMock()
+
+        hass.config_entries.async_forward_entry_setups = AsyncMock()
 
         configuration = PlannerConfiguration.empty()
 
@@ -108,12 +114,19 @@ def test_async_setup_entry_empty_configuration():
 
             ha_scheduler.async_schedule_next.assert_awaited_once_with()
 
+            hass.config_entries.async_forward_entry_setups.assert_awaited_once_with(
+                entry,
+                PLATFORMS,
+            )
+
     asyncio.run(run())
 
 def test_async_setup_entry_existing_configuration():
     async def run():
         hass = MagicMock()
         entry = MagicMock()
+
+        hass.config_entries.async_forward_entry_setups = AsyncMock()
 
         configuration = MagicMock()
         configuration.has_data.return_value = True
@@ -197,11 +210,22 @@ def test_async_setup_entry_existing_configuration():
 
             ha_scheduler.async_schedule_next.assert_awaited_once_with()
 
+            hass.config_entries.async_forward_entry_setups.assert_awaited_once_with(
+                entry,
+                PLATFORMS,
+            )
+
     asyncio.run(run())
+
+
 def test_async_unload_entry():
     async def run():
         hass = MagicMock()
         entry = MagicMock()
+
+        hass.config_entries.async_unload_platforms = AsyncMock(
+            return_value=True
+        )
 
         ha_scheduler = MagicMock()
         entry.runtime_data.ha_scheduler = ha_scheduler
@@ -212,6 +236,11 @@ def test_async_unload_entry():
         )
 
         assert result is True
+
+        hass.config_entries.async_unload_platforms.assert_awaited_once_with(
+            entry,
+            PLATFORMS,
+        )
 
         ha_scheduler.cancel.assert_called_once_with()
 
@@ -261,3 +290,33 @@ def test_async_remove_entry_delete_disabled():
             storage.async_delete.assert_not_awaited()
 
     asyncio.run(run())
+
+def test_async_unload_entry_failure():
+    async def run():
+        hass = MagicMock()
+        entry = MagicMock()
+
+        hass.config_entries.async_unload_platforms = AsyncMock(
+            return_value=False
+        )
+
+        ha_scheduler = MagicMock()
+        entry.runtime_data.ha_scheduler = ha_scheduler
+
+        result = await async_unload_entry(
+            hass,
+            entry,
+        )
+
+        assert result is False
+
+        hass.config_entries.async_unload_platforms.assert_awaited_once_with(
+            entry,
+            PLATFORMS,
+        )
+
+        ha_scheduler.cancel.assert_not_called()
+
+    asyncio.run(run())
+
+
