@@ -44,6 +44,7 @@ class PlannerScheduler:
                 key=lambda event: event.scheduled_at,
             )
         )
+
     def next_event(
         self,
         now: datetime,
@@ -52,23 +53,13 @@ class PlannerScheduler:
         """Return the next scheduled event."""
 
         for day_offset in range(max_days + 1):
-            target_date = (
-                now.date()
-                + timedelta(days=day_offset)
-            )
+            target_date = now.date() + timedelta(days=day_offset)
 
-            for event in self.events_for_date(
-                target_date
-            ):
+            for event in self.events_for_date(target_date):
                 scheduled_at = event.scheduled_at
 
-                if (
-                    scheduled_at.tzinfo is None
-                    and now.tzinfo is not None
-                ):
-                    scheduled_at = scheduled_at.replace(
-                        tzinfo=now.tzinfo
-                    )
+                if scheduled_at.tzinfo is None and now.tzinfo is not None:
+                    scheduled_at = scheduled_at.replace(tzinfo=now.tzinfo)
 
                 if scheduled_at > now:
                     if scheduled_at is event.scheduled_at:
@@ -87,22 +78,13 @@ class PlannerScheduler:
     ) -> ScheduledEvent | None:
         """Return the currently active event."""
 
-        for event in self.events_for_date(
-            now.date()
-        ):
+        for event in self.events_for_date(now.date()):
             scheduled_at = event.scheduled_at
 
-            if (
-                scheduled_at.tzinfo is None
-                and now.tzinfo is not None
-            ):
-                scheduled_at = scheduled_at.replace(
-                    tzinfo=now.tzinfo
-                )
+            if scheduled_at.tzinfo is None and now.tzinfo is not None:
+                scheduled_at = scheduled_at.replace(tzinfo=now.tzinfo)
 
-            event_end = scheduled_at + timedelta(
-                minutes=1
-            )
+            event_end = scheduled_at + timedelta(minutes=1)
 
             if scheduled_at <= now < event_end:
                 if scheduled_at is event.scheduled_at:
