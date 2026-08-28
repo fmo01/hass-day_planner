@@ -1,4 +1,4 @@
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta, timezone
 from unittest.mock import MagicMock
 
 from custom_components.day_planner.domain.moment import Moment
@@ -11,6 +11,10 @@ from custom_components.day_planner.domain.time_definition import (
 from custom_components.day_planner.planner.scheduler import (
     PlannerScheduler,
 )
+from custom_components.day_planner.domain.scheduled_event import (
+    ScheduledEvent,
+)
+
 
 
 def test_scheduler_events_for_date():
@@ -214,5 +218,200 @@ def test_scheduler_next_event_at_now_is_skipped():
         0,
     )
     assert event.moment == moment_later
+
+def test_scheduler_next_event_with_timezone():
+    moment = Moment(
+        id="m1",
+        name="Test",
+    )
+
+    scheduled = ScheduledMoment(
+        moment_id="m1",
+        time_definition=TimeDefinition(
+            fixed_time=time(23, 30),
+        ),
+    )
+
+    resolver = MagicMock()
+    resolver.resolve_schedule.return_value = (
+        (scheduled, moment),
+    )
+
+    scheduler = PlannerScheduler(
+        resolver
+    )
+
+    local_tz = timezone(
+        timedelta(hours=2)
+    )
+
+    now = datetime(
+        2026,
+        8,
+        28,
+        23,
+        0,
+        tzinfo=local_tz,
+    )
+
+    event = scheduler.next_event(now)
+
+    assert event is not None
+
+    assert event.scheduled_at == datetime(
+        2026,
+        8,
+        28,
+        23,
+        30,
+        tzinfo=local_tz,
+    )
+
+    assert event.scheduled_at.tzinfo == local_tz
+
+def test_scheduler_current_event():
+    moment = Moment(
+        id="m1",
+        name="Test",
+    )
+
+    scheduled = ScheduledMoment(
+        moment_id="m1",
+        time_definition=TimeDefinition(
+            fixed_time=time(23, 30),
+        ),
+    )
+
+    resolver = MagicMock()
+    resolver.resolve_schedule.return_value = (
+        (scheduled, moment),
+    )
+
+    scheduler = PlannerScheduler(
+        resolver
+    )
+
+    local_tz = timezone(
+        timedelta(hours=2)
+    )
+
+    now = datetime(
+        2026,
+        8,
+        28,
+        23,
+        30,
+        30,
+        tzinfo=local_tz,
+    )
+
+    event = scheduler.current_event(
+        now
+    )
+
+    assert event is not None
+    assert event.moment == moment
+    assert event.scheduled_at == datetime(
+        2026,
+        8,
+        28,
+        23,
+        30,
+        tzinfo=local_tz,
+    )
+
+
+def test_scheduler_current_event_timezone_aware():
+    moment = Moment(
+        id="m1",
+        name="Test",
+    )
+
+    local_tz = timezone(
+        timedelta(hours=2)
+    )
+
+    scheduled = ScheduledMoment(
+        moment_id="m1",
+        time_definition=TimeDefinition(
+            fixed_time=time(23, 30),
+        ),
+    )
+
+    resolver = MagicMock()
+    resolver.resolve_schedule.return_value = (
+        (scheduled, moment),
+    )
+
+    scheduler = PlannerScheduler(
+        resolver
+    )
+
+    now = datetime(
+        2026,
+        8,
+        28,
+        23,
+        30,
+        30,
+        tzinfo=local_tz,
+    )
+
+    event = scheduler.events_for_date(
+        date(2026, 8, 28)
+    )[0]
+
+    aware_event = ScheduledEvent(
+        scheduled_at=event.scheduled_at.replace(
+            tzinfo=local_tz
+        ),
+        moment=event.moment,
+    )
+
+    scheduler.events_for_date = MagicMock(
+        return_value=(aware_event,)
+    )
+
+    result = scheduler.current_event(
+        now
+    )
+
+    assert result is aware_event
+
+def test_scheduler_current_event_none():
+    moment = Moment(
+        id="m1",
+        name="Test",
+    )
+
+    scheduled = ScheduledMoment(
+        moment_id="m1",
+        time_definition=TimeDefinition(
+            fixed_time=time(23, 30),
+        ),
+    )
+
+    resolver = MagicMock()
+    resolver.resolve_schedule.return_value = (
+        (scheduled, moment),
+    )
+
+    scheduler = PlannerScheduler(
+        resolver
+    )
+
+    now = datetime(
+        2026,
+        8,
+        28,
+        22,
+        0,
+    )
+
+    result = scheduler.current_event(
+        now
+    )
+
+    assert result is None
 
 

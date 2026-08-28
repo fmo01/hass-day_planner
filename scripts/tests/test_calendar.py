@@ -65,6 +65,8 @@ def test_calendar_event():
         moment=moment,
     )
 
+    runtime.scheduler.current_event.return_value = None
+
     runtime.scheduler.next_event.return_value = (
         scheduled_event
     )
@@ -98,6 +100,7 @@ def test_calendar_event():
 def test_calendar_event_none():
     runtime = MagicMock()
 
+    runtime.scheduler.current_event.return_value = None
     runtime.scheduler.next_event.return_value = None
 
     calendar = DayPlannerCalendar(runtime)
@@ -252,3 +255,69 @@ def test_calendar_get_events_filters_range():
     )
 
     assert events == []
+
+def test_calendar_event_prefers_current_event():
+    runtime = MagicMock()
+
+    current_moment = Moment(
+        id="m1",
+        name="Événement courant",
+    )
+
+    next_moment = Moment(
+        id="m2",
+        name="Événement suivant",
+    )
+
+    current_event = ScheduledEvent(
+        scheduled_at=datetime(
+            2026,
+            8,
+            28,
+            23,
+            30,
+        ),
+        moment=current_moment,
+    )
+
+    next_event = ScheduledEvent(
+        scheduled_at=datetime(
+            2026,
+            8,
+            29,
+            23,
+            30,
+        ),
+        moment=next_moment,
+    )
+
+    runtime.scheduler.current_event.return_value = (
+        current_event
+    )
+    runtime.scheduler.next_event.return_value = (
+        next_event
+    )
+
+    calendar = DayPlannerCalendar(
+        runtime
+    )
+
+    with patch(
+        "custom_components.day_planner.calendar.dt_util.now",
+        return_value=datetime(
+            2026,
+            8,
+            28,
+            23,
+            30,
+            30,
+        ),
+    ):
+        event = calendar.event
+
+    assert event is not None
+    assert event.summary == "Événement courant"
+
+    runtime.scheduler.current_event.assert_called_once()
+    runtime.scheduler.next_event.assert_not_called()
+
