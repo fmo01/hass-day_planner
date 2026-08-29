@@ -1,9 +1,12 @@
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from custom_components.day_planner import (async_remove_entry,
-                                           async_setup_entry,
-                                           async_unload_entry)
+from custom_components.day_planner import (
+    _async_migrate_entity_ids,
+    async_remove_entry,
+    async_setup_entry,
+    async_unload_entry,
+    )
 from custom_components.day_planner.domain.planner_configuration import \
     PlannerConfiguration
 from custom_components.day_planner.const import (
@@ -44,6 +47,10 @@ def test_async_setup_entry_empty_configuration():
                 "custom_components.day_planner.async_setup_services",
                 new=AsyncMock(),
             ) as setup_services,
+            patch(
+                "custom_components.day_planner._async_migrate_entity_ids",
+                new=AsyncMock(),
+            ) as migrate_entity_ids,
         ):
             storage = storage_class.return_value
             storage.async_load = AsyncMock(
@@ -117,6 +124,10 @@ def test_async_setup_entry_empty_configuration():
             hass.config_entries.async_forward_entry_setups.assert_awaited_once_with(
                 entry,
                 PLATFORMS,
+            )
+            migrate_entity_ids.assert_awaited_once_with(
+                hass,
+                entry,
             )
 
     asyncio.run(run())
@@ -318,5 +329,115 @@ def test_async_unload_entry_failure():
         ha_scheduler.cancel.assert_not_called()
 
     asyncio.run(run())
+
+def test_migrate_entity_ids():
+    async def run():
+        hass = MagicMock()
+        entry = MagicMock()
+
+        registry = MagicMock()
+
+        registry.async_get_entity_id.side_effect = [
+            "sensor.next_event",
+            "sensor.current_day_type",
+            "sensor.current_moment",
+        ]
+
+        with patch(
+            "custom_components.day_planner.er.async_get",
+            return_value=registry,
+        ):
+            await _async_migrate_entity_ids(
+                hass,
+                entry,
+            )
+
+        assert registry.async_get_entity_id.call_count == 3
+
+        registry.async_get_entity_id.assert_any_call(
+            "sensor",
+            "day_planner",
+            "day_planner_next_event",
+        )
+
+        registry.async_get_entity_id.assert_any_call(
+            "sensor",
+            "day_planner",
+            "day_planner_current_day_type",
+        )
+
+        registry.async_get_entity_id.assert_any_call(
+            "sensor",
+            "day_planner",
+            "day_planner_current_moment",
+        )
+
+        assert registry.async_update_entity.call_count == 3
+
+        registry.async_update_entity.assert_any_call(
+            "sensor.next_event",
+            new_entity_id="sensor.day_planner_next_event",
+        )
+
+        registry.async_update_entity.assert_any_call(
+            "sensor.current_day_type",
+            new_entity_id="sensor.day_planner_current_day_type",
+        )
+
+        registry.async_update_entity.assert_any_call(
+            "sensor.current_moment",
+            new_entity_id="sensor.day_planner_current_moment",
+        )
+
+    asyncio.run(run())
+
+def test_migrate_entity_ids_already_migrated():
+    async def run():
+        hass = MagicMock()
+        entry = MagicMock()
+
+        registry = MagicMock()
+
+        registry.async_get_entity_id.side_effect = [
+            "sensor.day_planner_next_event",
+            "sensor.day_planner_current_day_type",
+            "sensor.day_planner_current_moment",
+        ]
+
+        with patch(
+            "custom_components.day_planner.er.async_get",
+            return_value=registry,
+        ):
+            await _async_migrate_entity_ids(
+                hass,
+                entry,
+            )
+
+        registry.async_update_entity.assert_not_called()
+
+    asyncio.run(run())
+
+
+def test_migrate_entity_ids_missing():
+    async def run():
+        hass = MagicMock()
+        entry = MagicMock()
+
+        registry = MagicMock()
+        registry.async_get_entity_id.return_value = None
+
+        with patch(
+            "custom_components.day_planner.er.async_get",
+            return_value=registry,
+        ):
+            await _async_migrate_entity_ids(
+                hass,
+                entry,
+            )
+
+        registry.async_update_entity.assert_not_called()
+
+    asyncio.run(run())
+
 
 

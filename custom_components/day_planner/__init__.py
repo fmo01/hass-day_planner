@@ -1,9 +1,15 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
+
 
 from .action_executor import ActionExecutor
-from .const import (CONF_DELETE_DATA_ON_REMOVE, DEFAULT_DELETE_DATA_ON_REMOVE,
-                    PLATFORMS)
+from .const import (
+    DOMAIN,
+    PLATFORMS,
+    CONF_DELETE_DATA_ON_REMOVE, 
+    DEFAULT_DELETE_DATA_ON_REMOVE,
+)
 from .ha_scheduler import HomeAssistantScheduler
 from .planner.engine import PlannerEngine
 from .planner.resolver import PlannerResolver
@@ -11,6 +17,39 @@ from .planner.scheduler import PlannerScheduler
 from .runtime import DayPlannerRuntimeData
 from .services import async_setup_services
 from .storage import DayPlannerStorage
+
+
+async def _async_migrate_entity_ids(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+) -> None:
+    """Migrate legacy Day Planner entity IDs."""
+
+    entity_registry = er.async_get(hass)
+
+    migrations = {
+        "day_planner_next_event": "sensor.day_planner_next_event",
+        "day_planner_current_day_type": "sensor.day_planner_current_day_type",
+        "day_planner_current_moment": "sensor.day_planner_current_moment",
+    }
+
+    for unique_id, new_entity_id in migrations.items():
+        entity_id = entity_registry.async_get_entity_id(
+            "sensor",
+            DOMAIN,
+            unique_id,
+        )
+
+        if (
+            entity_id is None
+            or entity_id == new_entity_id
+        ):
+            continue
+
+        entity_registry.async_update_entity(
+            entity_id,
+            new_entity_id=new_entity_id,
+        )
 
 
 async def async_setup_entry(
@@ -51,6 +90,10 @@ async def async_setup_entry(
     )
 
     await async_setup_services(hass)
+    await _async_migrate_entity_ids(
+        hass,
+        entry,
+    )
     await hass.config_entries.async_forward_entry_setups(
         entry,
         PLATFORMS,
