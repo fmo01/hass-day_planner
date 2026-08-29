@@ -1,4 +1,6 @@
 import asyncio
+from datetime import datetime, timedelta, timezone
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from custom_components.day_planner.ha_scheduler import (
@@ -13,7 +15,7 @@ def test_ha_scheduler_no_event():
     scheduler.next_event.return_value = None
 
     action_executor = MagicMock()
-    action_executor.async_execute = AsyncMock()
+    action_executor.async_execute_moment = AsyncMock()
 
     ha_scheduler = HomeAssistantScheduler(
         hass=hass,
@@ -34,7 +36,7 @@ def test_ha_scheduler_no_event():
         now.return_value
     )
 
-    action_executor.async_execute.assert_not_awaited()
+    action_executor.async_execute_moment.assert_not_awaited()
 
 from datetime import datetime
 
@@ -67,7 +69,7 @@ def test_ha_scheduler_schedules_event():
     scheduler.next_event.return_value = event
 
     action_executor = MagicMock()
-    action_executor.async_execute = AsyncMock()
+    action_executor.async_execute_moment = AsyncMock()
 
     cancel = MagicMock()
 
@@ -135,7 +137,7 @@ def test_ha_scheduler_executes_event_and_reschedules():
     scheduler.next_event.return_value = event
 
     action_executor = MagicMock()
-    action_executor.async_execute = AsyncMock()
+    action_executor.async_execute_moment = AsyncMock()
 
     cancel = MagicMock()
 
@@ -184,7 +186,7 @@ def test_ha_scheduler_executes_event_and_reschedules():
 
     asyncio.run(run())
 
-    action_executor.async_execute.assert_awaited_once_with(
+    action_executor.async_execute_moment.assert_awaited_once_with(
         moment
     )
 
@@ -241,7 +243,7 @@ def test_ha_scheduler_reschedule_cancels_previous():
     scheduler.next_event.return_value = event
 
     action_executor = MagicMock()
-    action_executor.async_execute = AsyncMock()
+    action_executor.async_execute_moment = AsyncMock()
 
     old_cancel = MagicMock()
     new_cancel = MagicMock()
@@ -280,3 +282,75 @@ def test_ha_scheduler_reschedule_cancels_previous():
     old_cancel.assert_called_once_with()
 
     assert ha_scheduler._cancel is new_cancel
+
+def test_ha_scheduler_converts_naive_event_to_timezone():
+    hass = MagicMock()
+
+    moment = Moment(
+        id="m1",
+        name="Réveil",
+    )
+
+    event = ScheduledEvent(
+        scheduled_at=datetime(
+            2026,
+            8,
+            31,
+            7,
+            30,
+        ),
+        moment=moment,
+    )
+
+    scheduler = MagicMock()
+    scheduler.next_event.return_value = event
+
+    action_executor = MagicMock()
+    action_executor.async_execute_moment = AsyncMock()
+
+    cancel = MagicMock()
+
+    ha_scheduler = HomeAssistantScheduler(
+        hass=hass,
+        scheduler=scheduler,
+        action_executor=action_executor,
+    )
+
+    local_tz = timezone(
+        timedelta(hours=2)
+    )
+
+    now = datetime(
+        2026,
+        8,
+        31,
+        6,
+        0,
+        tzinfo=local_tz,
+    )
+
+    with (
+        patch(
+            "custom_components.day_planner.ha_scheduler.dt_util.now",
+            return_value=now,
+        ),
+        patch(
+            "custom_components.day_planner.ha_scheduler."
+            "async_track_point_in_time",
+            return_value=cancel,
+        ) as track,
+    ):
+        asyncio.run(
+            ha_scheduler.async_schedule_next()
+        )
+
+    scheduled_at = track.call_args.args[2]
+
+    assert scheduled_at == datetime(
+        2026,
+        8,
+        31,
+        7,
+        30,
+        tzinfo=local_tz,
+    )

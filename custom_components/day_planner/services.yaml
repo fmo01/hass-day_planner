@@ -23,6 +23,16 @@ add_moment:
       example: mdi:alarm
       selector:
         icon:
+    actions:
+      name: Actions
+      description: Actions to execute when this moment occurs.
+      required: false
+      example:
+        - service: input_boolean.turn_on
+          data:
+            entity_id: input_boolean.day_planner_test
+      selector:
+        object:
 
 update_moment:
   name: Update moment
@@ -49,6 +59,16 @@ update_moment:
       example: mdi:coffee
       selector:
         icon:
+    actions:
+      name: Actions
+      description: Actions to execute when this moment occurs.
+      required: false
+      example:
+        - service: input_boolean.turn_on
+          data:
+            entity_id: input_boolean.day_planner_test
+      selector:
+        object:
 
 remove_moment:
   name: Remove moment
