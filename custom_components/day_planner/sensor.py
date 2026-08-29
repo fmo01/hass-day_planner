@@ -26,6 +26,7 @@ async def async_setup_entry(
         [
             DayPlannerNextEventSensor(runtime),
             DayPlannerCurrentDayTypeSensor(runtime),
+            DayPlannerCurrentMomentSensor(runtime),
         ]
     )
 
@@ -134,7 +135,9 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
 
         today = dt_util.now().date()
 
-        return self._runtime.resolver.resolve_day_context(today)
+        return self._runtime.resolver.resolve_day_context(
+            today
+        )
 
     @property
     def native_value(
@@ -168,3 +171,76 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
             attributes["day_type_id"] = context.day_type.id
 
         return attributes
+
+class DayPlannerCurrentMomentSensor(SensorEntity):
+    """Sensor exposing the current Day Planner moment."""
+
+    _attr_has_entity_name = True
+    _attr_name = "Current moment"
+
+    def __init__(
+        self,
+        runtime: DayPlannerRuntimeData,
+    ) -> None:
+        """Initialize sensor."""
+
+        self._runtime = runtime
+        self._attr_unique_id = (
+            f"{DOMAIN}_current_moment"
+        )
+
+    async def async_added_to_hass(self) -> None:
+        """Register update listener."""
+
+        self.async_on_remove(
+            async_dispatcher_connect(
+                self.hass,
+                SIGNAL_PLANNER_UPDATED,
+                self._handle_planner_updated,
+            )
+        )
+
+    def _handle_planner_updated(self) -> None:
+        """Handle planner configuration update."""
+
+        self.async_write_ha_state()
+
+    def _current_moment(self):
+        """Return the current moment event."""
+
+        now = dt_util.now()
+
+        return self._runtime.scheduler.current_moment(
+            now
+        )
+
+    @property
+    def native_value(
+        self,
+    ) -> str | None:
+        """Return the current moment name."""
+
+        event = self._current_moment()
+
+        if event is None:
+            return None
+
+        return event.moment.name
+
+    @property
+    def extra_state_attributes(
+        self,
+    ) -> dict:
+        """Return current moment information."""
+
+        event = self._current_moment()
+
+        if event is None:
+            return {}
+
+        return {
+            "moment_id": event.moment.id,
+            "scheduled_at": event.scheduled_at.isoformat(),
+        }
+
+
