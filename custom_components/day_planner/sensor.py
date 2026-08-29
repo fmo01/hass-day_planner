@@ -24,7 +24,12 @@ async def async_setup_entry(
 
     async_add_entities(
         [
-            DayPlannerNextEventSensor(runtime),
+            DayPlannerNextEventSensor(
+                runtime
+            ),
+            DayPlannerCurrentDayTypeSensor(
+                runtime
+            ),
         ]
     )
 
@@ -95,3 +100,81 @@ class DayPlannerNextEventSensor(SensorEntity):
         """Handle planner configuration update."""
 
         self.async_write_ha_state()
+
+class DayPlannerCurrentDayTypeSensor(SensorEntity):
+    """Sensor exposing the current Day Planner day type."""
+
+    _attr_has_entity_name = True
+    _attr_name = "Current day type"
+
+    def __init__(
+        self,
+        runtime: DayPlannerRuntimeData,
+    ) -> None:
+        """Initialize sensor."""
+
+        self._runtime = runtime
+        self._attr_unique_id = (
+            f"{DOMAIN}_current_day_type"
+        )
+
+    async def async_added_to_hass(self) -> None:
+        """Register update listener."""
+
+        self.async_on_remove(
+            async_dispatcher_connect(
+                self.hass,
+                SIGNAL_PLANNER_UPDATED,
+                self._handle_planner_updated,
+            )
+        )
+
+    def _handle_planner_updated(self) -> None:
+        """Handle planner configuration update."""
+
+        self.async_write_ha_state()
+
+    def _current_day_type(self):
+        """Return the current resolved day type."""
+
+        today = dt_util.now().date()
+
+        return self._runtime.resolver.resolve_day_type(
+            today
+        )
+
+    @property
+    def native_value(
+        self,
+    ) -> str | None:
+        """Return the current day type name."""
+
+        day_type = self._current_day_type()
+
+        if day_type is None:
+            return None
+
+        return day_type.name
+
+    @property
+    def extra_state_attributes(
+        self,
+    ) -> dict:
+        """Return current day type information."""
+
+        now = dt_util.now()
+        day_type = self._runtime.resolver.resolve_day_type(
+            now.date()
+        )
+
+        if day_type is None:
+            return {
+                "date": now.date().isoformat(),
+            }
+
+        return {
+            "day_type_id": day_type.id,
+            "date": now.date().isoformat(),
+        }
+
+
