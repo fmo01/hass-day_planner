@@ -96,6 +96,9 @@ def test_sensor_next_event():
         attributes = sensor.extra_state_attributes
 
     assert attributes == {
+        "integration": "Day Planner",
+        "integration_version": "0.0.4",
+        "release_url": "https://github.com/fmo01/hass-day_planner/releases",
         "moment_id": "wake_up",
         "scheduled_at": "2026-08-31T07:30:00",
     }
@@ -124,7 +127,14 @@ def test_sensor_without_next_event():
         return_value=current,
     ):
         assert sensor.native_value is None
-        assert sensor.extra_state_attributes == {}
+        assert sensor.extra_state_attributes == {
+            "integration": "Day Planner",
+            "integration_version": "0.0.4",
+            "release_url": "https://github.com/fmo01/hass-day_planner/releases",
+            "moment_id": None,
+            "scheduled_at": None,
+        }
+
 
 def test_sensor_dispatcher_update():
     runtime = MagicMock()
@@ -214,6 +224,9 @@ def test_sensor_current_day_type():
         attributes = sensor.extra_state_attributes
 
     assert attributes == {
+        "integration": "Day Planner",
+        "integration_version": "0.0.4",
+        "release_url": "https://github.com/fmo01/hass-day_planner/releases",
         "date": "2026-08-29",
         "cycle_id": "test_cycle",
         "week_schedule_id": "test_week",
@@ -257,12 +270,15 @@ def test_sensor_current_day_type_none():
         attributes = sensor.extra_state_attributes
 
     assert attributes == {
+        "integration": "Day Planner",
+        "integration_version": "0.0.4",
+        "release_url": "https://github.com/fmo01/hass-day_planner/releases",
         "date": "2026-08-29",
         "cycle_id": None,
         "week_schedule_id": None,
         "calendar_exception_id": None,
+        "day_type_id": None,
     }
-
 
 
 def test_sensor_current_day_type_dispatcher_update():
@@ -332,9 +348,13 @@ def test_sensor_current_moment():
     assert sensor.native_value == "Réveil"
 
     assert sensor.extra_state_attributes == {
+        "integration": "Day Planner",
+        "integration_version": "0.0.4",
+        "release_url": "https://github.com/fmo01/hass-day_planner/releases",
         "moment_id": "m1",
         "scheduled_at": "2026-08-29T08:00:00",
     }
+
 
 def test_sensor_current_moment_none():
     runtime = MagicMock()
