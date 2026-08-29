@@ -96,3 +96,38 @@ class PlannerScheduler:
                 )
 
         return None
+
+    def current_moment(
+        self,
+        now: datetime,
+    ) -> ScheduledEvent | None:
+        """Return the latest event reached for the current day."""
+
+        current: ScheduledEvent | None = None
+
+        for event in self.events_for_date(
+            now.date()
+        ):
+            scheduled_at = event.scheduled_at
+
+            if (
+                scheduled_at.tzinfo is None
+                and now.tzinfo is not None
+            ):
+                scheduled_at = scheduled_at.replace(
+                    tzinfo=now.tzinfo
+                )
+
+            if scheduled_at > now:
+                break
+
+            if scheduled_at is event.scheduled_at:
+                current = event
+            else:
+                current = ScheduledEvent(
+                    scheduled_at=scheduled_at,
+                    moment=event.moment,
+                )
+
+        return current
+
