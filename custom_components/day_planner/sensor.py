@@ -24,12 +24,8 @@ async def async_setup_entry(
 
     async_add_entities(
         [
-            DayPlannerNextEventSensor(
-                runtime
-            ),
-            DayPlannerCurrentDayTypeSensor(
-                runtime
-            ),
+            DayPlannerNextEventSensor(runtime),
+            DayPlannerCurrentDayTypeSensor(runtime),
         ]
     )
 
@@ -101,6 +97,7 @@ class DayPlannerNextEventSensor(SensorEntity):
 
         self.async_write_ha_state()
 
+
 class DayPlannerCurrentDayTypeSensor(SensorEntity):
     """Sensor exposing the current Day Planner day type."""
 
@@ -114,9 +111,7 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
         """Initialize sensor."""
 
         self._runtime = runtime
-        self._attr_unique_id = (
-            f"{DOMAIN}_current_day_type"
-        )
+        self._attr_unique_id = f"{DOMAIN}_current_day_type"
 
     async def async_added_to_hass(self) -> None:
         """Register update listener."""
@@ -139,9 +134,7 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
 
         today = dt_util.now().date()
 
-        return self._runtime.resolver.resolve_day_type(
-            today
-        )
+        return self._runtime.resolver.resolve_day_type(today)
 
     @property
     def native_value(
@@ -163,9 +156,7 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
         """Return current day type information."""
 
         now = dt_util.now()
-        day_type = self._runtime.resolver.resolve_day_type(
-            now.date()
-        )
+        day_type = self._runtime.resolver.resolve_day_type(now.date())
 
         if day_type is None:
             return {
@@ -176,5 +167,3 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
             "day_type_id": day_type.id,
             "date": now.date().isoformat(),
         }
-
-
