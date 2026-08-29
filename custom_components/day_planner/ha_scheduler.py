@@ -42,13 +42,8 @@ class HomeAssistantScheduler:
             return
         scheduled_at = event.scheduled_at
 
-        if (
-            scheduled_at.tzinfo is None
-            and now.tzinfo is not None
-        ):
-            scheduled_at = scheduled_at.replace(
-                tzinfo=now.tzinfo
-            )
+        if scheduled_at.tzinfo is None and now.tzinfo is not None:
+            scheduled_at = scheduled_at.replace(tzinfo=now.tzinfo)
 
         async def handle_event(
             now: datetime,
@@ -57,9 +52,7 @@ class HomeAssistantScheduler:
 
             self._cancel = None
 
-            await self._action_executor.async_execute_moment(
-                event.moment
-            )
+            await self._action_executor.async_execute_moment(event.moment)
 
             await self.async_schedule_next()
 
@@ -68,7 +61,6 @@ class HomeAssistantScheduler:
             handle_event,
             scheduled_at,
         )
-
 
     def cancel(self) -> None:
         """Cancel currently scheduled event."""
