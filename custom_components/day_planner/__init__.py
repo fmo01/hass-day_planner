@@ -2,14 +2,9 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
-
 from .action_executor import ActionExecutor
-from .const import (
-    DOMAIN,
-    PLATFORMS,
-    CONF_DELETE_DATA_ON_REMOVE, 
-    DEFAULT_DELETE_DATA_ON_REMOVE,
-)
+from .const import (CONF_DELETE_DATA_ON_REMOVE, DEFAULT_DELETE_DATA_ON_REMOVE,
+                    DOMAIN, PLATFORMS)
 from .ha_scheduler import HomeAssistantScheduler
 from .planner.engine import PlannerEngine
 from .planner.resolver import PlannerResolver
@@ -40,10 +35,7 @@ async def _async_migrate_entity_ids(
             unique_id,
         )
 
-        if (
-            entity_id is None
-            or entity_id == new_entity_id
-        ):
+        if entity_id is None or entity_id == new_entity_id:
             continue
 
         entity_registry.async_update_entity(
