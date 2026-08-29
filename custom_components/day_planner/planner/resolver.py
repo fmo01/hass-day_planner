@@ -5,6 +5,7 @@ from datetime import date
 from ..domain.day_type import DayType
 from ..domain.moment import Moment
 from ..domain.planner_configuration import PlannerConfiguration
+from ..domain.resolved_day_context import ResolvedDayContext
 from ..domain.scheduled_moment import ScheduledMoment
 
 
@@ -19,11 +20,11 @@ class PlannerResolver:
 
         self._configuration = configuration
 
-    def resolve_day_type(
+    def resolve_day_context(
         self,
         target_date: date,
-    ) -> DayType | None:
-        """Resolve the day type applicable to a date."""
+    ) -> ResolvedDayContext:
+        """Resolve the complete planning context for a date."""
 
         calendar_exception = next(
             (
@@ -35,21 +36,47 @@ class PlannerResolver:
         )
 
         if calendar_exception is not None:
-            return self._find_day_type(calendar_exception.day_type_id)
+            return ResolvedDayContext(
+                date=target_date,
+                day_type=self._find_day_type(
+                    calendar_exception.day_type_id
+                ),
+                cycle_id=None,
+                week_schedule_id=None,
+                calendar_exception_id=calendar_exception.id,
+            )
 
         if not self._configuration.cycles:
-            return None
+            return ResolvedDayContext(
+                date=target_date,
+                day_type=None,
+                cycle_id=None,
+                week_schedule_id=None,
+                calendar_exception_id=None,
+            )
 
         cycle = self._configuration.cycles[0]
 
         if target_date < cycle.start_date:
-            return None
+            return ResolvedDayContext(
+                date=target_date,
+                day_type=None,
+                cycle_id=cycle.id,
+                week_schedule_id=None,
+                calendar_exception_id=None,
+            )
 
-        days_since_start = (target_date - cycle.start_date).days
+        days_since_start = (
+            target_date - cycle.start_date
+        ).days
 
-        week_index = (days_since_start // 7) % len(cycle.week_schedule_ids)
+        week_index = (
+            days_since_start // 7
+        ) % len(cycle.week_schedule_ids)
 
-        week_schedule_id = cycle.week_schedule_ids[week_index]
+        week_schedule_id = (
+            cycle.week_schedule_ids[week_index]
+        )
 
         week_schedule = next(
             item
@@ -62,7 +89,24 @@ class PlannerResolver:
             target_date.strftime("%A").lower(),
         )
 
-        return self._find_day_type(day_type_id)
+        return ResolvedDayContext(
+            date=target_date,
+            day_type=self._find_day_type(day_type_id),
+            cycle_id=cycle.id,
+            week_schedule_id=week_schedule.id,
+            calendar_exception_id=None,
+        )
+
+
+    def resolve_day_type(
+        self,
+        target_date: date,
+    ) -> DayType | None:
+        """Resolve the day type applicable to a date."""
+
+        return self.resolve_day_context(
+            target_date
+        ).day_type
 
     def _find_day_type(
         self,

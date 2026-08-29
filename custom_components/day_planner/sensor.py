@@ -129,12 +129,14 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
 
         self.async_write_ha_state()
 
-    def _current_day_type(self):
-        """Return the current resolved day type."""
+    def _current_day_context(self):
+        """Return the current resolved day context."""
 
         today = dt_util.now().date()
 
-        return self._runtime.resolver.resolve_day_type(today)
+        return self._runtime.resolver.resolve_day_context(
+            today
+        )
 
     @property
     def native_value(
@@ -142,12 +144,12 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
     ) -> str | None:
         """Return the current day type name."""
 
-        day_type = self._current_day_type()
+        context = self._current_day_context()
 
-        if day_type is None:
+        if context.day_type is None:
             return None
 
-        return day_type.name
+        return context.day_type.name
 
     @property
     def extra_state_attributes(
@@ -155,15 +157,17 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
     ) -> dict:
         """Return current day type information."""
 
-        now = dt_util.now()
-        day_type = self._runtime.resolver.resolve_day_type(now.date())
+        context = self._current_day_context()
 
-        if day_type is None:
-            return {
-                "date": now.date().isoformat(),
-            }
-
-        return {
-            "day_type_id": day_type.id,
-            "date": now.date().isoformat(),
+        attributes = {
+            "date": context.date.isoformat(),
+            "cycle_id": context.cycle_id,
+            "week_schedule_id": context.week_schedule_id,
+            "calendar_exception_id": context.calendar_exception_id,
         }
+
+        if context.day_type is not None:
+            attributes["day_type_id"] = context.day_type.id
+
+        return attributes
+
