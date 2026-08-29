@@ -105,18 +105,11 @@ class PlannerScheduler:
 
         current: ScheduledEvent | None = None
 
-        for event in self.events_for_date(
-            now.date()
-        ):
+        for event in self.events_for_date(now.date()):
             scheduled_at = event.scheduled_at
 
-            if (
-                scheduled_at.tzinfo is None
-                and now.tzinfo is not None
-            ):
-                scheduled_at = scheduled_at.replace(
-                    tzinfo=now.tzinfo
-                )
+            if scheduled_at.tzinfo is None and now.tzinfo is not None:
+                scheduled_at = scheduled_at.replace(tzinfo=now.tzinfo)
 
             if scheduled_at > now:
                 break
@@ -130,4 +123,3 @@ class PlannerScheduler:
                 )
 
         return current
-
