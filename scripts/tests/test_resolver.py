@@ -401,3 +401,178 @@ def test_resolver_update_configuration():
     )
 
     assert resolver.resolve_moment("m1") == moment
+
+def test_resolver_day_context_without_cycle():
+    resolver = PlannerResolver(
+        PlannerConfiguration.empty()
+    )
+
+    target_date = date(2026, 8, 31)
+
+    context = resolver.resolve_day_context(
+        target_date
+    )
+
+    assert context.date == target_date
+    assert context.day_type is None
+    assert context.cycle_id is None
+    assert context.week_schedule_id is None
+    assert context.calendar_exception_id is None
+
+def test_resolver_day_context_before_cycle_start():
+    day_type = DayType(
+        id="dt1",
+        name="Travail",
+        scheduled_moments=(),
+    )
+
+    week_schedule = WeekSchedule(
+        id="ws1",
+        name="Semaine 1",
+        monday="dt1",
+        tuesday="dt1",
+        wednesday="dt1",
+        thursday="dt1",
+        friday="dt1",
+        saturday="dt1",
+        sunday="dt1",
+    )
+
+    cycle = Cycle(
+        id="c1",
+        name="Cycle 1",
+        start_date=date(2026, 8, 31),
+        week_schedule_ids=("ws1",),
+    )
+
+    resolver = PlannerResolver(
+        PlannerConfiguration(
+            moments=(),
+            day_types=(day_type,),
+            week_schedules=(week_schedule,),
+            cycles=(cycle,),
+            calendar_exceptions=(),
+        )
+    )
+
+    context = resolver.resolve_day_context(
+        date(2026, 8, 30)
+    )
+
+    assert context.day_type is None
+    assert context.cycle_id == "c1"
+    assert context.week_schedule_id is None
+    assert context.calendar_exception_id is None
+
+def test_resolver_day_context_cycle():
+    day_type = DayType(
+        id="dt1",
+        name="Travail",
+        scheduled_moments=(),
+    )
+
+    week_schedule = WeekSchedule(
+        id="ws1",
+        name="Semaine 1",
+        monday="dt1",
+        tuesday="dt1",
+        wednesday="dt1",
+        thursday="dt1",
+        friday="dt1",
+        saturday="dt1",
+        sunday="dt1",
+    )
+
+    cycle = Cycle(
+        id="c1",
+        name="Cycle 1",
+        start_date=date(2026, 8, 31),
+        week_schedule_ids=("ws1",),
+    )
+
+    resolver = PlannerResolver(
+        PlannerConfiguration(
+            moments=(),
+            day_types=(day_type,),
+            week_schedules=(week_schedule,),
+            cycles=(cycle,),
+            calendar_exceptions=(),
+        )
+    )
+
+    target_date = date(2026, 9, 1)
+
+    context = resolver.resolve_day_context(
+        target_date
+    )
+
+    assert context.date == target_date
+    assert context.day_type == day_type
+    assert context.cycle_id == "c1"
+    assert context.week_schedule_id == "ws1"
+    assert context.calendar_exception_id is None
+
+def test_resolver_day_context_calendar_exception():
+    normal = DayType(
+        id="normal",
+        name="Normal",
+        scheduled_moments=(),
+    )
+
+    holiday = DayType(
+        id="holiday",
+        name="Férié",
+        scheduled_moments=(),
+    )
+
+    week_schedule = WeekSchedule(
+        id="ws1",
+        name="Semaine 1",
+        monday="normal",
+        tuesday="normal",
+        wednesday="normal",
+        thursday="normal",
+        friday="normal",
+        saturday="normal",
+        sunday="normal",
+    )
+
+    cycle = Cycle(
+        id="c1",
+        name="Cycle 1",
+        start_date=date(2026, 8, 31),
+        week_schedule_ids=("ws1",),
+    )
+
+    calendar_exception = CalendarException(
+        id="ce1",
+        date=date(2026, 9, 1),
+        day_type_id="holiday",
+        description="Exception",
+    )
+
+    resolver = PlannerResolver(
+        PlannerConfiguration(
+            moments=(),
+            day_types=(
+                normal,
+                holiday,
+            ),
+            week_schedules=(week_schedule,),
+            cycles=(cycle,),
+            calendar_exceptions=(
+                calendar_exception,
+            ),
+        )
+    )
+
+    context = resolver.resolve_day_context(
+        date(2026, 9, 1)
+    )
+
+    assert context.day_type == holiday
+    assert context.cycle_id is None
+    assert context.week_schedule_id is None
+    assert context.calendar_exception_id == "ce1"
+
+

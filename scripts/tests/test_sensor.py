@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import date, datetime
 from unittest.mock import MagicMock, patch
 
 from custom_components.day_planner.const import (
@@ -8,6 +8,9 @@ from custom_components.day_planner.const import (
 
 from custom_components.day_planner.domain.moment import Moment
 from custom_components.day_planner.domain.day_type import DayType
+from custom_components.day_planner.domain.resolved_day_context import (
+    ResolvedDayContext,
+)
 from custom_components.day_planner.domain.scheduled_event import (
     ScheduledEvent,
 )
@@ -177,8 +180,16 @@ def test_sensor_current_day_type():
         scheduled_moments=(),
     )
 
-    runtime.resolver.resolve_day_type.return_value = (
-        day_type
+    context = ResolvedDayContext(
+        date=date(2026, 8, 29),
+        day_type=day_type,
+        cycle_id="test_cycle",
+        week_schedule_id="test_week",
+        calendar_exception_id=None,
+    )
+
+    runtime.resolver.resolve_day_context.return_value = (
+        context
     )
 
     sensor = DayPlannerCurrentDayTypeSensor(
@@ -202,15 +213,27 @@ def test_sensor_current_day_type():
         attributes = sensor.extra_state_attributes
 
     assert attributes == {
-        "day_type_id": "test_day",
         "date": "2026-08-29",
+        "cycle_id": "test_cycle",
+        "week_schedule_id": "test_week",
+        "calendar_exception_id": None,
+        "day_type_id": "test_day",
     }
-
 
 def test_sensor_current_day_type_none():
     runtime = MagicMock()
 
-    runtime.resolver.resolve_day_type.return_value = None
+    context = ResolvedDayContext(
+        date=date(2026, 8, 29),
+        day_type=None,
+        cycle_id=None,
+        week_schedule_id=None,
+        calendar_exception_id=None,
+    )
+
+    runtime.resolver.resolve_day_context.return_value = (
+        context
+    )
 
     sensor = DayPlannerCurrentDayTypeSensor(
         runtime
@@ -234,7 +257,11 @@ def test_sensor_current_day_type_none():
 
     assert attributes == {
         "date": "2026-08-29",
+        "cycle_id": None,
+        "week_schedule_id": None,
+        "calendar_exception_id": None,
     }
+
 
 
 def test_sensor_current_day_type_dispatcher_update():
