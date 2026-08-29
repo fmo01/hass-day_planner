@@ -11,8 +11,11 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .const import (DOMAIN, INTEGRATION_NAME, RELEASE_URL,
-                    SIGNAL_PLANNER_UPDATED)
+from .const import (
+    DOMAIN, 
+    INTEGRATION_NAME, 
+    SIGNAL_PLANNER_UPDATED,
+)
 from .runtime import DayPlannerRuntimeData
 from .integration_info import integration_attributes
 

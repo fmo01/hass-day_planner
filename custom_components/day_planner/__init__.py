@@ -3,8 +3,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
 from .action_executor import ActionExecutor
-from .const import (CONF_DELETE_DATA_ON_REMOVE, DEFAULT_DELETE_DATA_ON_REMOVE,
-                    DOMAIN, PLATFORMS)
+from .const import (
+    CONF_DELETE_DATA_ON_REMOVE,
+    DEFAULT_DELETE_DATA_ON_REMOVE,
+    PLATFORMS,
+)
 from .ha_scheduler import HomeAssistantScheduler
 from .planner.engine import PlannerEngine
 from .planner.resolver import PlannerResolver
