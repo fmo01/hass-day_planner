@@ -1,9 +1,8 @@
 """Sensor platform for Day Planner."""
 
 import json
-from pathlib import Path
-
 from datetime import datetime
+from pathlib import Path
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -12,13 +11,8 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .const import (
-    DOMAIN, 
-    SIGNAL_PLANNER_UPDATED,
-    INTEGRATION_NAME,
-    RELEASE_URL ,
-)
-
+from .const import (DOMAIN, INTEGRATION_NAME, RELEASE_URL,
+                    SIGNAL_PLANNER_UPDATED)
 from .runtime import DayPlannerRuntimeData
 
 _MANIFEST_PATH = Path(__file__).with_name("manifest.json")
@@ -202,9 +196,7 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
             "week_schedule_id": context.week_schedule_id,
             "calendar_exception_id": context.calendar_exception_id,
             "day_type_id": (
-                context.day_type.id
-                if context.day_type is not None
-                else None
+                context.day_type.id if context.day_type is not None else None
             ),
         }
 
