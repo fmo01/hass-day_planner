@@ -135,9 +135,7 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
 
         today = dt_util.now().date()
 
-        return self._runtime.resolver.resolve_day_context(
-            today
-        )
+        return self._runtime.resolver.resolve_day_context(today)
 
     @property
     def native_value(
@@ -172,6 +170,7 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
 
         return attributes
 
+
 class DayPlannerCurrentMomentSensor(SensorEntity):
     """Sensor exposing the current Day Planner moment."""
 
@@ -185,9 +184,7 @@ class DayPlannerCurrentMomentSensor(SensorEntity):
         """Initialize sensor."""
 
         self._runtime = runtime
-        self._attr_unique_id = (
-            f"{DOMAIN}_current_moment"
-        )
+        self._attr_unique_id = f"{DOMAIN}_current_moment"
 
     async def async_added_to_hass(self) -> None:
         """Register update listener."""
@@ -210,9 +207,7 @@ class DayPlannerCurrentMomentSensor(SensorEntity):
 
         now = dt_util.now()
 
-        return self._runtime.scheduler.current_moment(
-            now
-        )
+        return self._runtime.scheduler.current_moment(now)
 
     @property
     def native_value(
@@ -242,5 +237,3 @@ class DayPlannerCurrentMomentSensor(SensorEntity):
             "moment_id": event.moment.id,
             "scheduled_at": event.scheduled_at.isoformat(),
         }
-
-
