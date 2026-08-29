@@ -11,12 +11,22 @@
   "options": {
     "step": {
       "init": {
-        "title": "Day Planner options",
-        "data": {
-          "delete_data_on_remove": "Supprimer les données lors de la suppression de l'intégration"
-        },
-        "data_description": {
-          "delete_data_on_remove": "Supprime toutes les données Day Planner lorsque l'intégration est supprimée."
+        "title": "Day Planner",
+        "menu_options": {
+          "moments": "Moments",
+          "day_types": "Day types",
+          "week_schedules": "Week schedules",
+          "cycles": "Cycles",
+          "calendar_exceptions": "Calendar exceptions",
+          "settings": "Settings"
+        }
+      },
+      "moments": {
+        "title": "Moments",
+        "menu_options": {
+          "add_moment": "Add moment",
+          "edit_moment": "Edit moment",
+          "remove_moment": "Remove moment"
         }
       }
     }
