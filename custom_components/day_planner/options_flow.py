@@ -4,12 +4,10 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 
-from .const import (
-    CONF_DELETE_DATA_ON_REMOVE,
-    DEFAULT_DELETE_DATA_ON_REMOVE,
-    SIGNAL_PLANNER_UPDATED,
-)
+from .const import (CONF_DELETE_DATA_ON_REMOVE, DEFAULT_DELETE_DATA_ON_REMOVE,
+                    SIGNAL_PLANNER_UPDATED)
 from .domain.moment import Moment
+
 
 class DayPlannerOptionsFlow(
     config_entries.OptionsFlow,
@@ -95,19 +93,13 @@ class DayPlannerOptionsFlow(
                 actions=(),
             )
 
-            runtime.engine.add_moment(
-                moment
-            )
+            runtime.engine.add_moment(moment)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -140,9 +132,7 @@ class DayPlannerOptionsFlow(
     ):
         """Edit a moment."""
 
-        return self.async_abort(
-            reason="not_implemented"
-        )
+        return self.async_abort(reason="not_implemented")
 
     async def async_step_remove_moment(
         self,
@@ -150,6 +140,4 @@ class DayPlannerOptionsFlow(
     ):
         """Remove a moment."""
 
-        return self.async_abort(
-            reason="not_implemented"
-        )
+        return self.async_abort(reason="not_implemented")
