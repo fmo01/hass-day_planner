@@ -3,11 +3,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
 from .action_executor import ActionExecutor
-from .const import (
-    CONF_DELETE_DATA_ON_REMOVE,
-    DEFAULT_DELETE_DATA_ON_REMOVE,
-    PLATFORMS,
-)
+from .const import (CONF_DELETE_DATA_ON_REMOVE, DEFAULT_DELETE_DATA_ON_REMOVE,
+                    PLATFORMS)
 from .ha_scheduler import HomeAssistantScheduler
 from .planner.engine import PlannerEngine
 from .planner.resolver import PlannerResolver
@@ -26,18 +23,10 @@ async def _async_migrate_entity_ids(
     entity_registry = er.async_get(hass)
 
     migrations = {
-        "day_planner_next_event": (
-            "sensor.day_planner_next_event"
-        ),
-        "day_planner_current_day_type": (
-            "sensor.day_planner_current_day_type"
-        ),
-        "day_planner_current_moment": (
-            "sensor.day_planner_current_moment"
-        ),
-        "day_planner_calendar": (
-            "calendar.day_planner_planning"
-        ),
+        "day_planner_next_event": ("sensor.day_planner_next_event"),
+        "day_planner_current_day_type": ("sensor.day_planner_current_day_type"),
+        "day_planner_current_moment": ("sensor.day_planner_current_moment"),
+        "day_planner_calendar": ("calendar.day_planner_planning"),
     }
 
     entries = er.async_entries_for_config_entry(
@@ -46,14 +35,9 @@ async def _async_migrate_entity_ids(
     )
 
     for entity in entries:
-        new_entity_id = migrations.get(
-            entity.unique_id
-        )
+        new_entity_id = migrations.get(entity.unique_id)
 
-        if (
-            new_entity_id is None
-            or entity.entity_id == new_entity_id
-        ):
+        if new_entity_id is None or entity.entity_id == new_entity_id:
             continue
 
         entity_registry.async_update_entity(

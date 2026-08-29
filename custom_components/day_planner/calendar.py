@@ -9,13 +9,9 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .const import (
-    DOMAIN, 
-    INTEGRATION_NAME,
-    SIGNAL_PLANNER_UPDATED,
-)
-from .runtime import DayPlannerRuntimeData
+from .const import DOMAIN, INTEGRATION_NAME, SIGNAL_PLANNER_UPDATED
 from .integration_info import integration_attributes
+from .runtime import DayPlannerRuntimeData
 
 
 async def async_setup_entry(
@@ -145,7 +141,7 @@ class DayPlannerCalendar(CalendarEntity):
 
     @property
     def extra_state_attributes(
-    self,
+        self,
     ) -> dict:
         """Return Day Planner integration information."""
 

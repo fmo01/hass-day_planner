@@ -11,13 +11,9 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .const import (
-    DOMAIN, 
-    INTEGRATION_NAME, 
-    SIGNAL_PLANNER_UPDATED,
-)
-from .runtime import DayPlannerRuntimeData
+from .const import DOMAIN, INTEGRATION_NAME, SIGNAL_PLANNER_UPDATED
 from .integration_info import integration_attributes
+from .runtime import DayPlannerRuntimeData
 
 _MANIFEST_PATH = Path(__file__).with_name("manifest.json")
 
@@ -27,6 +23,7 @@ with _MANIFEST_PATH.open(
     _MANIFEST = json.load(manifest_file)
 
 INTEGRATION_VERSION = _MANIFEST["version"]
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
