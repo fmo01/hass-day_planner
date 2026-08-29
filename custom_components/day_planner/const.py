@@ -2,7 +2,7 @@ DOMAIN = "day_planner"
 
 NAME = "Day Planner"
 
-INTEGRATION_NAME = NAME 
+INTEGRATION_NAME = NAME
 
 RELEASE_URL = "https://github.com/fmo01/hass-day_planner/releases"
 
