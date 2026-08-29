@@ -23,23 +23,38 @@ async def _async_migrate_entity_ids(
     entity_registry = er.async_get(hass)
 
     migrations = {
-        "day_planner_next_event": "sensor.day_planner_next_event",
-        "day_planner_current_day_type": "sensor.day_planner_current_day_type",
-        "day_planner_current_moment": "sensor.day_planner_current_moment",
+        "day_planner_next_event": (
+            "sensor.day_planner_next_event"
+        ),
+        "day_planner_current_day_type": (
+            "sensor.day_planner_current_day_type"
+        ),
+        "day_planner_current_moment": (
+            "sensor.day_planner_current_moment"
+        ),
+        "day_planner_calendar": (
+            "calendar.day_planner_planning"
+        ),
     }
 
-    for unique_id, new_entity_id in migrations.items():
-        entity_id = entity_registry.async_get_entity_id(
-            "sensor",
-            DOMAIN,
-            unique_id,
+    entries = er.async_entries_for_config_entry(
+        entity_registry,
+        entry.entry_id,
+    )
+
+    for entity in entries:
+        new_entity_id = migrations.get(
+            entity.unique_id
         )
 
-        if entity_id is None or entity_id == new_entity_id:
+        if (
+            new_entity_id is None
+            or entity.entity_id == new_entity_id
+        ):
             continue
 
         entity_registry.async_update_entity(
-            entity_id,
+            entity.entity_id,
             new_entity_id=new_entity_id,
         )
 

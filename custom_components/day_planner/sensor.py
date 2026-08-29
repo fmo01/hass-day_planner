@@ -14,6 +14,7 @@ from homeassistant.util import dt as dt_util
 from .const import (DOMAIN, INTEGRATION_NAME, RELEASE_URL,
                     SIGNAL_PLANNER_UPDATED)
 from .runtime import DayPlannerRuntimeData
+from .integration_info import integration_attributes
 
 _MANIFEST_PATH = Path(__file__).with_name("manifest.json")
 
@@ -23,17 +24,6 @@ with _MANIFEST_PATH.open(
     _MANIFEST = json.load(manifest_file)
 
 INTEGRATION_VERSION = _MANIFEST["version"]
-
-
-def _integration_attributes() -> dict:
-    """Return common Day Planner attributes."""
-
-    return {
-        "integration": INTEGRATION_NAME,
-        "integration_version": INTEGRATION_VERSION,
-        "release_url": RELEASE_URL,
-    }
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -91,7 +81,7 @@ class DayPlannerNextEventSensor(SensorEntity):
 
         if event is None:
             attributes = {
-                **_integration_attributes(),
+                **integration_attributes(),
                 "moment_id": None,
                 "scheduled_at": None,
             }
@@ -99,7 +89,7 @@ class DayPlannerNextEventSensor(SensorEntity):
             return attributes
 
         attributes = {
-            **_integration_attributes(),
+            **integration_attributes(),
             "moment_id": event.moment.id,
             "scheduled_at": event.scheduled_at.isoformat(),
         }
@@ -134,7 +124,7 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
     """Sensor exposing the current Day Planner day type."""
 
     _attr_has_entity_name = False
-    _attr_name = f"{INTEGRATION_NAME} urrent day type"
+    _attr_name = f"{INTEGRATION_NAME} Current day type"
 
     def __init__(
         self,
@@ -190,7 +180,7 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
         context = self._current_day_context()
 
         attributes = {
-            **_integration_attributes(),
+            **integration_attributes(),
             "date": context.date.isoformat(),
             "cycle_id": context.cycle_id,
             "week_schedule_id": context.week_schedule_id,
@@ -266,7 +256,7 @@ class DayPlannerCurrentMomentSensor(SensorEntity):
             return {}
 
         attributes = {
-            **_integration_attributes(),
+            **integration_attributes(),
             "moment_id": event.moment.id,
             "scheduled_at": event.scheduled_at.isoformat(),
         }
