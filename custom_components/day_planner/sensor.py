@@ -134,9 +134,7 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
 
         today = dt_util.now().date()
 
-        return self._runtime.resolver.resolve_day_context(
-            today
-        )
+        return self._runtime.resolver.resolve_day_context(today)
 
     @property
     def native_value(
@@ -170,4 +168,3 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
             attributes["day_type_id"] = context.day_type.id
 
         return attributes
-

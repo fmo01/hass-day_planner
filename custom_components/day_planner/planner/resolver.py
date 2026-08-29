@@ -38,9 +38,7 @@ class PlannerResolver:
         if calendar_exception is not None:
             return ResolvedDayContext(
                 date=target_date,
-                day_type=self._find_day_type(
-                    calendar_exception.day_type_id
-                ),
+                day_type=self._find_day_type(calendar_exception.day_type_id),
                 cycle_id=None,
                 week_schedule_id=None,
                 calendar_exception_id=calendar_exception.id,
@@ -66,17 +64,11 @@ class PlannerResolver:
                 calendar_exception_id=None,
             )
 
-        days_since_start = (
-            target_date - cycle.start_date
-        ).days
+        days_since_start = (target_date - cycle.start_date).days
 
-        week_index = (
-            days_since_start // 7
-        ) % len(cycle.week_schedule_ids)
+        week_index = (days_since_start // 7) % len(cycle.week_schedule_ids)
 
-        week_schedule_id = (
-            cycle.week_schedule_ids[week_index]
-        )
+        week_schedule_id = cycle.week_schedule_ids[week_index]
 
         week_schedule = next(
             item
@@ -97,16 +89,13 @@ class PlannerResolver:
             calendar_exception_id=None,
         )
 
-
     def resolve_day_type(
         self,
         target_date: date,
     ) -> DayType | None:
         """Resolve the day type applicable to a date."""
 
-        return self.resolve_day_context(
-            target_date
-        ).day_type
+        return self.resolve_day_context(target_date).day_type
 
     def _find_day_type(
         self,
