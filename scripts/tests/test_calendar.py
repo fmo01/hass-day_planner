@@ -321,3 +321,16 @@ def test_calendar_event_prefers_current_event():
     runtime.scheduler.current_event.assert_called_once()
     runtime.scheduler.next_event.assert_not_called()
 
+def test_calendar_extra_state_attributes():
+    runtime = MagicMock()
+
+    calendar = DayPlannerCalendar(
+        runtime
+    )
+
+    assert calendar.extra_state_attributes == {
+        "integration": "Day Planner",
+        "integration_version": "0.0.4",
+        "release_url": "https://github.com/fmo01/hass-day_planner/releases",
+    }
+

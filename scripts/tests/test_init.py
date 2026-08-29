@@ -334,45 +334,66 @@ def test_migrate_entity_ids():
     async def run():
         hass = MagicMock()
         entry = MagicMock()
+        entry.entry_id = "entry1"
 
         registry = MagicMock()
 
-        registry.async_get_entity_id.side_effect = [
-            "sensor.next_event",
-            "sensor.current_day_type",
-            "sensor.current_moment",
+        next_event = MagicMock()
+        next_event.unique_id = "day_planner_next_event"
+        next_event.entity_id = "sensor.next_event"
+
+        current_day_type = MagicMock()
+        current_day_type.unique_id = (
+            "day_planner_current_day_type"
+        )
+        current_day_type.entity_id = (
+            "sensor.current_day_type"
+        )
+
+        current_moment = MagicMock()
+        current_moment.unique_id = (
+            "day_planner_current_moment"
+        )
+        current_moment.entity_id = (
+            "sensor.current_moment"
+        )
+
+        calendar = MagicMock()
+        calendar.unique_id = "day_planner_calendar"
+        calendar.entity_id = "calendar.planning"
+
+        entries = [
+            next_event,
+            current_day_type,
+            current_moment,
+            calendar,
         ]
 
-        with patch(
-            "custom_components.day_planner.er.async_get",
-            return_value=registry,
+        with (
+            patch(
+                "custom_components.day_planner.er.async_get",
+                return_value=registry,
+            ),
+            patch(
+                "custom_components.day_planner."
+                "er.async_entries_for_config_entry",
+                return_value=entries,
+            ) as entries_for_config_entry,
         ):
             await _async_migrate_entity_ids(
                 hass,
                 entry,
             )
 
-        assert registry.async_get_entity_id.call_count == 3
-
-        registry.async_get_entity_id.assert_any_call(
-            "sensor",
-            "day_planner",
-            "day_planner_next_event",
+        entries_for_config_entry.assert_called_once_with(
+            registry,
+            "entry1",
         )
 
-        registry.async_get_entity_id.assert_any_call(
-            "sensor",
-            "day_planner",
-            "day_planner_current_day_type",
+        assert (
+            registry.async_update_entity.call_count
+            == 4
         )
-
-        registry.async_get_entity_id.assert_any_call(
-            "sensor",
-            "day_planner",
-            "day_planner_current_moment",
-        )
-
-        assert registry.async_update_entity.call_count == 3
 
         registry.async_update_entity.assert_any_call(
             "sensor.next_event",
@@ -381,12 +402,23 @@ def test_migrate_entity_ids():
 
         registry.async_update_entity.assert_any_call(
             "sensor.current_day_type",
-            new_entity_id="sensor.day_planner_current_day_type",
+            new_entity_id=(
+                "sensor.day_planner_current_day_type"
+            ),
         )
 
         registry.async_update_entity.assert_any_call(
             "sensor.current_moment",
-            new_entity_id="sensor.day_planner_current_moment",
+            new_entity_id=(
+                "sensor.day_planner_current_moment"
+            ),
+        )
+
+        registry.async_update_entity.assert_any_call(
+            "calendar.planning",
+            new_entity_id=(
+                "calendar.day_planner_planning"
+            ),
         )
 
     asyncio.run(run())
@@ -395,18 +427,26 @@ def test_migrate_entity_ids_already_migrated():
     async def run():
         hass = MagicMock()
         entry = MagicMock()
+        entry.entry_id = "entry1"
 
         registry = MagicMock()
 
-        registry.async_get_entity_id.side_effect = [
-            "sensor.day_planner_next_event",
-            "sensor.day_planner_current_day_type",
-            "sensor.day_planner_current_moment",
-        ]
+        entity = MagicMock()
+        entity.unique_id = "day_planner_next_event"
+        entity.entity_id = (
+            "sensor.day_planner_next_event"
+        )
 
-        with patch(
-            "custom_components.day_planner.er.async_get",
-            return_value=registry,
+        with (
+            patch(
+                "custom_components.day_planner.er.async_get",
+                return_value=registry,
+            ),
+            patch(
+                "custom_components.day_planner."
+                "er.async_entries_for_config_entry",
+                return_value=[entity],
+            ),
         ):
             await _async_migrate_entity_ids(
                 hass,
