@@ -6,7 +6,7 @@ from pathlib import Path
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
@@ -113,7 +113,7 @@ class DayPlannerNextEventSensor(SensorEntity):
                 self._handle_planner_updated,
             )
         )
-
+    @callback
     def _handle_planner_updated(self) -> None:
         """Handle planner configuration update."""
 
@@ -145,7 +145,7 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
                 self._handle_planner_updated,
             )
         )
-
+    @callback
     def _handle_planner_updated(self) -> None:
         """Handle planner configuration update."""
 
@@ -218,7 +218,7 @@ class DayPlannerCurrentMomentSensor(SensorEntity):
                 self._handle_planner_updated,
             )
         )
-
+    @callback
     def _handle_planner_updated(self) -> None:
         """Handle planner configuration update."""
 

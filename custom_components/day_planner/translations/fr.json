@@ -6,9 +6,14 @@
         "description": "Créer votre instance Day Planner."
       }
     }
-  }
-,
+  } ,
   "options": {
+    "error": {
+      "day_type_in_use": "Ce type de journée ne peut pas être supprimé car il est encore utilisé par une semaine ou une exception.",
+      "week_schedule_in_use": "Cette semaine ne peut pas être supprimée car elle est encore utilisée par un cycle.",
+      "maximum_cycles_reached": "Le nombre maximum de cycles autorisés est atteint.",
+      "max_cycles_too_small": "La valeur {value} est trop petite. La valeur minimale est {minimum}."
+    },
     "step": {
       "init": {
         "title": "Day Planner",
@@ -21,12 +26,305 @@
           "settings": "Paramètres"
         }
       },
+      "settings": {
+        "title": "Paramètres",
+        "data": {
+          "delete_data_on_remove": "Supprimer les données lors de la suppression de l'intégration",
+          "max_cycles": "Nombre maximum de cycles"
+        }
+      },
       "moments": {
         "title": "Moments",
         "menu_options": {
           "add_moment": "Ajouter un moment",
           "edit_moment": "Modifier un moment",
-          "remove_moment": "Supprimer un moment"
+          "remove_moment": "Supprimer un moment",
+          "moment_actions": "Actions"
+        }
+      },
+      "remove_moment_confirm": {
+        "title": "Supprimer le moment",
+        "description": "Voulez-vous vraiment supprimer {name} ?",
+        "data": {
+          "confirm": "Confirmer la suppression"
+        }
+      },
+      "day_types": {
+        "title": "Types de journée",
+        "menu_options": {
+          "add_day_type": "Ajouter un type de journée",
+          "edit_day_type": "Modifier un type de journée",
+          "remove_day_type": "Supprimer un type de journée",
+          "scheduled_moments": "Moments programmés"
+        }
+      },
+      "add_day_type": {
+        "title": "Ajouter un type de journée",
+        "data": {
+          "id": "Identifiant",
+          "name": "Nom"
+        }
+      },
+      "edit_day_type": {
+        "title": "Modifier un type de journée",
+        "data": {
+          "id": "Type de journée"
+        }
+      },
+      "edit_day_type_details": {
+        "title": "Modifier un type de journée",
+        "data": {
+          "name": "Nom"
+        }
+      },
+      "remove_day_type": {
+        "title": "Supprimer un type de journée",
+        "data": {
+          "id": "Type de journée"
+        }
+      },
+      "remove_day_type_confirm": {
+        "title": "Supprimer le type de journée",
+        "description": "Voulez-vous vraiment supprimer {name} ?",
+        "data": {
+          "confirm": "Confirmer la suppression"
+        }
+      },
+      "scheduled_moments": {
+        "title": "Moments programmés",
+        "data": {
+          "day_type_id": "Type de journée"
+        }
+      },
+      "scheduled_moments_menu": {
+        "title": "Moments programmés",
+        "menu_options": {
+          "add_scheduled_moment": "Ajouter un moment programmé",
+          "edit_scheduled_moment": "Modifier un moment programmé",
+          "remove_scheduled_moment": "Supprimer un moment programmé"
+        }
+      },
+      "add_scheduled_moment": {
+        "title": "Ajouter un moment programmé",
+        "data": {
+          "moment_id": "Moment",
+          "time": "Heure"
+        }
+      },
+      "edit_scheduled_moment": {
+        "title": "Modifier un moment programmé",
+        "data": {
+          "moment_id": "Moment"
+        }
+      },
+      "edit_scheduled_moment_details": {
+        "title": "Modifier un moment programmé",
+        "description": "Moment programmé : {name}",
+        "data": {
+          "time": "Heure"
+        }
+      },
+      "remove_scheduled_moment": {
+        "title": "Supprimer un moment programmé",
+        "data": {
+          "moment_id": "Moment"
+        }
+      },
+      "remove_scheduled_moment_confirm": {
+        "title": "Supprimer le moment programmé",
+        "description": "Voulez-vous vraiment supprimer {name} ?",
+        "data": {
+          "confirm": "Confirmer la suppression"
+        }
+      },
+      "week_schedules": {
+        "title": "Semaines",
+        "menu_options": {
+          "add_week_schedule": "Ajouter une semaine",
+          "edit_week_schedule": "Modifier une semaine",
+          "remove_week_schedule": "Supprimer une semaine"
+        }
+      },
+      "add_week_schedule": {
+        "title": "Ajouter une semaine",
+        "data": {
+          "id": "Identifiant",
+          "name": "Nom",
+          "monday": "Lundi",
+          "tuesday": "Mardi",
+          "wednesday": "Mercredi",
+          "thursday": "Jeudi",
+          "friday": "Vendredi",
+          "saturday": "Samedi",
+          "sunday": "Dimanche"
+        }
+      },
+      "edit_week_schedule": {
+        "title": "Modifier une semaine",
+        "data": {
+          "id": "Semaine"
+        }
+      },
+      "edit_week_schedule_details": {
+        "title": "Modifier une semaine",
+        "data": {
+          "name": "Nom",
+          "monday": "Lundi",
+          "tuesday": "Mardi",
+          "wednesday": "Mercredi",
+          "thursday": "Jeudi",
+          "friday": "Vendredi",
+          "saturday": "Samedi",
+          "sunday": "Dimanche"
+        }
+      },
+      "remove_week_schedule": {
+        "title": "Supprimer une semaine",
+        "data": {
+          "id": "Semaine"
+        }
+      },
+      "remove_week_schedule_confirm": {
+        "title": "Supprimer la semaine",
+        "description": "Voulez-vous vraiment supprimer {name} ?",
+        "data": {
+          "confirm": "Confirmer la suppression"
+        }
+      },
+      "cycles": {
+        "title": "Cycles",
+        "menu_options": {
+          "add_cycle": "Ajouter un cycle",
+          "edit_cycle": "Modifier un cycle",
+          "remove_cycle": "Supprimer un cycle"
+        }
+      },
+      "add_cycle": {
+        "title": "Ajouter un cycle",
+        "data": {
+          "id": "Identifiant",
+          "name": "Nom",
+          "start_date": "Date de début",
+          "week_schedule_ids": "Semaines"
+        }
+      },
+      "edit_cycle": {
+        "title": "Modifier un cycle",
+        "data": {
+          "id": "Cycle"
+        }
+      },
+      "edit_cycle_details": {
+        "title": "Modifier un cycle",
+        "data": {
+          "name": "Nom",
+          "start_date": "Date de début",
+          "week_schedule_ids": "Semaines"
+        }
+      },
+      "remove_cycle": {
+        "title": "Supprimer un cycle",
+        "data": {
+          "id": "Cycle"
+        }
+      },
+      "remove_cycle_confirm": {
+        "title": "Supprimer le cycle",
+        "description": "Voulez-vous vraiment supprimer {name} ?",
+        "data": {
+          "confirm": "Confirmer la suppression"
+        }
+      },
+      "calendar_exceptions": {
+        "title": "Exceptions calendrier",
+        "menu_options": {
+          "add_calendar_exception": "Ajouter une exception",
+          "edit_calendar_exception": "Modifier une exception",
+          "remove_calendar_exception": "Supprimer une exception"
+        }
+      },
+      "add_calendar_exception": {
+        "title": "Ajouter une exception",
+        "data": {
+          "id": "Identifiant",
+          "date": "Date",
+          "day_type_id": "Type de journée",
+          "description": "Description"
+        }
+      },
+      "edit_calendar_exception": {
+        "title": "Modifier une exception",
+        "data": {
+          "id": "Exception"
+        }
+      },
+      "edit_calendar_exception_details": {
+        "title": "Modifier une exception",
+        "data": {
+          "date": "Date",
+          "day_type_id": "Type de journée",
+          "description": "Description"
+        }
+      },
+      "remove_calendar_exception": {
+        "title": "Supprimer une exception",
+        "data": {
+          "id": "Exception"
+        }
+      },
+      "remove_calendar_exception_confirm": {
+        "title": "Supprimer l'exception",
+        "description": "Voulez-vous vraiment supprimer {name} ?",
+        "data": {
+          "confirm": "Confirmer la suppression"
+        }
+      },
+      "moment_actions": {
+        "title": "Actions du moment",
+        "data": {
+          "moment_id": "Moment"
+        }
+      },
+      "moment_actions_menu": {
+        "title": "Actions du moment",
+        "menu_options": {
+          "add_moment_action": "Ajouter une action",
+          "edit_moment_action": "Modifier une action",
+          "remove_moment_action": "Supprimer une action"
+        }
+      },
+      "add_moment_action": {
+        "title": "Ajouter une action",
+        "data": {
+          "id": "Identifiant",
+          "service": "Service",
+          "data": "Données"
+        }
+      },
+      "edit_moment_action": {
+        "title": "Modifier une action",
+        "data": {
+          "id": "Action"
+        }
+      },
+      "edit_moment_action_details": {
+        "title": "Modifier une action",
+        "data": {
+          "service": "Service",
+          "data": "Données"
+        }
+      },
+      "remove_moment_action": {
+        "title": "Supprimer une action",
+        "data": {
+          "id": "Action"
+        }
+      },
+      "remove_moment_action_confirm": {
+        "title": "Supprimer l'action",
+        "description": "Voulez-vous vraiment supprimer {name} ?",
+        "data": {
+          "confirm": "Confirmer la suppression"
         }
       }
     }

@@ -6,6 +6,7 @@ from typing import Any
 class Action:
     """An action executed during a moment."""
 
+    id: str
     service: str
     data: dict[str, Any]
 
@@ -13,6 +14,7 @@ class Action:
         """Serialize object."""
 
         return {
+            "id": self.id,
             "service": self.service,
             "data": self.data,
         }
@@ -25,6 +27,7 @@ class Action:
         """Deserialize object."""
 
         return cls(
+            id=str(data["id"]),
             service=str(data["service"]),
             data=dict(data.get("data", {})),
         )

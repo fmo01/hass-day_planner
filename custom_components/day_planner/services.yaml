@@ -28,7 +28,8 @@ add_moment:
       description: Actions to execute when this moment occurs.
       required: false
       example:
-        - service: input_boolean.turn_on
+        - id: turn_on_test
+          service: input_boolean.turn_on
           data:
             entity_id: input_boolean.day_planner_test
       selector:
@@ -64,7 +65,8 @@ update_moment:
       description: Actions to execute when this moment occurs.
       required: false
       example:
-        - service: input_boolean.turn_on
+        - id: turn_on_test
+          service: input_boolean.turn_on
           data:
             entity_id: input_boolean.day_planner_test
       selector:

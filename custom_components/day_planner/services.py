@@ -121,6 +121,7 @@ async def async_setup_services(
             icon=call.data["icon"],
             actions=tuple(
                 Action(
+                    id=action["id"],
                     service=action["service"],
                     data=dict(
                         action.get(
@@ -151,6 +152,7 @@ async def async_setup_services(
         if "actions" in call.data:
             actions = tuple(
                 Action(
+                    id=action["id"],
                     service=action["service"],
                     data=dict(
                         action.get(

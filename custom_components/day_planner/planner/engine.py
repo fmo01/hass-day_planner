@@ -3,6 +3,11 @@
 from dataclasses import replace
 from typing import TypeVar
 
+from ..const import DEFAULT_MAX_CYCLES
+from .errors import NotFoundError, ValidationError
+from .protocols import HasId
+from .validator import PlannerValidator
+
 from ..domain.calendar_exception import CalendarException
 from ..domain.cycle import Cycle
 from ..domain.day_type import DayType
@@ -10,9 +15,6 @@ from ..domain.moment import Moment
 from ..domain.planner_configuration import PlannerConfiguration
 from ..domain.scheduled_moment import ScheduledMoment
 from ..domain.week_schedule import WeekSchedule
-from .errors import NotFoundError, ValidationError
-from .protocols import HasId
-from .validator import PlannerValidator
 
 T = TypeVar("T", bound=HasId)
 
@@ -25,12 +27,17 @@ class PlannerEngine:
     def __init__(
         self,
         configuration: PlannerConfiguration,
+        max_cycles: int = DEFAULT_MAX_CYCLES,
     ) -> None:
         """Initialize engine."""
 
         self._configuration = configuration
+        self._max_cycles = max_cycles
 
-        PlannerValidator.validate_configuration(configuration)
+        PlannerValidator.validate_configuration(
+            configuration,
+            max_cycles=self._max_cycles,
+        )
 
     @property
     def configuration(
@@ -39,6 +46,12 @@ class PlannerEngine:
         """Return current configuration."""
 
         return self._configuration
+
+    @property
+    def max_cycles(self) -> int:
+        """Return maximum number of cycles."""
+
+        return self._max_cycles
 
     #
     # Generic helpers
@@ -101,6 +114,7 @@ class PlannerEngine:
 
         PlannerValidator.validate_configuration(
             configuration,
+            max_cycles=self._max_cycles,
         )
 
         self._configuration = configuration

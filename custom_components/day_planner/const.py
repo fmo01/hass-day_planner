@@ -41,6 +41,12 @@ SERVICE_ADD_CALENDAR_EXCEPTION = "add_calendar_exception"
 SERVICE_UPDATE_CALENDAR_EXCEPTION = "update_calendar_exception"
 SERVICE_REMOVE_CALENDAR_EXCEPTION = "remove_calendar_exception"
 
+CONF_MAX_CYCLES = "max_cycles"
+
+DEFAULT_MAX_CYCLES = 1
+MIN_MAX_CYCLES = 1
+MAX_MAX_CYCLES = 4
+
 
 DEFAULT_MOMENTS = [
     {

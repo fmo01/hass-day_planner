@@ -1,5 +1,6 @@
 """Domain validation rules for Day Planner."""
 
+from ..const import DEFAULT_MAX_CYCLES
 from ..domain.calendar_exception import CalendarException
 from ..domain.cycle import Cycle
 from ..domain.day_type import DayType
@@ -13,6 +14,7 @@ class PlannerValidator:
     @staticmethod
     def validate_configuration(
         configuration: PlannerConfiguration,
+        max_cycles: int = DEFAULT_MAX_CYCLES,
     ) -> None:
         """Validate complete configuration."""
 
@@ -24,9 +26,20 @@ class PlannerValidator:
 
         PlannerValidator._validate_cycles(configuration)
 
-        PlannerValidator._validate_cycle_count(configuration)
+        PlannerValidator._validate_cycle_count(
+            configuration,
+            max_cycles,
+        )
 
         PlannerValidator._validate_calendar_exceptions(configuration)
+
+        PlannerValidator._validate_action_ids(
+            configuration
+        )
+
+        PlannerValidator._validate_action_ids(
+            configuration
+        )
 
     @staticmethod
     def _validate_unique_ids(
@@ -60,6 +73,30 @@ class PlannerValidator:
                 PlannerValidator._validate_action(
                     action,
                 )
+
+    @staticmethod
+    def _validate_action_ids(
+        configuration: PlannerConfiguration,
+    ) -> None:
+        """Validate action identifiers."""
+
+        for moment in configuration.moments:
+            action_ids: set[str] = set()
+
+            for action in moment.actions:
+                if not action.id:
+                    raise ValidationError(
+                        "Action id cannot be empty"
+                    )
+
+                if action.id in action_ids:
+                    raise ValidationError(
+                        f"Duplicate action id in moment "
+                        f"'{moment.id}': {action.id}"
+                    )
+
+                action_ids.add(action.id)
+
 
     @staticmethod
     def _validate_action(
@@ -140,11 +177,14 @@ class PlannerValidator:
     @staticmethod
     def _validate_cycle_count(
         configuration: PlannerConfiguration,
+        max_cycles: int,
     ) -> None:
-        """Ensure only one cycle exists."""
+        """Ensure the maximum cycle count is not exceeded."""
 
-        if len(configuration.cycles) > 1:
-            raise ValidationError("Only one cycle is allowed")
+        if len(configuration.cycles) > max_cycles:
+            raise ValidationError(
+                f"Maximum number of cycles exceeded: {max_cycles}"
+            )
 
     @staticmethod
     def _validate_calendar_exceptions(

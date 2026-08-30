@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
@@ -56,6 +56,7 @@ class DayPlannerCalendar(CalendarEntity):
             )
         )
 
+    @callback
     def _handle_planner_updated(self) -> None:
         """Handle planner configuration update."""
 
