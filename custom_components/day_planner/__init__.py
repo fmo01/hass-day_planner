@@ -3,13 +3,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
 from .action_executor import ActionExecutor
-from .const import (
-    CONF_DELETE_DATA_ON_REMOVE,
-    DEFAULT_DELETE_DATA_ON_REMOVE,
-    PLATFORMS,
-    CONF_MAX_CYCLES,
-    DEFAULT_MAX_CYCLES,
-)
+from .const import (CONF_DELETE_DATA_ON_REMOVE, CONF_MAX_CYCLES,
+                    DEFAULT_DELETE_DATA_ON_REMOVE, DEFAULT_MAX_CYCLES,
+                    PLATFORMS)
 from .ha_scheduler import HomeAssistantScheduler
 from .planner.engine import PlannerEngine
 from .planner.resolver import PlannerResolver
@@ -50,15 +46,14 @@ async def _async_migrate_entity_ids(
             new_entity_id=new_entity_id,
         )
 
+
 async def _async_options_updated(
     hass: HomeAssistant,
     entry: ConfigEntry,
 ) -> None:
     """Reload Day Planner when options change."""
 
-    await hass.config_entries.async_reload(
-        entry.entry_id
-    )
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_setup_entry(
@@ -103,11 +98,7 @@ async def async_setup_entry(
         ha_scheduler=ha_scheduler,
     )
 
-    entry.async_on_unload(
-        entry.add_update_listener(
-            _async_options_updated
-        )
-    )
+    entry.async_on_unload(entry.add_update_listener(_async_options_updated))
 
     await async_setup_services(hass)
     await _async_migrate_entity_ids(

@@ -33,13 +33,9 @@ class PlannerValidator:
 
         PlannerValidator._validate_calendar_exceptions(configuration)
 
-        PlannerValidator._validate_action_ids(
-            configuration
-        )
+        PlannerValidator._validate_action_ids(configuration)
 
-        PlannerValidator._validate_action_ids(
-            configuration
-        )
+        PlannerValidator._validate_action_ids(configuration)
 
     @staticmethod
     def _validate_unique_ids(
@@ -85,18 +81,14 @@ class PlannerValidator:
 
             for action in moment.actions:
                 if not action.id:
-                    raise ValidationError(
-                        "Action id cannot be empty"
-                    )
+                    raise ValidationError("Action id cannot be empty")
 
                 if action.id in action_ids:
                     raise ValidationError(
-                        f"Duplicate action id in moment "
-                        f"'{moment.id}': {action.id}"
+                        f"Duplicate action id in moment " f"'{moment.id}': {action.id}"
                     )
 
                 action_ids.add(action.id)
-
 
     @staticmethod
     def _validate_action(
@@ -182,9 +174,7 @@ class PlannerValidator:
         """Ensure the maximum cycle count is not exceeded."""
 
         if len(configuration.cycles) > max_cycles:
-            raise ValidationError(
-                f"Maximum number of cycles exceeded: {max_cycles}"
-            )
+            raise ValidationError(f"Maximum number of cycles exceeded: {max_cycles}")
 
     @staticmethod
     def _validate_calendar_exceptions(

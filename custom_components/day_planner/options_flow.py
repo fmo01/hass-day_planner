@@ -7,30 +7,25 @@ from homeassistant import config_entries
 from homeassistant.helpers import selector
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 
-from .const import (
-    CONF_DELETE_DATA_ON_REMOVE,
-    CONF_MAX_CYCLES,
-    DEFAULT_DELETE_DATA_ON_REMOVE,
-    DEFAULT_MAX_CYCLES,
-    MAX_MAX_CYCLES,
-    MIN_MAX_CYCLES,
-    SIGNAL_PLANNER_UPDATED,
-)
-
+from .const import (CONF_DELETE_DATA_ON_REMOVE, CONF_MAX_CYCLES,
+                    DEFAULT_DELETE_DATA_ON_REMOVE, DEFAULT_MAX_CYCLES,
+                    MAX_MAX_CYCLES, MIN_MAX_CYCLES, SIGNAL_PLANNER_UPDATED)
 from .domain.action import Action
-from .domain.cycle import Cycle
 from .domain.calendar_exception import CalendarException
+from .domain.cycle import Cycle
 from .domain.day_type import DayType
 from .domain.moment import Moment
-from .domain.time_definition import TimeDefinition
 from .domain.scheduled_moment import ScheduledMoment
+from .domain.time_definition import TimeDefinition
 from .domain.week_schedule import WeekSchedule
 from .planner.errors import ValidationError
+
 
 class DayPlannerOptionsFlow(
     config_entries.OptionsFlow,
 ):
     """Handle Day Planner options."""
+
     def __init__(self) -> None:
         """Initialize options flow."""
 
@@ -67,6 +62,7 @@ class DayPlannerOptionsFlow(
                 "settings",
             ],
         )
+
     async def async_step_calendar_exceptions(
         self,
         user_input=None,
@@ -222,7 +218,6 @@ class DayPlannerOptionsFlow(
             data_schema=schema,
         )
 
-
     async def async_step_edit_moment(
         self,
         user_input=None,
@@ -270,9 +265,7 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        moment = runtime.engine.get_moment(
-            self._selected_moment_id
-        )
+        moment = runtime.engine.get_moment(self._selected_moment_id)
 
         if user_input is not None:
             updated_moment = Moment(
@@ -282,19 +275,13 @@ class DayPlannerOptionsFlow(
                 actions=moment.actions,
             )
 
-            runtime.engine.update_moment(
-                updated_moment
-            )
+            runtime.engine.update_moment(updated_moment)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -325,7 +312,6 @@ class DayPlannerOptionsFlow(
             step_id="edit_moment_details",
             data_schema=schema,
         )
-
 
     async def async_step_remove_moment(
         self,
@@ -374,9 +360,7 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        moment = runtime.engine.get_moment(
-            self._selected_remove_moment_id
-        )
+        moment = runtime.engine.get_moment(self._selected_remove_moment_id)
 
         if user_input is not None:
             if not user_input["confirm"]:
@@ -395,19 +379,13 @@ class DayPlannerOptionsFlow(
                     },
                 )
 
-            runtime.engine.remove_moment(
-                moment.id
-            )
+            runtime.engine.remove_moment(moment.id)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -437,7 +415,6 @@ class DayPlannerOptionsFlow(
                 "name": moment.name,
             },
         )
-
 
     async def async_step_day_types(
         self,
@@ -478,9 +455,7 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        cycle_count = len(
-            runtime.engine.configuration.cycles
-        )
+        cycle_count = len(runtime.engine.configuration.cycles)
 
         menu_options = []
 
@@ -515,19 +490,13 @@ class DayPlannerOptionsFlow(
                 scheduled_moments=(),
             )
 
-            runtime.engine.add_day_type(
-                day_type
-            )
+            runtime.engine.add_day_type(day_type)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -592,7 +561,6 @@ class DayPlannerOptionsFlow(
             data_schema=schema,
         )
 
-
     async def async_step_edit_day_type_details(
         self,
         user_input=None,
@@ -601,9 +569,7 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        day_type = runtime.engine.get_day_type(
-            self._selected_day_type_id
-        )
+        day_type = runtime.engine.get_day_type(self._selected_day_type_id)
 
         if user_input is not None:
             updated_day_type = DayType(
@@ -612,19 +578,13 @@ class DayPlannerOptionsFlow(
                 scheduled_moments=day_type.scheduled_moments,
             )
 
-            runtime.engine.update_day_type(
-                updated_day_type
-            )
+            runtime.engine.update_day_type(updated_day_type)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -661,9 +621,7 @@ class DayPlannerOptionsFlow(
         runtime = self.config_entry.runtime_data
 
         if user_input is not None:
-            self._selected_remove_day_type_id = (
-                user_input["id"]
-            )
+            self._selected_remove_day_type_id = user_input["id"]
 
             return await self.async_step_remove_day_type_confirm()
 
@@ -701,9 +659,7 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        day_type = runtime.engine.get_day_type(
-            self._selected_remove_day_type_id
-        )
+        day_type = runtime.engine.get_day_type(self._selected_remove_day_type_id)
 
         schema = vol.Schema(
             {
@@ -725,9 +681,7 @@ class DayPlannerOptionsFlow(
                 )
 
             try:
-                runtime.engine.remove_day_type(
-                    day_type.id
-                )
+                runtime.engine.remove_day_type(day_type.id)
             except ValidationError:
                 return self.async_show_form(
                     step_id="remove_day_type_confirm",
@@ -742,13 +696,9 @@ class DayPlannerOptionsFlow(
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -779,9 +729,7 @@ class DayPlannerOptionsFlow(
         runtime = self.config_entry.runtime_data
 
         if user_input is not None:
-            self._selected_scheduled_day_type_id = (
-                user_input["day_type_id"]
-            )
+            self._selected_scheduled_day_type_id = user_input["day_type_id"]
 
             return await self.async_step_scheduled_moments_menu()
 
@@ -797,9 +745,7 @@ class DayPlannerOptionsFlow(
 
         schema = vol.Schema(
             {
-                vol.Required(
-                    "day_type_id"
-                ): selector.SelectSelector(
+                vol.Required("day_type_id"): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=options,
                         mode=selector.SelectSelectorMode.DROPDOWN,
@@ -840,9 +786,7 @@ class DayPlannerOptionsFlow(
             scheduled_moment = ScheduledMoment(
                 moment_id=user_input["moment_id"],
                 time_definition=TimeDefinition(
-                    fixed_time=time.fromisoformat(
-                        user_input["time"]
-                    ),
+                    fixed_time=time.fromisoformat(user_input["time"]),
                 ),
             )
 
@@ -853,13 +797,9 @@ class DayPlannerOptionsFlow(
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -885,17 +825,13 @@ class DayPlannerOptionsFlow(
 
         schema = vol.Schema(
             {
-                vol.Required(
-                    "moment_id"
-                ): selector.SelectSelector(
+                vol.Required("moment_id"): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=moment_options,
                         mode=selector.SelectSelectorMode.DROPDOWN,
                     )
                 ),
-                vol.Required(
-                    "time"
-                ): selector.TimeSelector(),
+                vol.Required("time"): selector.TimeSelector(),
             }
         )
 
@@ -912,20 +848,15 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        day_type = runtime.engine.get_day_type(
-            self._selected_scheduled_day_type_id
-        )
+        day_type = runtime.engine.get_day_type(self._selected_scheduled_day_type_id)
 
         if user_input is not None:
-            self._selected_scheduled_moment_id = (
-                user_input["moment_id"]
-            )
+            self._selected_scheduled_moment_id = user_input["moment_id"]
 
             return await self.async_step_edit_scheduled_moment_details()
 
         moment_names = {
-            moment.id: moment.name
-            for moment in runtime.engine.configuration.moments
+            moment.id: moment.name for moment in runtime.engine.configuration.moments
         }
 
         options = [
@@ -941,9 +872,7 @@ class DayPlannerOptionsFlow(
 
         schema = vol.Schema(
             {
-                vol.Required(
-                    "moment_id"
-                ): selector.SelectSelector(
+                vol.Required("moment_id"): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=options,
                         mode=selector.SelectSelectorMode.DROPDOWN,
@@ -965,28 +894,21 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        day_type = runtime.engine.get_day_type(
-            self._selected_scheduled_day_type_id
-        )
+        day_type = runtime.engine.get_day_type(self._selected_scheduled_day_type_id)
 
         scheduled_moment = next(
             item
             for item in day_type.scheduled_moments
-            if item.moment_id
-            == self._selected_scheduled_moment_id
+            if item.moment_id == self._selected_scheduled_moment_id
         )
 
-        moment = runtime.engine.get_moment(
-            scheduled_moment.moment_id
-        )
+        moment = runtime.engine.get_moment(scheduled_moment.moment_id)
 
         if user_input is not None:
             updated = ScheduledMoment(
                 moment_id=scheduled_moment.moment_id,
                 time_definition=TimeDefinition(
-                    fixed_time=time.fromisoformat(
-                        user_input["time"]
-                    ),
+                    fixed_time=time.fromisoformat(user_input["time"]),
                 ),
             )
 
@@ -997,13 +919,9 @@ class DayPlannerOptionsFlow(
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -1021,12 +939,7 @@ class DayPlannerOptionsFlow(
             {
                 vol.Required(
                     "time",
-                    default=(
-                        scheduled_moment
-                        .time_definition
-                        .fixed_time
-                        .isoformat()
-                    ),
+                    default=(scheduled_moment.time_definition.fixed_time.isoformat()),
                 ): selector.TimeSelector(),
             }
         )
@@ -1036,7 +949,7 @@ class DayPlannerOptionsFlow(
             data_schema=schema,
             description_placeholders={
                 "name": moment.name,
-            }
+            },
         )
 
     async def async_step_remove_scheduled_moment(
@@ -1047,20 +960,15 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        day_type = runtime.engine.get_day_type(
-            self._selected_scheduled_day_type_id
-        )
+        day_type = runtime.engine.get_day_type(self._selected_scheduled_day_type_id)
 
         if user_input is not None:
-            self._selected_remove_scheduled_moment_id = (
-                user_input["moment_id"]
-            )
+            self._selected_remove_scheduled_moment_id = user_input["moment_id"]
 
             return await self.async_step_remove_scheduled_moment_confirm()
 
         moment_names = {
-            moment.id: moment.name
-            for moment in runtime.engine.configuration.moments
+            moment.id: moment.name for moment in runtime.engine.configuration.moments
         }
 
         options = [
@@ -1076,9 +984,7 @@ class DayPlannerOptionsFlow(
 
         schema = vol.Schema(
             {
-                vol.Required(
-                    "moment_id"
-                ): selector.SelectSelector(
+                vol.Required("moment_id"): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=options,
                         mode=selector.SelectSelectorMode.DROPDOWN,
@@ -1100,9 +1006,7 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        moment = runtime.engine.get_moment(
-            self._selected_remove_scheduled_moment_id
-        )
+        moment = runtime.engine.get_moment(self._selected_remove_scheduled_moment_id)
 
         schema = vol.Schema(
             {
@@ -1130,13 +1034,9 @@ class DayPlannerOptionsFlow(
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -1179,19 +1079,13 @@ class DayPlannerOptionsFlow(
                 sunday=user_input["sunday"],
             )
 
-            runtime.engine.add_week_schedule(
-                week_schedule
-            )
+            runtime.engine.add_week_schedule(week_schedule)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -1248,9 +1142,7 @@ class DayPlannerOptionsFlow(
         runtime = self.config_entry.runtime_data
 
         if user_input is not None:
-            self._selected_week_schedule_id = (
-                user_input["id"]
-            )
+            self._selected_week_schedule_id = user_input["id"]
 
             return await self.async_step_edit_week_schedule_details()
 
@@ -1303,19 +1195,13 @@ class DayPlannerOptionsFlow(
                 sunday=user_input["sunday"],
             )
 
-            runtime.engine.update_week_schedule(
-                updated
-            )
+            runtime.engine.update_week_schedule(updated)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -1396,9 +1282,7 @@ class DayPlannerOptionsFlow(
         runtime = self.config_entry.runtime_data
 
         if user_input is not None:
-            self._selected_remove_week_schedule_id = (
-                user_input["id"]
-            )
+            self._selected_remove_week_schedule_id = user_input["id"]
 
             return await self.async_step_remove_week_schedule_confirm()
 
@@ -1458,9 +1342,7 @@ class DayPlannerOptionsFlow(
                 )
 
             try:
-                runtime.engine.remove_week_schedule(
-                    week_schedule.id
-                )
+                runtime.engine.remove_week_schedule(week_schedule.id)
             except ValidationError:
                 return self.async_show_form(
                     step_id="remove_week_schedule_confirm",
@@ -1475,13 +1357,9 @@ class DayPlannerOptionsFlow(
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -1515,18 +1393,12 @@ class DayPlannerOptionsFlow(
             cycle = Cycle(
                 id=user_input["id"],
                 name=user_input["name"],
-                start_date=date.fromisoformat(
-                    user_input["start_date"]
-                ),
-                week_schedule_ids=tuple(
-                    user_input["week_schedule_ids"]
-                ),
+                start_date=date.fromisoformat(user_input["start_date"]),
+                week_schedule_ids=tuple(user_input["week_schedule_ids"]),
             )
 
             try:
-                runtime.engine.add_cycle(
-                    cycle
-                )
+                runtime.engine.add_cycle(cycle)
             except ValidationError:
                 return self.async_show_form(
                     step_id="add_cycle",
@@ -1534,20 +1406,15 @@ class DayPlannerOptionsFlow(
                         {
                             vol.Required("id"): str,
                             vol.Required("name"): str,
-                            vol.Required(
-                                "start_date"
-                            ): selector.DateSelector(),
-                            vol.Required(
-                                "week_schedule_ids"
-                            ): selector.SelectSelector(
+                            vol.Required("start_date"): selector.DateSelector(),
+                            vol.Required("week_schedule_ids"): selector.SelectSelector(
                                 selector.SelectSelectorConfig(
                                     options=[
                                         selector.SelectOptionDict(
                                             value=week_schedule.id,
                                             label=week_schedule.name,
                                         )
-                                        for week_schedule
-                                        in runtime.engine.configuration.week_schedules
+                                        for week_schedule in runtime.engine.configuration.week_schedules
                                     ],
                                     multiple=True,
                                     mode=selector.SelectSelectorMode.DROPDOWN,
@@ -1562,13 +1429,9 @@ class DayPlannerOptionsFlow(
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -1587,20 +1450,15 @@ class DayPlannerOptionsFlow(
                 value=week_schedule.id,
                 label=week_schedule.name,
             )
-            for week_schedule
-            in runtime.engine.configuration.week_schedules
+            for week_schedule in runtime.engine.configuration.week_schedules
         ]
 
         schema = vol.Schema(
             {
                 vol.Required("id"): str,
                 vol.Required("name"): str,
-                vol.Required(
-                    "start_date"
-                ): selector.DateSelector(),
-                vol.Required(
-                    "week_schedule_ids"
-                ): selector.SelectSelector(
+                vol.Required("start_date"): selector.DateSelector(),
+                vol.Required("week_schedule_ids"): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=week_options,
                         multiple=True,
@@ -1660,35 +1518,23 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        cycle = runtime.engine.get_cycle(
-            self._selected_cycle_id
-        )
+        cycle = runtime.engine.get_cycle(self._selected_cycle_id)
 
         if user_input is not None:
             updated = Cycle(
                 id=cycle.id,
                 name=user_input["name"],
-                start_date=date.fromisoformat(
-                    user_input["start_date"]
-                ),
-                week_schedule_ids=tuple(
-                    user_input["week_schedule_ids"]
-                ),
+                start_date=date.fromisoformat(user_input["start_date"]),
+                week_schedule_ids=tuple(user_input["week_schedule_ids"]),
             )
 
-            runtime.engine.update_cycle(
-                updated
-            )
+            runtime.engine.update_cycle(updated)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -1707,8 +1553,7 @@ class DayPlannerOptionsFlow(
                 value=week_schedule.id,
                 label=week_schedule.name,
             )
-            for week_schedule
-            in runtime.engine.configuration.week_schedules
+            for week_schedule in runtime.engine.configuration.week_schedules
         ]
 
         schema = vol.Schema(
@@ -1748,9 +1593,7 @@ class DayPlannerOptionsFlow(
         runtime = self.config_entry.runtime_data
 
         if user_input is not None:
-            self._selected_remove_cycle_id = (
-                user_input["id"]
-            )
+            self._selected_remove_cycle_id = user_input["id"]
 
             return await self.async_step_remove_cycle_confirm()
 
@@ -1786,9 +1629,7 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        cycle = runtime.engine.get_cycle(
-            self._selected_remove_cycle_id
-        )
+        cycle = runtime.engine.get_cycle(self._selected_remove_cycle_id)
 
         schema = vol.Schema(
             {
@@ -1809,19 +1650,13 @@ class DayPlannerOptionsFlow(
                     },
                 )
 
-            runtime.engine.remove_cycle(
-                cycle.id
-            )
+            runtime.engine.remove_cycle(cycle.id)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -1854,26 +1689,18 @@ class DayPlannerOptionsFlow(
         if user_input is not None:
             calendar_exception = CalendarException(
                 id=user_input["id"],
-                date=date.fromisoformat(
-                    user_input["date"]
-                ),
+                date=date.fromisoformat(user_input["date"]),
                 day_type_id=user_input["day_type_id"],
                 description=user_input.get("description") or None,
             )
 
-            runtime.engine.add_calendar_exception(
-                calendar_exception
-            )
+            runtime.engine.add_calendar_exception(calendar_exception)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -1892,17 +1719,14 @@ class DayPlannerOptionsFlow(
                 value=day_type.id,
                 label=day_type.name,
             )
-            for day_type
-            in runtime.engine.configuration.day_types
+            for day_type in runtime.engine.configuration.day_types
         ]
 
         schema = vol.Schema(
             {
                 vol.Required("id"): str,
                 vol.Required("date"): selector.DateSelector(),
-                vol.Required(
-                    "day_type_id"
-                ): selector.SelectSelector(
+                vol.Required("day_type_id"): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=day_type_options,
                         mode=selector.SelectSelectorMode.DROPDOWN,
@@ -1920,7 +1744,6 @@ class DayPlannerOptionsFlow(
             data_schema=schema,
         )
 
-
     async def async_step_edit_calendar_exception(
         self,
         user_input=None,
@@ -1930,9 +1753,7 @@ class DayPlannerOptionsFlow(
         runtime = self.config_entry.runtime_data
 
         if user_input is not None:
-            self._selected_calendar_exception_id = (
-                user_input["id"]
-            )
+            self._selected_calendar_exception_id = user_input["id"]
 
             return await self.async_step_edit_calendar_exception_details()
 
@@ -1944,8 +1765,7 @@ class DayPlannerOptionsFlow(
                     or calendar_exception.date.isoformat()
                 ),
             )
-            for calendar_exception
-            in runtime.engine.configuration.calendar_exceptions
+            for calendar_exception in runtime.engine.configuration.calendar_exceptions
         ]
 
         schema = vol.Schema(
@@ -1972,35 +1792,25 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        calendar_exception = (
-            runtime.engine.get_calendar_exception(
-                self._selected_calendar_exception_id
-            )
+        calendar_exception = runtime.engine.get_calendar_exception(
+            self._selected_calendar_exception_id
         )
 
         if user_input is not None:
             updated = CalendarException(
                 id=calendar_exception.id,
-                date=date.fromisoformat(
-                    user_input["date"]
-                ),
+                date=date.fromisoformat(user_input["date"]),
                 day_type_id=user_input["day_type_id"],
                 description=user_input.get("description") or None,
             )
 
-            runtime.engine.update_calendar_exception(
-                updated
-            )
+            runtime.engine.update_calendar_exception(updated)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -2019,8 +1829,7 @@ class DayPlannerOptionsFlow(
                 value=day_type.id,
                 label=day_type.name,
             )
-            for day_type
-            in runtime.engine.configuration.day_types
+            for day_type in runtime.engine.configuration.day_types
         ]
 
         schema = vol.Schema(
@@ -2059,9 +1868,7 @@ class DayPlannerOptionsFlow(
         runtime = self.config_entry.runtime_data
 
         if user_input is not None:
-            self._selected_remove_calendar_exception_id = (
-                user_input["id"]
-            )
+            self._selected_remove_calendar_exception_id = user_input["id"]
 
             return await self.async_step_remove_calendar_exception_confirm()
 
@@ -2073,8 +1880,7 @@ class DayPlannerOptionsFlow(
                     or calendar_exception.date.isoformat()
                 ),
             )
-            for calendar_exception
-            in runtime.engine.configuration.calendar_exceptions
+            for calendar_exception in runtime.engine.configuration.calendar_exceptions
         ]
 
         schema = vol.Schema(
@@ -2101,10 +1907,8 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        calendar_exception = (
-            runtime.engine.get_calendar_exception(
-                self._selected_remove_calendar_exception_id
-            )
+        calendar_exception = runtime.engine.get_calendar_exception(
+            self._selected_remove_calendar_exception_id
         )
 
         schema = vol.Schema(
@@ -2129,19 +1933,13 @@ class DayPlannerOptionsFlow(
                     },
                 )
 
-            runtime.engine.remove_calendar_exception(
-                calendar_exception.id
-            )
+            runtime.engine.remove_calendar_exception(calendar_exception.id)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -2175,9 +1973,7 @@ class DayPlannerOptionsFlow(
         runtime = self.config_entry.runtime_data
 
         if user_input is not None:
-            self._selected_action_moment_id = (
-                user_input["moment_id"]
-            )
+            self._selected_action_moment_id = user_input["moment_id"]
 
             return await self.async_step_moment_actions_menu()
 
@@ -2193,9 +1989,7 @@ class DayPlannerOptionsFlow(
 
         schema = vol.Schema(
             {
-                vol.Required(
-                    "moment_id"
-                ): selector.SelectSelector(
+                vol.Required("moment_id"): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=options,
                         mode=selector.SelectSelectorMode.DROPDOWN,
@@ -2232,9 +2026,7 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        moment = runtime.engine.get_moment(
-            self._selected_action_moment_id
-        )
+        moment = runtime.engine.get_moment(self._selected_action_moment_id)
 
         if user_input is not None:
             action = Action(
@@ -2258,19 +2050,13 @@ class DayPlannerOptionsFlow(
                 ),
             )
 
-            runtime.engine.update_moment(
-                updated_moment
-            )
+            runtime.engine.update_moment(updated_moment)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -2308,9 +2094,7 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        moment = runtime.engine.get_moment(
-            self._selected_action_moment_id
-        )
+        moment = runtime.engine.get_moment(self._selected_action_moment_id)
 
         if user_input is not None:
             self._selected_action_id = user_input["id"]
@@ -2349,14 +2133,10 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        moment = runtime.engine.get_moment(
-            self._selected_action_moment_id
-        )
+        moment = runtime.engine.get_moment(self._selected_action_moment_id)
 
         action = next(
-            item
-            for item in moment.actions
-            if item.id == self._selected_action_id
+            item for item in moment.actions if item.id == self._selected_action_id
         )
 
         if user_input is not None:
@@ -2372,9 +2152,7 @@ class DayPlannerOptionsFlow(
             )
 
             actions = tuple(
-                updated_action
-                if current.id == action.id
-                else current
+                updated_action if current.id == action.id else current
                 for current in moment.actions
             )
 
@@ -2385,19 +2163,13 @@ class DayPlannerOptionsFlow(
                 actions=actions,
             )
 
-            runtime.engine.update_moment(
-                updated_moment
-            )
+            runtime.engine.update_moment(updated_moment)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -2437,14 +2209,10 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        moment = runtime.engine.get_moment(
-            self._selected_action_moment_id
-        )
+        moment = runtime.engine.get_moment(self._selected_action_moment_id)
 
         if user_input is not None:
-            self._selected_remove_action_id = (
-                user_input["id"]
-            )
+            self._selected_remove_action_id = user_input["id"]
 
             return await self.async_step_remove_moment_action_confirm()
 
@@ -2480,9 +2248,7 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        moment = runtime.engine.get_moment(
-            self._selected_action_moment_id
-        )
+        moment = runtime.engine.get_moment(self._selected_action_moment_id)
 
         action = next(
             item
@@ -2510,9 +2276,7 @@ class DayPlannerOptionsFlow(
                 )
 
             actions = tuple(
-                current
-                for current in moment.actions
-                if current.id != action.id
+                current for current in moment.actions if current.id != action.id
             )
 
             updated_moment = Moment(
@@ -2522,19 +2286,13 @@ class DayPlannerOptionsFlow(
                 actions=actions,
             )
 
-            runtime.engine.update_moment(
-                updated_moment
-            )
+            runtime.engine.update_moment(updated_moment)
 
             configuration = runtime.engine.configuration
 
-            await runtime.storage.async_save(
-                configuration
-            )
+            await runtime.storage.async_save(configuration)
 
-            runtime.resolver.update_configuration(
-                configuration
-            )
+            runtime.resolver.update_configuration(configuration)
 
             await runtime.ha_scheduler.async_schedule_next()
 
@@ -2555,5 +2313,3 @@ class DayPlannerOptionsFlow(
                 "name": action.id,
             },
         )
-
-

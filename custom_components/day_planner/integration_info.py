@@ -5,7 +5,6 @@ from pathlib import Path
 
 from .const import INTEGRATION_NAME, RELEASE_URL
 
-
 _MANIFEST_PATH = Path(__file__).with_name("manifest.json")
 
 with _MANIFEST_PATH.open(

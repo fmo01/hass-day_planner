@@ -113,6 +113,7 @@ class DayPlannerNextEventSensor(SensorEntity):
                 self._handle_planner_updated,
             )
         )
+
     @callback
     def _handle_planner_updated(self) -> None:
         """Handle planner configuration update."""
@@ -145,6 +146,7 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
                 self._handle_planner_updated,
             )
         )
+
     @callback
     def _handle_planner_updated(self) -> None:
         """Handle planner configuration update."""
@@ -218,6 +220,7 @@ class DayPlannerCurrentMomentSensor(SensorEntity):
                 self._handle_planner_updated,
             )
         )
+
     @callback
     def _handle_planner_updated(self) -> None:
         """Handle planner configuration update."""
