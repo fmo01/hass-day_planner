@@ -2,8 +2,16 @@ name: Validate with hassfest
 
 on:
   push:
+    paths:
+      - 'custom_components/**' # Se déclenche uniquement si des fichiers ici changent
+
   pull_request:
+    paths:
+      - 'custom_components/**' # Se déclenche uniquement si des fichiers ici changent
+  
   workflow_dispatch: # Permet le déclenchement manuel
+    paths:
+      - 'custom_components/**' # Se déclenche uniquement si des fichiers ici changent
   schedule:
     - cron:  '0 0 * * *'
 
