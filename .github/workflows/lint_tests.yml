@@ -1,4 +1,4 @@
-name: Lint & Formatting
+name: Lint & Formatting scripts tests
 
 permissions:
   contents: write
@@ -7,14 +7,14 @@ on:
   push:
     branches: [ main, unstable ]
     paths:
-      - 'custom_components/**' # Se déclenche uniquement si des fichiers ici changent
+      - 'scripts/tests/**' # Se déclenche uniquement si des fichiers ici changent
   pull_request:
     branches: [ main, unstable ]
     paths:
-      - 'custom_components/**' # Se déclenche uniquement si des fichiers ici changent
+      - 'scripts/tests/**' # Se déclenche uniquement si des fichiers ici changent
   workflow_dispatch: # Permet le déclenchement manuel
     paths:
-      - 'custom_components/**' # Se déclenche uniquement si des fichiers ici changent
+      - 'scripts/tests/**' # Se déclenche uniquement si des fichiers ici changent
 
 jobs:
   lint:
@@ -57,7 +57,7 @@ jobs:
         git config --global user.email "actions@github.com"
         if [[ -n "$(git status --porcelain)" ]]; then
           git add .
-          git commit -m "Auto-fix: Format code with black and isort [skip ci]"
+          git commit -m "Auto-fix: scripts tests : Format code with black, isort and flake8  [skip ci]"
           git push
         else
           echo "No changes to commit"
