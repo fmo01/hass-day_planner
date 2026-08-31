@@ -47,12 +47,10 @@ class HomeAssistantScheduler:
 
         executed = False
 
-
         async def handle_event(
             now: datetime,
         ) -> None:
             """Handle scheduled event."""
-
 
             nonlocal executed
 
@@ -63,9 +61,7 @@ class HomeAssistantScheduler:
             self._cancel = None
 
             try:
-                await self._action_executor.async_execute_moment(
-                    event.moment
-                )
+                await self._action_executor.async_execute_moment(event.moment)
             finally:
                 await self.async_schedule_next()
 

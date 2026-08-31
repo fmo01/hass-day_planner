@@ -10,6 +10,7 @@ from .domain.moment import Moment
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class ActionExecutor:
     """Execute actions attached to moments."""
 
@@ -47,8 +48,7 @@ class ActionExecutor:
                 await self.async_execute_action(action)
             except Exception:
                 _LOGGER.exception(
-                    "Unable to execute Day Planner action '%s' "
-                    "for moment '%s'",
+                    "Unable to execute Day Planner action '%s' " "for moment '%s'",
                     action.id,
                     moment.id,
                 )

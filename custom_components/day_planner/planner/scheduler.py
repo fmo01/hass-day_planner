@@ -25,9 +25,7 @@ class PlannerScheduler:
         """Return scheduled datetime with reference timezone if needed."""
 
         if scheduled_at.tzinfo is None and reference.tzinfo is not None:
-            return scheduled_at.replace(
-                tzinfo=reference.tzinfo
-            )
+            return scheduled_at.replace(tzinfo=reference.tzinfo)
 
         return scheduled_at
 
@@ -125,9 +123,9 @@ class PlannerScheduler:
 
         for event in self.events_for_date(now.date()):
             scheduled_at = self._normalize_scheduled_at(
-                    event.scheduled_at,
-                    now,
-                )
+                event.scheduled_at,
+                now,
+            )
 
             if scheduled_at.tzinfo is None and now.tzinfo is not None:
                 scheduled_at = scheduled_at.replace(tzinfo=now.tzinfo)
