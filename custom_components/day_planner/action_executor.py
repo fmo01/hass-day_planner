@@ -1,11 +1,14 @@
 """Execute Day Planner actions in Home Assistant."""
 
+import logging
+
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.script import Script
 
 from .domain.action import Action
 from .domain.moment import Moment
 
+_LOGGER = logging.getLogger(__name__)
 
 class ActionExecutor:
     """Execute actions attached to moments."""
@@ -40,4 +43,12 @@ class ActionExecutor:
         """Execute all actions attached to a moment."""
 
         for action in moment.actions:
-            await self.async_execute_action(action)
+            try:
+                await self.async_execute_action(action)
+            except Exception:
+                _LOGGER.exception(
+                    "Unable to execute Day Planner action '%s' "
+                    "for moment '%s'",
+                    action.id,
+                    moment.id,
+                )

@@ -17,6 +17,20 @@ class PlannerScheduler:
 
         self._resolver = resolver
 
+    @staticmethod
+    def _normalize_scheduled_at(
+        scheduled_at: datetime,
+        reference: datetime,
+    ) -> datetime:
+        """Return scheduled datetime with reference timezone if needed."""
+
+        if scheduled_at.tzinfo is None and reference.tzinfo is not None:
+            return scheduled_at.replace(
+                tzinfo=reference.tzinfo
+            )
+
+        return scheduled_at
+
     def events_for_date(
         self,
         target_date: date,
@@ -56,13 +70,14 @@ class PlannerScheduler:
             target_date = now.date() + timedelta(days=day_offset)
 
             for event in self.events_for_date(target_date):
-                scheduled_at = event.scheduled_at
 
-                if scheduled_at.tzinfo is None and now.tzinfo is not None:
-                    scheduled_at = scheduled_at.replace(tzinfo=now.tzinfo)
+                scheduled_at = self._normalize_scheduled_at(
+                    event.scheduled_at,
+                    now,
+                )
 
                 if scheduled_at > now:
-                    if scheduled_at is event.scheduled_at:
+                    if scheduled_at == event.scheduled_at:
                         return event
 
                     return ScheduledEvent(
@@ -82,7 +97,10 @@ class PlannerScheduler:
             scheduled_at = event.scheduled_at
 
             if scheduled_at.tzinfo is None and now.tzinfo is not None:
-                scheduled_at = scheduled_at.replace(tzinfo=now.tzinfo)
+                scheduled_at = self._normalize_scheduled_at(
+                    event.scheduled_at,
+                    now,
+                )
 
             event_end = scheduled_at + timedelta(minutes=1)
 
@@ -106,7 +124,10 @@ class PlannerScheduler:
         current: ScheduledEvent | None = None
 
         for event in self.events_for_date(now.date()):
-            scheduled_at = event.scheduled_at
+            scheduled_at = self._normalize_scheduled_at(
+                    event.scheduled_at,
+                    now,
+                )
 
             if scheduled_at.tzinfo is None and now.tzinfo is not None:
                 scheduled_at = scheduled_at.replace(tzinfo=now.tzinfo)
