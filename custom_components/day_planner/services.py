@@ -122,9 +122,7 @@ async def async_setup_services(
             actions=tuple(
                 Action(
                     id=action["id"],
-                    sequence=list(
-                        action["sequence"]
-                    ),
+                    sequence=list(action["sequence"]),
                 )
                 for action in call.data.get("actions", [])
             ),
@@ -149,9 +147,7 @@ async def async_setup_services(
             actions = tuple(
                 Action(
                     id=action["id"],
-                    sequence=list(
-                        action["sequence"]
-                    ),
+                    sequence=list(action["sequence"]),
                 )
                 for action in call.data["actions"]
             )

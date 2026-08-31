@@ -40,6 +40,4 @@ class ActionExecutor:
         """Execute all actions attached to a moment."""
 
         for action in moment.actions:
-            await self.async_execute_action(
-                action
-            )
+            await self.async_execute_action(action)

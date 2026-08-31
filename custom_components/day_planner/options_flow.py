@@ -2031,9 +2031,7 @@ class DayPlannerOptionsFlow(
         if user_input is not None:
             action = Action(
                 id=user_input["id"],
-                sequence=list(
-                    user_input["sequence"]
-                ),
+                sequence=list(user_input["sequence"]),
             )
             updated_moment = Moment(
                 id=moment.id,
@@ -2068,9 +2066,7 @@ class DayPlannerOptionsFlow(
         schema = vol.Schema(
             {
                 vol.Required("id"): str,
-                vol.Required(
-                    "sequence"
-                ): selector.ActionSelector(),
+                vol.Required("sequence"): selector.ActionSelector(),
             }
         )
 
@@ -2135,15 +2131,11 @@ class DayPlannerOptionsFlow(
         if user_input is not None:
             updated_action = Action(
                 id=action.id,
-                sequence=list(
-                    user_input["sequence"]
-                ),
+                sequence=list(user_input["sequence"]),
             )
 
             actions = tuple(
-                updated_action
-                if current.id == action.id
-                else current
+                updated_action if current.id == action.id else current
                 for current in moment.actions
             )
 

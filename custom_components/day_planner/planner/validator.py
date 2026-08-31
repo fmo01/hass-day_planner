@@ -95,9 +95,7 @@ class PlannerValidator:
         """Validate one action."""
 
         if not action.sequence:
-            raise ValidationError(
-                "Action sequence cannot be empty"
-            )
+            raise ValidationError("Action sequence cannot be empty")
 
     @staticmethod
     def _validate_day_types(
