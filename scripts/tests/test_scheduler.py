@@ -495,48 +495,220 @@ def test_scheduler_current_moment_none():
 
     assert event is None
 
+def test_scheduler_normalizes_naive_datetime_timezone():
+    naive = datetime(
+        2026,
+        8,
+        31,
+        7,
+        30,
+    )
 
-def test_scheduler_current_moment_with_timezone():
-    moment = Moment(
-        id="m1",
+    aware_now = datetime(
+        2026,
+        8,
+        31,
+        6,
+        0,
+        tzinfo=timezone.utc,
+    )
+
+    normalized = PlannerScheduler._normalize_scheduled_at(
+        naive,
+        aware_now,
+    )
+
+    assert normalized == datetime(
+        2026,
+        8,
+        31,
+        7,
+        30,
+        tzinfo=timezone.utc,
+    )
+
+
+def test_scheduler_keeps_aware_datetime():
+    scheduled_at = datetime(
+        2026,
+        8,
+        31,
+        7,
+        30,
+        tzinfo=timezone.utc,
+    )
+
+    reference = datetime(
+        2026,
+        8,
+        31,
+        6,
+        0,
+        tzinfo=timezone.utc,
+    )
+
+    normalized = PlannerScheduler._normalize_scheduled_at(
+        scheduled_at,
+        reference,
+    )
+
+    assert normalized is scheduled_at
+
+def test_scheduler_does_not_catch_up_missed_event():
+    resolver = MagicMock()
+
+    missed_moment = Moment(
+        id="wake_up",
         name="Réveil",
     )
 
-    scheduled = ScheduledMoment(
-        moment_id="m1",
-        time_definition=TimeDefinition(
-            fixed_time=time(8, 0),
+    next_moment = Moment(
+        id="departure",
+        name="Départ",
+    )
+
+    resolver.resolve_schedule.return_value = (
+        (
+            ScheduledMoment(
+                moment_id="wake_up",
+                time_definition=TimeDefinition(
+                    fixed_time=time(7, 30),
+                ),
+            ),
+            missed_moment,
+        ),
+        (
+            ScheduledMoment(
+                moment_id="departure",
+                time_definition=TimeDefinition(
+                    fixed_time=time(8, 0),
+                ),
+            ),
+            next_moment,
         ),
     )
 
-    resolver = MagicMock()
-    resolver.resolve_schedule.return_value = ((scheduled, moment),)
-
     scheduler = PlannerScheduler(resolver)
-
-    local_tz = timezone(timedelta(hours=2))
 
     now = datetime(
         2026,
         8,
-        29,
-        8,
-        30,
-        tzinfo=local_tz,
+        31,
+        7,
+        35,
     )
 
-    event = scheduler.current_moment(now)
+    event = scheduler.next_event(now)
 
     assert event is not None
-    assert event.moment == moment
-
+    assert event.moment == next_moment
     assert event.scheduled_at == datetime(
         2026,
         8,
-        29,
+        31,
         8,
         0,
-        tzinfo=local_tz,
     )
 
-    assert event.scheduled_at.tzinfo == local_tz
+def test_ha_scheduler_replans_after_configuration_change():
+    hass = MagicMock()
+
+    moment = Moment(
+        id="departure",
+        name="Départ",
+    )
+
+    old_event = ScheduledEvent(
+        scheduled_at=datetime(
+            2026,
+            8,
+            31,
+            8,
+            0,
+        ),
+        moment=moment,
+    )
+
+    new_event = ScheduledEvent(
+        scheduled_at=datetime(
+            2026,
+            8,
+            31,
+            8,
+            30,
+        ),
+        moment=moment,
+    )
+
+    scheduler = MagicMock()
+    scheduler.next_event.side_effect = [
+        old_event,
+        new_event,
+    ]
+
+    action_executor = MagicMock()
+    action_executor.async_execute_moment = AsyncMock()
+
+    old_cancel = MagicMock()
+    new_cancel = MagicMock()
+
+    ha_scheduler = HomeAssistantScheduler(
+        hass=hass,
+        scheduler=scheduler,
+        action_executor=action_executor,
+    )
+
+    async def run():
+        with (
+            patch(
+                "custom_components.day_planner.ha_scheduler.dt_util.now",
+                return_value=datetime(
+                    2026,
+                    8,
+                    31,
+                    7,
+                    30,
+                ),
+            ),
+            patch(
+                "custom_components.day_planner.ha_scheduler."
+                "async_track_point_in_time",
+                side_effect=[
+                    old_cancel,
+                    new_cancel,
+                ],
+            ) as track,
+        ):
+            # Première programmation : 08:00
+            await ha_scheduler.async_schedule_next()
+
+            assert ha_scheduler._cancel is old_cancel
+            assert track.call_args_list[0].args[2] == datetime(
+                2026,
+                8,
+                31,
+                8,
+                0,
+            )
+
+            # Simulation d'une modification de configuration :
+            # le scheduler retourne maintenant 08:30.
+            await ha_scheduler.async_schedule_next()
+
+            # L'ancienne programmation doit être annulée.
+            old_cancel.assert_called_once_with()
+
+            # La nouvelle doit être installée.
+            assert ha_scheduler._cancel is new_cancel
+
+            assert track.call_args_list[1].args[2] == datetime(
+                2026,
+                8,
+                31,
+                8,
+                30,
+            )
+
+    asyncio.run(run())
+
+    assert scheduler.next_event.call_count == 2

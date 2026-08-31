@@ -129,3 +129,63 @@ def test_execute_moment_without_actions():
     )
 
     executor.async_execute_action.assert_not_awaited()
+
+def test_execute_moment_continues_after_action_error():
+    hass = MagicMock(spec=HomeAssistant)
+
+    executor = ActionExecutor(hass)
+
+    action_1 = Action(
+        id="action_1",
+        sequence=[
+            {
+                "action": "light.turn_on",
+                "target": {
+                    "entity_id": "light.salon",
+                },
+            }
+        ],
+    )
+
+    action_2 = Action(
+        id="action_2",
+        sequence=[
+            {
+                "action": "switch.turn_on",
+                "target": {
+                    "entity_id": "switch.test",
+                },
+            }
+        ],
+    )
+
+    moment = Moment(
+        id="m1",
+        name="Réveil",
+        actions=(
+            action_1,
+            action_2,
+        ),
+    )
+
+    executor.async_execute_action = AsyncMock(
+        side_effect=[
+            RuntimeError("Action failed"),
+            None,
+        ]
+    )
+
+    asyncio.run(
+        executor.async_execute_moment(
+            moment
+        )
+    )
+
+    assert executor.async_execute_action.await_count == 2
+
+    executor.async_execute_action.assert_has_awaits(
+        [
+            call(action_1),
+            call(action_2),
+        ]
+    )
