@@ -2031,9 +2031,7 @@ class DayPlannerOptionsFlow(
         schema = vol.Schema(
             {
                 vol.Required("id"): str,
-                vol.Required(
-                    "sequence"
-                ): selector.ActionSelector(),
+                vol.Required("sequence"): selector.ActionSelector(),
             }
         )
 
@@ -2049,9 +2047,7 @@ class DayPlannerOptionsFlow(
 
             action = Action(
                 id=user_input["id"],
-                sequence=list(
-                    user_input["sequence"]
-                ),
+                sequence=list(user_input["sequence"]),
             )
 
             updated_moment = Moment(
@@ -2163,9 +2159,7 @@ class DayPlannerOptionsFlow(
 
             updated_action = Action(
                 id=action.id,
-                sequence=list(
-                    user_input["sequence"]
-                ),
+                sequence=list(user_input["sequence"]),
             )
 
             actions = tuple(
