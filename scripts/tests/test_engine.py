@@ -78,10 +78,14 @@ def test_engine_update_moment(
 def test_engine_add_moment_with_action():
     action = Action(
         id="salon_on",
-        service="light.turn_on",
-        data={
-            "entity_id": "light.salon",
-        },
+        sequence=[
+            {
+                "action": "light.turn_on",
+                "target": {
+                    "entity_id": "light.salon",
+                },
+            }
+        ],
     )
 
     moment = Moment(
@@ -106,8 +110,7 @@ def test_engine_rejects_moment_with_invalid_action():
         actions=(
             Action(
                 id="action_1",
-                service="",
-                data={},
+                sequence=[],
             ),
         ),
     )
@@ -116,7 +119,7 @@ def test_engine_rejects_moment_with_invalid_action():
 
     with pytest.raises(
         ValidationError,
-        match="Action service cannot be empty",
+        match="Action sequence cannot be empty",
     ):
         engine.add_moment(moment)
 

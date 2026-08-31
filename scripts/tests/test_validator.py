@@ -343,11 +343,15 @@ def test_validator_accepts_moment_with_action():
         name="Réveil",
         actions=(
             Action(
-                id="salon_on",
-                service="light.turn_on",
-                data={
-                    "entity_id": "light.salon",
-                },
+                id="salon",
+                sequence=[
+                    {
+                        "action": "light.turn_on",
+                        "target": {
+                            "entity_id": "light.salon",
+                        },
+                    }
+                ],
             ),
         ),
     )
@@ -363,15 +367,14 @@ def test_validator_accepts_moment_with_action():
     PlannerValidator.validate_configuration(configuration)
 
 
-def test_validator_rejects_action_without_service():
+def test_validator_rejects_action_without_sequence():
     moment = Moment(
         id="m1",
         name="Réveil",
         actions=(
             Action(
-                id="id_1",
-                service="",
-                data={},
+                id="action_1",
+                sequence=[],
             ),
         ),
     )
@@ -386,9 +389,11 @@ def test_validator_rejects_action_without_service():
 
     with pytest.raises(
         ValidationError,
-        match="Action service cannot be empty",
+        match="Action sequence cannot be empty",
     ):
-        PlannerValidator.validate_configuration(configuration)
+        PlannerValidator.validate_configuration(
+            configuration
+        )
 
 
 def test_validator_rejects_action_without_id():
@@ -398,8 +403,14 @@ def test_validator_rejects_action_without_id():
         actions=(
             Action(
                 id="",
-                service="light.turn_on",
-                data={},
+                sequence=[
+                    {
+                        "action": "light.turn_on",
+                        "target": {
+                            "entity_id": "light.salon",
+                        },
+                    }
+                ],
             ),
         ),
     )
@@ -509,17 +520,25 @@ def test_validator_rejects_duplicate_action_id():
         actions=(
             Action(
                 id="salon",
-                service="light.turn_on",
-                data={
-                    "entity_id": "light.salon",
-                },
+                sequence=[
+                    {
+                        "action": "light.turn_on",
+                        "target": {
+                            "entity_id": "light.salon",
+                        },
+                    }
+                ],
             ),
             Action(
                 id="salon",
-                service="light.turn_off",
-                data={
-                    "entity_id": "light.salon",
-                },
+                sequence=[
+                    {
+                        "action": "light.turn_on",
+                        "target": {
+                            "entity_id": "light.salon",
+                        },
+                    }
+                ],
             ),
         ),
     )

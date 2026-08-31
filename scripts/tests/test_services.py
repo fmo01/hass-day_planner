@@ -199,11 +199,17 @@ def test_service_add_moment():
                 "actions": [
                     {
                         "id": "salon_on",
-                        "service": "light.turn_on",
-                        "data": {
-                            "entity_id": "light.salon",
-                            "brightness_pct": 50,
-                        },
+                        "sequence": [
+                            {
+                                "action": "light.turn_on",
+                                "target": {
+                                    "entity_id": "light.salon",
+                                },
+                                "data": {
+                                    "brightness_pct": 50,
+                                },
+                            }
+                        ],
                     },
                 ],
             },
@@ -221,11 +227,17 @@ def test_service_add_moment():
     assert moment.actions == (
         Action(
             id="salon_on",
-            service="light.turn_on",
-            data={
-                "entity_id": "light.salon",
-                "brightness_pct": 50,
-            },
+            sequence=[
+                {
+                    "action": "light.turn_on",
+                    "target": {
+                        "entity_id": "light.salon",
+                    },
+                    "data": {
+                        "brightness_pct": 50,
+                    },
+                }
+            ],
         ),
     )
 
@@ -243,12 +255,15 @@ def test_service_update_moment():
 
     existing_action = Action(
         id="salon_on",
-        service="light.turn_on",
-        data={
-            "entity_id": "light.salon",
-        },
+        sequence=[
+            {
+                "action": "light.turn_on",
+                "target": {
+                    "entity_id": "light.salon",
+                },
+            }
+        ],
     )
-
     runtime.engine.get_moment = MagicMock(
         return_value=Moment(
             id="m1",
@@ -313,10 +328,14 @@ def test_service_update_moment_clear_actions():
 
     existing_action = Action(
         id="salon_on",
-        service="light.turn_on",
-        data={
-            "entity_id": "light.salon",
-        },
+        sequence=[
+            {
+                "action": "light.turn_on",
+                "target": {
+                    "entity_id": "light.salon",
+                },
+            }
+        ],
     )
 
     runtime.engine.get_moment = MagicMock(
@@ -368,6 +387,85 @@ def test_service_update_moment_clear_actions():
     assert moment.actions == ()
 
     runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
+
+def test_service_update_moment_actions():
+    hass = MagicMock(spec=HomeAssistant)
+
+    hass.services = MagicMock()
+    hass.services.async_register = MagicMock()
+
+    runtime = MagicMock()
+    runtime.engine.update_moment = MagicMock()
+
+    runtime.engine.get_moment = MagicMock(
+        return_value=Moment(
+            id="m1",
+            name="Moment 1",
+            actions=(),
+        )
+    )
+
+    runtime.engine.configuration = object()
+    runtime.storage.async_save = AsyncMock()
+    runtime.resolver.update_configuration = MagicMock()
+    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    entry = MagicMock()
+    entry.runtime_data = runtime
+
+    hass.config_entries.async_entries.return_value = [entry]
+
+    async def run():
+        await async_setup_services(hass)
+
+        service = get_registered_service(
+            hass,
+            SERVICE_UPDATE_MOMENT,
+        )
+
+        call = ServiceCall(
+            hass=hass,
+            domain=DOMAIN,
+            service=SERVICE_UPDATE_MOMENT,
+            data={
+                "id": "m1",
+                "name": "Moment modifié",
+                "actions": [
+                    {
+                        "id": "salon_on",
+                        "sequence": [
+                            {
+                                "action": "light.turn_on",
+                                "target": {
+                                    "entity_id": "light.salon",
+                                },
+                            }
+                        ],
+                    },
+                ],
+            },
+        )
+
+        await service(call)
+
+    asyncio.run(run())
+
+    moment = runtime.engine.update_moment.call_args.args[0]
+
+    assert moment.actions == (
+        Action(
+            id="salon_on",
+            sequence=[
+                {
+                    "action": "light.turn_on",
+                    "target": {
+                        "entity_id": "light.salon",
+                    },
+                }
+            ],
+        ),
+    )
 
 
 def test_service_remove_moment():

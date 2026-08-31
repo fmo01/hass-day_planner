@@ -493,10 +493,14 @@ def test_options_flow_edit_moment_details_create():
 
         existing_action = Action(
             id="salon_on",
-            service="light.turn_on",
-            data={
-                "entity_id": "light.salon",
-            },
+            sequence=[
+                {
+                    "action": "light.turn_on",
+                    "target": {
+                        "entity_id": "light.salon",
+                    },
+                }
+            ],
         )
 
         current_moment = Moment(
@@ -3569,21 +3573,24 @@ def test_options_flow_add_moment_action_form():
 
         schema = call.kwargs["data_schema"]
 
+        sequence = [
+            {
+                "action": "light.turn_on",
+                "target": {
+                    "entity_id": "light.salon",
+                },
+            }
+        ]
+
         result_schema = schema(
             {
                 "id": "salon_on",
-                "service": "light.turn_on",
-                "data": {
-                    "entity_id": "light.salon",
-                },
+                "sequence": sequence,
             }
         )
 
         assert result_schema["id"] == "salon_on"
-        assert result_schema["service"] == "light.turn_on"
-        assert result_schema["data"] == {
-            "entity_id": "light.salon",
-        }
+        assert result_schema["sequence"] == sequence
 
         assert result == {"type": "form"}
 
@@ -3596,12 +3603,15 @@ def test_options_flow_add_moment_action_create():
 
         existing_action = Action(
             id="existing",
-            service="light.turn_off",
-            data={
-                "entity_id": "light.salon",
-            },
+            sequence=[
+                {
+                    "action": "light.turn_off",
+                    "target": {
+                        "entity_id": "light.salon",
+                    },
+                }
+            ],
         )
-
         moment = Moment(
             id="wake_up",
             name="Réveil",
@@ -3632,10 +3642,14 @@ def test_options_flow_add_moment_action_create():
             result = await flow.async_step_add_moment_action(
                 {
                     "id": "salon_on",
-                    "service": "light.turn_on",
-                    "data": {
-                        "entity_id": "light.salon",
-                    },
+                    "sequence": [
+                        {
+                            "action": "light.turn_on",
+                            "target": {
+                                "entity_id": "light.salon",
+                            },
+                        }
+                    ],
                 }
             )
 
@@ -3649,10 +3663,14 @@ def test_options_flow_add_moment_action_create():
             existing_action,
             Action(
                 id="salon_on",
-                service="light.turn_on",
-                data={
-                    "entity_id": "light.salon",
-                },
+                sequence=[
+                    {
+                        "action": "light.turn_on",
+                        "target": {
+                            "entity_id": "light.salon",
+                        },
+                    }
+                ],
             ),
         )
 
@@ -3680,10 +3698,14 @@ def test_options_flow_edit_moment_action_form():
 
         action = Action(
             id="salon_on",
-            service="light.turn_on",
-            data={
-                "entity_id": "light.salon",
-            },
+            sequence=[
+                {
+                    "action": "light.turn_on",
+                    "target": {
+                        "entity_id": "light.salon",
+                    },
+                }
+            ],
         )
 
         moment = Moment(
@@ -3731,10 +3753,12 @@ def test_options_flow_edit_moment_action_select():
 
         action = Action(
             id="salon_on",
-            service="light.turn_on",
-            data={},
+            sequence=[
+                {
+                    "action": "light.turn_on",
+                }
+            ],
         )
-
         moment = Moment(
             id="wake_up",
             name="Réveil",
@@ -3771,10 +3795,14 @@ def test_options_flow_edit_moment_action_details_form():
 
         action = Action(
             id="salon_on",
-            service="light.turn_on",
-            data={
-                "entity_id": "light.salon",
-            },
+            sequence=[
+                {
+                    "action": "light.turn_on",
+                    "target": {
+                        "entity_id": "light.salon",
+                    },
+                }
+            ],
         )
 
         moment = Moment(
@@ -3803,12 +3831,14 @@ def test_options_flow_edit_moment_action_details_form():
 
         result_schema = schema({})
 
-        assert result_schema["service"] == "light.turn_on"
-
-        assert result_schema["data"] == {
-            "entity_id": "light.salon",
-        }
-
+        assert result_schema["sequence"] == [
+            {
+                "action": "light.turn_on",
+                "target": {
+                    "entity_id": "light.salon",
+                },
+            }
+        ]
         assert result == {"type": "form"}
 
     asyncio.run(run())
@@ -3820,20 +3850,27 @@ def test_options_flow_edit_moment_action_details_create():
 
         action1 = Action(
             id="salon_on",
-            service="light.turn_on",
-            data={
-                "entity_id": "light.salon",
-            },
+            sequence=[
+                {
+                    "action": "light.turn_on",
+                    "target": {
+                        "entity_id": "light.salon",
+                    },
+                }
+            ],
         )
 
         action2 = Action(
             id="cuisine_on",
-            service="light.turn_on",
-            data={
-                "entity_id": "light.cuisine",
-            },
+            sequence=[
+                {
+                    "action": "light.turn_on",
+                    "target": {
+                        "entity_id": "light.cuisine",
+                    },
+                }
+            ],
         )
-
         moment = Moment(
             id="wake_up",
             name="Réveil",
@@ -3868,10 +3905,14 @@ def test_options_flow_edit_moment_action_details_create():
         ) as dispatcher_send:
             result = await flow.async_step_edit_moment_action_details(
                 {
-                    "service": "light.turn_off",
-                    "data": {
-                        "entity_id": "light.salon",
-                    },
+                    "sequence": [
+                        {
+                            "action": "light.turn_off",
+                            "target": {
+                                "entity_id": "light.salon",
+                            },
+                        }
+                    ],
                 }
             )
 
@@ -3884,10 +3925,14 @@ def test_options_flow_edit_moment_action_details_create():
         assert updated.actions == (
             Action(
                 id="salon_on",
-                service="light.turn_off",
-                data={
-                    "entity_id": "light.salon",
-                },
+                sequence=[
+                    {
+                        "action": "light.turn_off",
+                        "target": {
+                            "entity_id": "light.salon",
+                        },
+                    }
+                ],
             ),
             action2,
         )
@@ -3916,8 +3961,14 @@ def test_options_flow_remove_moment_action_form():
 
         action = Action(
             id="salon_on",
-            service="light.turn_on",
-            data={"entity_id": "light.salon"},
+            sequence=[
+                {
+                    "action": "light.turn_on",
+                    "target": {
+                        "entity_id": "light.salon",
+                    },
+                }
+            ],
         )
 
         moment = Moment(
@@ -3984,8 +4035,14 @@ def test_options_flow_remove_moment_action_confirm_form():
 
         action = Action(
             id="salon_on",
-            service="light.turn_on",
-            data={},
+            sequence=[
+                {
+                    "action": "light.turn_on",
+                    "target": {
+                        "entity_id": "light.salon",
+                    },
+                }
+            ],
         )
 
         moment = Moment(
@@ -4023,8 +4080,14 @@ def test_options_flow_remove_moment_action_not_confirmed():
 
         action = Action(
             id="salon_on",
-            service="light.turn_on",
-            data={},
+            sequence=[
+                {
+                    "action": "light.turn_on",
+                    "target": {
+                        "entity_id": "light.salon",
+                    },
+                }
+            ],
         )
 
         moment = Moment(
@@ -4056,14 +4119,26 @@ def test_options_flow_remove_moment_action_confirmed():
 
         removed_action = Action(
             id="salon_on",
-            service="light.turn_on",
-            data={"entity_id": "light.salon"},
+            sequence=[
+                {
+                    "action": "light.turn_on",
+                    "target": {
+                        "entity_id": "light.salon",
+                    },
+                }
+            ],
         )
 
         preserved_action = Action(
             id="cuisine_on",
-            service="light.turn_on",
-            data={"entity_id": "light.cuisine"},
+            sequence=[
+                {
+                    "action": "light.turn_on",
+                    "target": {
+                        "entity_id": "light.cuisine",
+                    },
+                }
+            ],
         )
 
         moment = Moment(

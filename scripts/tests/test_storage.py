@@ -99,11 +99,17 @@ def test_storage_roundtrip_moment_with_actions():
                 actions=(
                     Action(
                         id="salon_on",
-                        service="light.turn_on",
-                        data={
-                            "entity_id": "light.salon",
-                            "brightness_pct": 50,
-                        },
+                        sequence=[
+                            {
+                                "action": "light.turn_on",
+                                "target": {
+                                    "entity_id": "light.salon",
+                                },
+                                "data": {
+                                    "brightness_pct": 50,
+                                },
+                            }
+                        ],
                     ),
                 ),
             ),
@@ -135,11 +141,17 @@ def test_storage_roundtrip_moment_with_actions():
 
         assert restored == configuration
 
-        assert restored.moments[0].actions[0].service == "light.turn_on"
+        assert restored.moments[0].actions[0].id == "salon_on"
 
-        assert restored.moments[0].actions[0].data == {
-            "entity_id": "light.salon",
-            "brightness_pct": 50,
-        }
-
+        assert restored.moments[0].actions[0].sequence == [
+            {
+                "action": "light.turn_on",
+                "target": {
+                    "entity_id": "light.salon",
+                },
+                "data": {
+                    "brightness_pct": 50,
+                },
+            }
+        ]
     asyncio.run(run())

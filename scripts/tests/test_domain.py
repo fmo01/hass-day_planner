@@ -26,34 +26,51 @@ def test_moment_roundtrip(moment):
 def test_action_roundtrip():
     action = Action(
         id="salon_on",
-        service="light.turn_on",
-        data={
-            "entity_id": "light.salon",
-        },
+        sequence=[
+            {
+                "action": "light.turn_on",
+                "target": {
+                    "entity_id": "light.salon",
+                },
+                "data": {
+                    "brightness_pct": 50,
+                },
+            }
+        ],
     )
 
     data = action.to_dict()
 
     assert data == {
         "id": "salon_on",
-        "service": "light.turn_on",
-        "data": {
-            "entity_id": "light.salon",
-        },
+        "sequence": [
+            {
+                "action": "light.turn_on",
+                "target": {
+                    "entity_id": "light.salon",
+                },
+                "data": {
+                    "brightness_pct": 50,
+                },
+            }
+        ],
     }
 
     restored = Action.from_dict(data)
 
     assert restored == action
 
-
 def test_moment_with_actions_roundtrip():
     action = Action(
         id="salon_on",
-        service="light.turn_on",
-        data={
-            "entity_id": "light.salon",
-        },
+        sequence=[
+            {
+                "action": "light.turn_on",
+                "target": {
+                    "entity_id": "light.salon",
+                },
+            }
+        ],
     )
 
     moment = Moment(
@@ -72,10 +89,14 @@ def test_moment_with_actions_roundtrip():
         "actions": [
             {
                 "id": "salon_on",
-                "service": "light.turn_on",
-                "data": {
-                    "entity_id": "light.salon",
-                },
+                "sequence": [
+                    {
+                        "action": "light.turn_on",
+                        "target": {
+                            "entity_id": "light.salon",
+                        },
+                    }
+                ],
             },
         ],
     }
@@ -83,7 +104,6 @@ def test_moment_with_actions_roundtrip():
     restored = Moment.from_dict(data)
 
     assert restored == moment
-
 
 def test_day_type_roundtrip(day_type):
     data = day_type.to_dict()
@@ -216,15 +236,25 @@ def test_planner_configuration_has_data(
 def test_action():
     action = Action(
         id="salon_on",
-        service="light.turn_on",
-        data={"entity_id": "light.salon"},
+        sequence=[
+            {
+                "action": "light.turn_on",
+                "target": {
+                    "entity_id": "light.salon",
+                },
+            }
+        ],
     )
 
-    assert action.service == "light.turn_on"
-    assert action.data == {
-        "entity_id": "light.salon",
-    }
-
+    assert action.id == "salon_on"
+    assert action.sequence == [
+        {
+            "action": "light.turn_on",
+            "target": {
+                "entity_id": "light.salon",
+            },
+        }
+    ]
 
 def test_audit():
     now = datetime.now()
