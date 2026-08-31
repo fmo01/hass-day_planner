@@ -12,7 +12,8 @@
       "day_type_in_use": "This day type cannot be removed because it is still used by a week schedule or a calendar exception.",
       "week_schedule_in_use": "This week schedule cannot be removed because it is still used by a cycle.",
       "maximum_cycles_reached": "The maximum number of allowed cycles has been reached.",
-      "max_cycles_too_small": "The value {value} is too small. The minimum value is {minimum}."
+      "max_cycles_too_small": "The value {value} is too small. The minimum value is {minimum}.",
+      "action_sequence_required": "At least one Home Assistant action is required."
            },
     "step": {
       "init": {

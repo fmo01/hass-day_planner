@@ -12,7 +12,8 @@
       "day_type_in_use": "Ce type de journée ne peut pas être supprimé car il est encore utilisé par une semaine ou une exception.",
       "week_schedule_in_use": "Cette semaine ne peut pas être supprimée car elle est encore utilisée par un cycle.",
       "maximum_cycles_reached": "Le nombre maximum de cycles autorisés est atteint.",
-      "max_cycles_too_small": "La valeur {value} est trop petite. La valeur minimale est {minimum}."
+      "max_cycles_too_small": "La valeur {value} est trop petite. La valeur minimale est {minimum}.",
+      "action_sequence_required": "Au moins une action Home Assistant doit être définie."
     },
     "step": {
       "init": {

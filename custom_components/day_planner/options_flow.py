@@ -2028,11 +2028,32 @@ class DayPlannerOptionsFlow(
 
         moment = runtime.engine.get_moment(self._selected_action_moment_id)
 
+        schema = vol.Schema(
+            {
+                vol.Required("id"): str,
+                vol.Required(
+                    "sequence"
+                ): selector.ActionSelector(),
+            }
+        )
+
         if user_input is not None:
+            if not user_input.get("sequence"):
+                return self.async_show_form(
+                    step_id="add_moment_action",
+                    data_schema=schema,
+                    errors={
+                        "sequence": "action_sequence_required",
+                    },
+                )
+
             action = Action(
                 id=user_input["id"],
-                sequence=list(user_input["sequence"]),
+                sequence=list(
+                    user_input["sequence"]
+                ),
             )
+
             updated_moment = Moment(
                 id=moment.id,
                 name=moment.name,
@@ -2062,13 +2083,6 @@ class DayPlannerOptionsFlow(
                 title="",
                 data=self.config_entry.options,
             )
-
-        schema = vol.Schema(
-            {
-                vol.Required("id"): str,
-                vol.Required("sequence"): selector.ActionSelector(),
-            }
-        )
 
         return self.async_show_form(
             step_id="add_moment_action",
@@ -2128,10 +2142,30 @@ class DayPlannerOptionsFlow(
             item for item in moment.actions if item.id == self._selected_action_id
         )
 
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    "sequence",
+                    default=action.sequence,
+                ): selector.ActionSelector(),
+            }
+        )
+
         if user_input is not None:
+            if not user_input.get("sequence"):
+                return self.async_show_form(
+                    step_id="edit_moment_action_details",
+                    data_schema=schema,
+                    errors={
+                        "sequence": "action_sequence_required",
+                    },
+                )
+
             updated_action = Action(
                 id=action.id,
-                sequence=list(user_input["sequence"]),
+                sequence=list(
+                    user_input["sequence"]
+                ),
             )
 
             actions = tuple(
@@ -2165,15 +2199,6 @@ class DayPlannerOptionsFlow(
                 title="",
                 data=self.config_entry.options,
             )
-
-        schema = vol.Schema(
-            {
-                vol.Required(
-                    "sequence",
-                    default=action.sequence,
-                ): selector.ActionSelector(),
-            }
-        )
 
         return self.async_show_form(
             step_id="edit_moment_action_details",
