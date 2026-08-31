@@ -6,9 +6,15 @@ permissions:
 on:
   push:
     branches: [ main, unstable ]
+    paths:
+      - 'custom_components/**' # Se déclenche uniquement si des fichiers ici changent
   pull_request:
     branches: [ main, unstable ]
+    paths:
+      - 'custom_components/**' # Se déclenche uniquement si des fichiers ici changent
   workflow_dispatch: # Permet le déclenchement manuel
+    paths:
+      - 'custom_components/**' # Se déclenche uniquement si des fichiers ici changent
 
 jobs:
   lint:
