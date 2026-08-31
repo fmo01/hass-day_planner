@@ -4197,3 +4197,115 @@ def test_options_flow_remove_moment_action_confirmed():
         }
 
     asyncio.run(run())
+
+
+def test_options_flow_add_moment_action_empty_sequence():
+    async def run():
+        runtime = MagicMock()
+
+        moment = Moment(
+            id="wake_up",
+            name="Réveil",
+            icon="mdi:alarm",
+            actions=(),
+        )
+
+        runtime.engine.get_moment.return_value = moment
+
+        flow = create_flow(runtime=runtime)
+        flow._selected_action_moment_id = "wake_up"
+
+        flow.async_show_form = MagicMock(
+            return_value={
+                "type": "form",
+            }
+        )
+
+        result = await flow.async_step_add_moment_action(
+            {
+                "id": "salon_on",
+                "sequence": [],
+            }
+        )
+
+        # Aucune modification ne doit être effectuée.
+        runtime.engine.update_moment.assert_not_called()
+
+        flow.async_show_form.assert_called_once()
+
+        call = flow.async_show_form.call_args
+
+        assert call.kwargs["step_id"] == "add_moment_action"
+
+        assert call.kwargs["errors"] == {
+            "sequence": "action_sequence_required",
+        }
+
+        assert result == {
+            "type": "form",
+        }
+
+    asyncio.run(run())
+def test_options_flow_edit_moment_action_empty_sequence():
+    async def run():
+        runtime = MagicMock()
+
+        action = Action(
+            id="salon_on",
+            sequence=[
+                {
+                    "action": "light.turn_on",
+                    "target": {
+                        "entity_id": "light.salon",
+                    },
+                }
+            ],
+        )
+
+        moment = Moment(
+            id="wake_up",
+            name="Réveil",
+            icon="mdi:alarm",
+            actions=(action,),
+        )
+
+        runtime.engine.get_moment.return_value = moment
+
+        flow = create_flow(runtime=runtime)
+
+        flow._selected_action_moment_id = "wake_up"
+        flow._selected_action_id = "salon_on"
+
+        flow.async_show_form = MagicMock(
+            return_value={
+                "type": "form",
+            }
+        )
+
+        result = await flow.async_step_edit_moment_action_details(
+            {
+                "sequence": [],
+            }
+        )
+
+        # L'action existante ne doit surtout pas être modifiée.
+        runtime.engine.update_moment.assert_not_called()
+
+        flow.async_show_form.assert_called_once()
+
+        call = flow.async_show_form.call_args
+
+        assert (
+            call.kwargs["step_id"]
+            == "edit_moment_action_details"
+        )
+
+        assert call.kwargs["errors"] == {
+            "sequence": "action_sequence_required",
+        }
+
+        assert result == {
+            "type": "form",
+        }
+
+    asyncio.run(run())
