@@ -57,7 +57,7 @@ jobs:
         git config --global user.email "actions@github.com"
         if [[ -n "$(git status --porcelain)" ]]; then
           git add .
-          git commit -m "Auto-fix: Format code with black and isort [skip ci]"
+          git commit -m "Auto-fix: custom_components: Format code with black, isort and flake8 [skip ci]"
           git push
         else
           echo "No changes to commit"
