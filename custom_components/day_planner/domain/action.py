@@ -1,3 +1,5 @@
+"""Day Planner action model."""
+
 from dataclasses import dataclass
 from typing import Any
 
@@ -7,16 +9,14 @@ class Action:
     """An action executed during a moment."""
 
     id: str
-    service: str
-    data: dict[str, Any]
+    sequence: list[dict[str, Any]]
 
     def to_dict(self) -> dict:
         """Serialize object."""
 
         return {
             "id": self.id,
-            "service": self.service,
-            "data": self.data,
+            "sequence": self.sequence,
         }
 
     @classmethod
@@ -28,6 +28,10 @@ class Action:
 
         return cls(
             id=str(data["id"]),
-            service=str(data["service"]),
-            data=dict(data.get("data", {})),
+            sequence=list(
+                data.get(
+                    "sequence",
+                    [],
+                )
+            ),
         )

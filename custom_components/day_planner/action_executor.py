@@ -1,6 +1,7 @@
 """Execute Day Planner actions in Home Assistant."""
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.script import Script
 
 from .domain.action import Action
 from .domain.moment import Moment
@@ -23,17 +24,14 @@ class ActionExecutor:
     ) -> None:
         """Execute one action."""
 
-        domain, service = action.service.split(
-            ".",
-            1,
+        script = Script(
+            self._hass,
+            action.sequence,
+            f"Day Planner action: {action.id}",
+            "day_planner",
         )
 
-        await self._hass.services.async_call(
-            domain,
-            service,
-            action.data,
-            blocking=True,
-        )
+        await script.async_run()
 
     async def async_execute_moment(
         self,
@@ -42,4 +40,6 @@ class ActionExecutor:
         """Execute all actions attached to a moment."""
 
         for action in moment.actions:
-            await self.async_execute_action(action)
+            await self.async_execute_action(
+                action
+            )

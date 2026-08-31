@@ -292,8 +292,7 @@
         "title": "Add action",
         "data": {
           "id": "Identifier",
-          "service": "Service",
-          "data": "Data"
+          "sequence": "Home Assistant action"
         }
       },
       "edit_moment_action": {
@@ -305,8 +304,7 @@
       "edit_moment_action_details": {
         "title": "Edit action",
         "data": {
-          "service": "Service",
-          "data": "Data"
+          "sequence": "Home Assistant action"
         }
       },
       "remove_moment_action": {

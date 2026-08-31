@@ -2031,15 +2031,10 @@ class DayPlannerOptionsFlow(
         if user_input is not None:
             action = Action(
                 id=user_input["id"],
-                service=user_input["service"],
-                data=dict(
-                    user_input.get(
-                        "data",
-                        {},
-                    )
+                sequence=list(
+                    user_input["sequence"]
                 ),
             )
-
             updated_moment = Moment(
                 id=moment.id,
                 name=moment.name,
@@ -2073,11 +2068,9 @@ class DayPlannerOptionsFlow(
         schema = vol.Schema(
             {
                 vol.Required("id"): str,
-                vol.Required("service"): str,
-                vol.Optional(
-                    "data",
-                    default={},
-                ): selector.ObjectSelector(),
+                vol.Required(
+                    "sequence"
+                ): selector.ActionSelector(),
             }
         )
 
@@ -2104,7 +2097,7 @@ class DayPlannerOptionsFlow(
         options = [
             selector.SelectOptionDict(
                 value=action.id,
-                label=f"{action.id} — {action.service}",
+                label=action.id,
             )
             for action in moment.actions
         ]
@@ -2142,17 +2135,15 @@ class DayPlannerOptionsFlow(
         if user_input is not None:
             updated_action = Action(
                 id=action.id,
-                service=user_input["service"],
-                data=dict(
-                    user_input.get(
-                        "data",
-                        {},
-                    )
+                sequence=list(
+                    user_input["sequence"]
                 ),
             )
 
             actions = tuple(
-                updated_action if current.id == action.id else current
+                updated_action
+                if current.id == action.id
+                else current
                 for current in moment.actions
             )
 
@@ -2186,13 +2177,9 @@ class DayPlannerOptionsFlow(
         schema = vol.Schema(
             {
                 vol.Required(
-                    "service",
-                    default=action.service,
-                ): str,
-                vol.Optional(
-                    "data",
-                    default=action.data,
-                ): selector.ObjectSelector(),
+                    "sequence",
+                    default=action.sequence,
+                ): selector.ActionSelector(),
             }
         )
 
@@ -2219,7 +2206,7 @@ class DayPlannerOptionsFlow(
         options = [
             selector.SelectOptionDict(
                 value=action.id,
-                label=f"{action.id} — {action.service}",
+                label=action.id,
             )
             for action in moment.actions
         ]

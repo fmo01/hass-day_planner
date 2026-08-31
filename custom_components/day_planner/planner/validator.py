@@ -35,8 +35,6 @@ class PlannerValidator:
 
         PlannerValidator._validate_action_ids(configuration)
 
-        PlannerValidator._validate_action_ids(configuration)
-
     @staticmethod
     def _validate_unique_ids(
         configuration: PlannerConfiguration,
@@ -96,8 +94,10 @@ class PlannerValidator:
     ) -> None:
         """Validate one action."""
 
-        if not action.service.strip():
-            raise ValidationError("Action service cannot be empty")
+        if not action.sequence:
+            raise ValidationError(
+                "Action sequence cannot be empty"
+            )
 
     @staticmethod
     def _validate_day_types(

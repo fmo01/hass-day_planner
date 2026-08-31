@@ -29,9 +29,12 @@ add_moment:
       required: false
       example:
         - id: turn_on_test
-          service: input_boolean.turn_on
-          data:
-            entity_id: input_boolean.day_planner_test
+          sequence:
+            - action: light.turn_on
+              target:
+                entity_id: light.salon
+              data:
+                brightness_pct: 50
       selector:
         object:
 
@@ -66,9 +69,12 @@ update_moment:
       required: false
       example:
         - id: turn_on_test
-          service: input_boolean.turn_on
-          data:
-            entity_id: input_boolean.day_planner_test
+          sequence:
+            - action: light.turn_on
+              target:
+                entity_id: light.salon
+              data:
+                brightness_pct: 50
       selector:
         object:
 

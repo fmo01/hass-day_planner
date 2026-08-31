@@ -4,11 +4,7 @@ from homeassistant.helpers import config_validation as cv
 ACTION_SCHEMA = vol.Schema(
     {
         vol.Required("id"): cv.string,
-        vol.Required("service"): cv.string,
-        vol.Optional(
-            "data",
-            default={},
-        ): dict,
+        vol.Required("sequence"): list,
     }
 )
 
