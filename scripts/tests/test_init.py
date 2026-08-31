@@ -1,42 +1,34 @@
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from custom_components.day_planner import (
-    _async_migrate_entity_ids,
-    async_remove_entry,
-    async_setup_entry,
-    async_unload_entry,
-    )
+from custom_components.day_planner import (_async_migrate_entity_ids,
+                                           _async_options_updated,
+                                           async_remove_entry,
+                                           async_setup_entry,
+                                           async_unload_entry)
+from custom_components.day_planner.const import (
+                                                 CONF_MAX_CYCLES,
+                                                 DEFAULT_MAX_CYCLES, PLATFORMS,
+)
 from custom_components.day_planner.domain.planner_configuration import \
     PlannerConfiguration
-from custom_components.day_planner.const import (
-    CONF_DELETE_DATA_ON_REMOVE,
-    PLATFORMS,
-)
 
 
 def test_async_setup_entry_empty_configuration():
     async def run():
         hass = MagicMock()
         entry = MagicMock()
+        entry.options = {}
 
         hass.config_entries.async_forward_entry_setups = AsyncMock()
 
         configuration = PlannerConfiguration.empty()
 
         with (
-            patch(
-                "custom_components.day_planner.DayPlannerStorage"
-            ) as storage_class,
-            patch(
-                "custom_components.day_planner.PlannerEngine"
-            ) as engine_class,
-            patch(
-                "custom_components.day_planner.PlannerResolver"
-            ) as resolver_class,
-            patch(
-                "custom_components.day_planner.PlannerScheduler"
-            ) as scheduler_class,
+            patch("custom_components.day_planner.DayPlannerStorage") as storage_class,
+            patch("custom_components.day_planner.PlannerEngine") as engine_class,
+            patch("custom_components.day_planner.PlannerResolver") as resolver_class,
+            patch("custom_components.day_planner.PlannerScheduler") as scheduler_class,
             patch(
                 "custom_components.day_planner.ActionExecutor"
             ) as action_executor_class,
@@ -53,9 +45,7 @@ def test_async_setup_entry_empty_configuration():
             ) as migrate_entity_ids,
         ):
             storage = storage_class.return_value
-            storage.async_load = AsyncMock(
-                return_value=configuration
-            )
+            storage.async_load = AsyncMock(return_value=configuration)
             storage.async_save = AsyncMock()
 
             engine = engine_class.return_value
@@ -76,25 +66,18 @@ def test_async_setup_entry_empty_configuration():
             assert result is True
 
             storage.async_load.assert_awaited_once_with()
-            storage.async_save.assert_awaited_once_with(
-                configuration
-            )
+            storage.async_save.assert_awaited_once_with(configuration)
 
             engine_class.assert_called_once_with(
-                configuration
+                configuration,
+                max_cycles=DEFAULT_MAX_CYCLES,
             )
 
-            resolver_class.assert_called_once_with(
-                configuration
-            )
+            resolver_class.assert_called_once_with(configuration)
 
-            scheduler_class.assert_called_once_with(
-                resolver
-            )
+            scheduler_class.assert_called_once_with(resolver)
 
-            action_executor_class.assert_called_once_with(
-                hass
-            )
+            action_executor_class.assert_called_once_with(hass)
 
             ha_scheduler_class.assert_called_once_with(
                 hass=hass,
@@ -106,18 +89,10 @@ def test_async_setup_entry_empty_configuration():
             assert entry.runtime_data.engine is engine
             assert entry.runtime_data.resolver is resolver
             assert entry.runtime_data.scheduler is scheduler
-            assert (
-                entry.runtime_data.action_executor
-                is action_executor
-            )
-            assert (
-                entry.runtime_data.ha_scheduler
-                is ha_scheduler
-            )
+            assert entry.runtime_data.action_executor is action_executor
+            assert entry.runtime_data.ha_scheduler is ha_scheduler
 
-            setup_services.assert_awaited_once_with(
-                hass
-            )
+            setup_services.assert_awaited_once_with(hass)
 
             ha_scheduler.async_schedule_next.assert_awaited_once_with()
 
@@ -132,10 +107,12 @@ def test_async_setup_entry_empty_configuration():
 
     asyncio.run(run())
 
+
 def test_async_setup_entry_existing_configuration():
     async def run():
         hass = MagicMock()
         entry = MagicMock()
+        entry.options = {}
 
         hass.config_entries.async_forward_entry_setups = AsyncMock()
 
@@ -143,18 +120,10 @@ def test_async_setup_entry_existing_configuration():
         configuration.has_data.return_value = True
 
         with (
-            patch(
-                "custom_components.day_planner.DayPlannerStorage"
-            ) as storage_class,
-            patch(
-                "custom_components.day_planner.PlannerEngine"
-            ) as engine_class,
-            patch(
-                "custom_components.day_planner.PlannerResolver"
-            ) as resolver_class,
-            patch(
-                "custom_components.day_planner.PlannerScheduler"
-            ) as scheduler_class,
+            patch("custom_components.day_planner.DayPlannerStorage") as storage_class,
+            patch("custom_components.day_planner.PlannerEngine") as engine_class,
+            patch("custom_components.day_planner.PlannerResolver") as resolver_class,
+            patch("custom_components.day_planner.PlannerScheduler") as scheduler_class,
             patch(
                 "custom_components.day_planner.ActionExecutor"
             ) as action_executor_class,
@@ -167,9 +136,7 @@ def test_async_setup_entry_existing_configuration():
             ) as setup_services,
         ):
             storage = storage_class.return_value
-            storage.async_load = AsyncMock(
-                return_value=configuration
-            )
+            storage.async_load = AsyncMock(return_value=configuration)
             storage.async_save = AsyncMock()
 
             engine = engine_class.return_value
@@ -194,20 +161,15 @@ def test_async_setup_entry_existing_configuration():
             storage.async_save.assert_not_awaited()
 
             engine_class.assert_called_once_with(
-                configuration
+                configuration,
+                max_cycles=DEFAULT_MAX_CYCLES,
             )
 
-            resolver_class.assert_called_once_with(
-                configuration
-            )
+            resolver_class.assert_called_once_with(configuration)
 
-            scheduler_class.assert_called_once_with(
-                resolver
-            )
+            scheduler_class.assert_called_once_with(resolver)
 
-            action_executor_class.assert_called_once_with(
-                hass
-            )
+            action_executor_class.assert_called_once_with(hass)
 
             ha_scheduler_class.assert_called_once_with(
                 hass=hass,
@@ -215,9 +177,7 @@ def test_async_setup_entry_existing_configuration():
                 action_executor=action_executor,
             )
 
-            setup_services.assert_awaited_once_with(
-                hass
-            )
+            setup_services.assert_awaited_once_with(hass)
 
             ha_scheduler.async_schedule_next.assert_awaited_once_with()
 
@@ -234,9 +194,7 @@ def test_async_unload_entry():
         hass = MagicMock()
         entry = MagicMock()
 
-        hass.config_entries.async_unload_platforms = AsyncMock(
-            return_value=True
-        )
+        hass.config_entries.async_unload_platforms = AsyncMock(return_value=True)
 
         ha_scheduler = MagicMock()
         entry.runtime_data.ha_scheduler = ha_scheduler
@@ -256,6 +214,7 @@ def test_async_unload_entry():
         ha_scheduler.cancel.assert_called_once_with()
 
     asyncio.run(run())
+
 
 def test_async_remove_entry_delete_enabled():
     async def run():
@@ -302,14 +261,13 @@ def test_async_remove_entry_delete_disabled():
 
     asyncio.run(run())
 
+
 def test_async_unload_entry_failure():
     async def run():
         hass = MagicMock()
         entry = MagicMock()
 
-        hass.config_entries.async_unload_platforms = AsyncMock(
-            return_value=False
-        )
+        hass.config_entries.async_unload_platforms = AsyncMock(return_value=False)
 
         ha_scheduler = MagicMock()
         entry.runtime_data.ha_scheduler = ha_scheduler
@@ -330,6 +288,7 @@ def test_async_unload_entry_failure():
 
     asyncio.run(run())
 
+
 def test_migrate_entity_ids():
     async def run():
         hass = MagicMock()
@@ -343,20 +302,12 @@ def test_migrate_entity_ids():
         next_event.entity_id = "sensor.next_event"
 
         current_day_type = MagicMock()
-        current_day_type.unique_id = (
-            "day_planner_current_day_type"
-        )
-        current_day_type.entity_id = (
-            "sensor.current_day_type"
-        )
+        current_day_type.unique_id = "day_planner_current_day_type"
+        current_day_type.entity_id = "sensor.current_day_type"
 
         current_moment = MagicMock()
-        current_moment.unique_id = (
-            "day_planner_current_moment"
-        )
-        current_moment.entity_id = (
-            "sensor.current_moment"
-        )
+        current_moment.unique_id = "day_planner_current_moment"
+        current_moment.entity_id = "sensor.current_moment"
 
         calendar = MagicMock()
         calendar.unique_id = "day_planner_calendar"
@@ -375,8 +326,7 @@ def test_migrate_entity_ids():
                 return_value=registry,
             ),
             patch(
-                "custom_components.day_planner."
-                "er.async_entries_for_config_entry",
+                "custom_components.day_planner." "er.async_entries_for_config_entry",
                 return_value=entries,
             ) as entries_for_config_entry,
         ):
@@ -390,10 +340,7 @@ def test_migrate_entity_ids():
             "entry1",
         )
 
-        assert (
-            registry.async_update_entity.call_count
-            == 4
-        )
+        assert registry.async_update_entity.call_count == 4
 
         registry.async_update_entity.assert_any_call(
             "sensor.next_event",
@@ -402,26 +349,21 @@ def test_migrate_entity_ids():
 
         registry.async_update_entity.assert_any_call(
             "sensor.current_day_type",
-            new_entity_id=(
-                "sensor.day_planner_current_day_type"
-            ),
+            new_entity_id=("sensor.day_planner_current_day_type"),
         )
 
         registry.async_update_entity.assert_any_call(
             "sensor.current_moment",
-            new_entity_id=(
-                "sensor.day_planner_current_moment"
-            ),
+            new_entity_id=("sensor.day_planner_current_moment"),
         )
 
         registry.async_update_entity.assert_any_call(
             "calendar.planning",
-            new_entity_id=(
-                "calendar.day_planner_planning"
-            ),
+            new_entity_id=("calendar.day_planner_planning"),
         )
 
     asyncio.run(run())
+
 
 def test_migrate_entity_ids_already_migrated():
     async def run():
@@ -433,9 +375,7 @@ def test_migrate_entity_ids_already_migrated():
 
         entity = MagicMock()
         entity.unique_id = "day_planner_next_event"
-        entity.entity_id = (
-            "sensor.day_planner_next_event"
-        )
+        entity.entity_id = "sensor.day_planner_next_event"
 
         with (
             patch(
@@ -443,8 +383,7 @@ def test_migrate_entity_ids_already_migrated():
                 return_value=registry,
             ),
             patch(
-                "custom_components.day_planner."
-                "er.async_entries_for_config_entry",
+                "custom_components.day_planner." "er.async_entries_for_config_entry",
                 return_value=[entity],
             ),
         ):
@@ -480,4 +419,61 @@ def test_migrate_entity_ids_missing():
     asyncio.run(run())
 
 
+def test_async_setup_entry_custom_max_cycles():
+    async def run():
+        hass = MagicMock()
+        entry = MagicMock()
 
+        entry.options = {
+            CONF_MAX_CYCLES: 3,
+        }
+
+        hass.config_entries.async_forward_entry_setups = AsyncMock()
+
+        configuration = PlannerConfiguration.empty()
+
+        with (
+            patch("custom_components.day_planner.DayPlannerStorage") as storage_class,
+            patch("custom_components.day_planner.PlannerEngine") as engine_class,
+            patch(
+                "custom_components.day_planner.async_setup_services",
+                new=AsyncMock(),
+            ),
+        ):
+            storage = storage_class.return_value
+            storage.async_load = AsyncMock(return_value=configuration)
+            storage.async_save = AsyncMock()
+
+            engine = engine_class.return_value
+            engine.configuration = configuration
+
+            result = await async_setup_entry(
+                hass,
+                entry,
+            )
+
+            assert result is True
+
+            engine_class.assert_called_once_with(
+                configuration,
+                max_cycles=3,
+            )
+
+    asyncio.run(run())
+
+
+def test_async_options_updated():
+    async def run():
+        hass = MagicMock()
+        entry = MagicMock()
+
+        hass.config_entries.async_reload = AsyncMock()
+
+        await _async_options_updated(
+            hass,
+            entry,
+        )
+
+        hass.config_entries.async_reload.assert_awaited_once_with(entry.entry_id)
+
+    asyncio.run(run())

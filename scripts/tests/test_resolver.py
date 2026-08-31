@@ -1,28 +1,17 @@
 from datetime import date, time
 
-from custom_components.day_planner.domain.calendar_exception import (
-    CalendarException,
-)
+from custom_components.day_planner.domain.calendar_exception import \
+    CalendarException
 from custom_components.day_planner.domain.cycle import Cycle
 from custom_components.day_planner.domain.day_type import DayType
-from custom_components.day_planner.domain.planner_configuration import (
-    PlannerConfiguration,
-)
-from custom_components.day_planner.domain.week_schedule import (
-    WeekSchedule,
-)
-from custom_components.day_planner.planner.resolver import (
-    PlannerResolver,
-)
-from datetime import time
-
 from custom_components.day_planner.domain.moment import Moment
-from custom_components.day_planner.domain.scheduled_moment import (
-    ScheduledMoment,
-)
-from custom_components.day_planner.domain.time_definition import (
-    TimeDefinition,
-)
+from custom_components.day_planner.domain.planner_configuration import \
+    PlannerConfiguration
+from custom_components.day_planner.domain.scheduled_moment import \
+    ScheduledMoment
+from custom_components.day_planner.domain.time_definition import TimeDefinition
+from custom_components.day_planner.domain.week_schedule import WeekSchedule
+from custom_components.day_planner.planner.resolver import PlannerResolver
 
 
 def test_resolver_without_cycle():
@@ -30,9 +19,7 @@ def test_resolver_without_cycle():
 
     resolver = PlannerResolver(configuration)
 
-    assert resolver.resolve_day_type(
-        date(2026, 8, 31)
-    ) is None
+    assert resolver.resolve_day_type(date(2026, 8, 31)) is None
 
 
 def test_resolver_before_cycle_start_date():
@@ -71,9 +58,7 @@ def test_resolver_before_cycle_start_date():
 
     resolver = PlannerResolver(configuration)
 
-    assert resolver.resolve_day_type(
-        date(2026, 8, 30)
-    ) is None
+    assert resolver.resolve_day_type(date(2026, 8, 30)) is None
 
 
 def test_resolver_calendar_exception_has_priority():
@@ -125,9 +110,7 @@ def test_resolver_calendar_exception_has_priority():
 
     resolver = PlannerResolver(configuration)
 
-    assert resolver.resolve_day_type(
-        date(2026, 9, 1)
-    ) == holiday
+    assert resolver.resolve_day_type(date(2026, 9, 1)) == holiday
 
 
 def test_resolver_two_week_cycle():
@@ -190,25 +173,16 @@ def test_resolver_two_week_cycle():
 
     resolver = PlannerResolver(configuration)
 
-    assert resolver.resolve_day_type(
-        date(2026, 8, 31)
-    ) == week1_day
+    assert resolver.resolve_day_type(date(2026, 8, 31)) == week1_day
 
-    assert resolver.resolve_day_type(
-        date(2026, 9, 6)
-    ) == week1_day
+    assert resolver.resolve_day_type(date(2026, 9, 6)) == week1_day
 
-    assert resolver.resolve_day_type(
-        date(2026, 9, 7)
-    ) == week2_day
+    assert resolver.resolve_day_type(date(2026, 9, 7)) == week2_day
 
-    assert resolver.resolve_day_type(
-        date(2026, 9, 13)
-    ) == week2_day
+    assert resolver.resolve_day_type(date(2026, 9, 13)) == week2_day
 
-    assert resolver.resolve_day_type(
-        date(2026, 9, 14)
-    ) == week1_day
+    assert resolver.resolve_day_type(date(2026, 9, 14)) == week1_day
+
 
 def test_resolver_scheduled_moments():
     moment = Moment(
@@ -258,11 +232,8 @@ def test_resolver_scheduled_moments():
 
     resolver = PlannerResolver(configuration)
 
-    assert resolver.resolve_scheduled_moments(
-        date(2026, 8, 31)
-    ) == (
-        scheduled,
-    )
+    assert resolver.resolve_scheduled_moments(date(2026, 8, 31)) == (scheduled,)
+
 
 def test_resolver_resolve_moment():
     moment = Moment(
@@ -280,9 +251,7 @@ def test_resolver_resolve_moment():
 
     resolver = PlannerResolver(configuration)
 
-    assert resolver.resolve_moment(
-        "m1"
-    ) == moment
+    assert resolver.resolve_moment("m1") == moment
 
 
 def test_resolver_resolve_schedule():
@@ -351,9 +320,7 @@ def test_resolver_resolve_schedule():
 
     resolver = PlannerResolver(configuration)
 
-    assert resolver.resolve_schedule(
-        date(2026, 8, 31)
-    ) == (
+    assert resolver.resolve_schedule(date(2026, 8, 31)) == (
         (
             scheduled1,
             moment1,
@@ -368,20 +335,15 @@ def test_resolver_resolve_schedule():
 def test_resolver_resolve_scheduled_moments_without_day_type():
     configuration = PlannerConfiguration.empty()
 
-    resolver = PlannerResolver(
-        configuration
-    )
+    resolver = PlannerResolver(configuration)
 
-    result = resolver.resolve_scheduled_moments(
-        date(2026, 8, 31)
-    )
+    result = resolver.resolve_scheduled_moments(date(2026, 8, 31))
 
     assert result == ()
 
+
 def test_resolver_update_configuration():
-    resolver = PlannerResolver(
-        PlannerConfiguration.empty()
-    )
+    resolver = PlannerResolver(PlannerConfiguration.empty())
 
     moment = Moment(
         id="m1",
@@ -396,28 +358,24 @@ def test_resolver_update_configuration():
         calendar_exceptions=(),
     )
 
-    resolver.update_configuration(
-        configuration
-    )
+    resolver.update_configuration(configuration)
 
     assert resolver.resolve_moment("m1") == moment
 
+
 def test_resolver_day_context_without_cycle():
-    resolver = PlannerResolver(
-        PlannerConfiguration.empty()
-    )
+    resolver = PlannerResolver(PlannerConfiguration.empty())
 
     target_date = date(2026, 8, 31)
 
-    context = resolver.resolve_day_context(
-        target_date
-    )
+    context = resolver.resolve_day_context(target_date)
 
     assert context.date == target_date
     assert context.day_type is None
     assert context.cycle_id is None
     assert context.week_schedule_id is None
     assert context.calendar_exception_id is None
+
 
 def test_resolver_day_context_before_cycle_start():
     day_type = DayType(
@@ -455,14 +413,13 @@ def test_resolver_day_context_before_cycle_start():
         )
     )
 
-    context = resolver.resolve_day_context(
-        date(2026, 8, 30)
-    )
+    context = resolver.resolve_day_context(date(2026, 8, 30))
 
     assert context.day_type is None
     assert context.cycle_id == "c1"
     assert context.week_schedule_id is None
     assert context.calendar_exception_id is None
+
 
 def test_resolver_day_context_cycle():
     day_type = DayType(
@@ -502,15 +459,14 @@ def test_resolver_day_context_cycle():
 
     target_date = date(2026, 9, 1)
 
-    context = resolver.resolve_day_context(
-        target_date
-    )
+    context = resolver.resolve_day_context(target_date)
 
     assert context.date == target_date
     assert context.day_type == day_type
     assert context.cycle_id == "c1"
     assert context.week_schedule_id == "ws1"
     assert context.calendar_exception_id is None
+
 
 def test_resolver_day_context_calendar_exception():
     normal = DayType(
@@ -560,19 +516,13 @@ def test_resolver_day_context_calendar_exception():
             ),
             week_schedules=(week_schedule,),
             cycles=(cycle,),
-            calendar_exceptions=(
-                calendar_exception,
-            ),
+            calendar_exceptions=(calendar_exception,),
         )
     )
 
-    context = resolver.resolve_day_context(
-        date(2026, 9, 1)
-    )
+    context = resolver.resolve_day_context(date(2026, 9, 1))
 
     assert context.day_type == holiday
     assert context.cycle_id is None
     assert context.week_schedule_id is None
     assert context.calendar_exception_id == "ce1"
-
-

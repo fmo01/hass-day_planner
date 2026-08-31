@@ -5,17 +5,11 @@ from unittest.mock import MagicMock, patch
 from homeassistant.components.calendar import CalendarEvent
 from homeassistant.util import dt as dt_util
 
-from custom_components.day_planner.calendar import (
-    DayPlannerCalendar,
-    async_setup_entry,
-)
-from custom_components.day_planner.const import (
-    SIGNAL_PLANNER_UPDATED,
-)
+from custom_components.day_planner.calendar import (DayPlannerCalendar,
+                                                    async_setup_entry)
+from custom_components.day_planner.const import SIGNAL_PLANNER_UPDATED
 from custom_components.day_planner.domain.moment import Moment
-from custom_components.day_planner.domain.scheduled_event import (
-    ScheduledEvent,
-)
+from custom_components.day_planner.domain.scheduled_event import ScheduledEvent
 
 
 def test_calendar_setup_entry():
@@ -67,9 +61,7 @@ def test_calendar_event():
 
     runtime.scheduler.current_event.return_value = None
 
-    runtime.scheduler.next_event.return_value = (
-        scheduled_event
-    )
+    runtime.scheduler.next_event.return_value = scheduled_event
 
     calendar = DayPlannerCalendar(runtime)
 
@@ -136,9 +128,7 @@ def test_calendar_dispatcher_update():
         "custom_components.day_planner.calendar.async_dispatcher_connect",
         return_value=remove_listener,
     ) as dispatcher_connect:
-        asyncio.run(
-            calendar.async_added_to_hass()
-        )
+        asyncio.run(calendar.async_added_to_hass())
 
     dispatcher_connect.assert_called_once_with(
         hass,
@@ -146,14 +136,13 @@ def test_calendar_dispatcher_update():
         calendar._handle_planner_updated,
     )
 
-    calendar.async_on_remove.assert_called_once_with(
-        remove_listener
-    )
+    calendar.async_on_remove.assert_called_once_with(remove_listener)
 
     calendar._handle_planner_updated()
 
     calendar.async_write_ha_state.assert_called_once_with()
     calendar.async_update_event_listeners.assert_called_once_with()
+
 
 def test_calendar_get_events():
     runtime = MagicMock()
@@ -171,15 +160,11 @@ def test_calendar_get_events():
     runtime.scheduler.events_for_date.side_effect = [
         (
             ScheduledEvent(
-                scheduled_at=datetime(
-                    2026, 8, 31, 7, 30
-                ),
+                scheduled_at=datetime(2026, 8, 31, 7, 30),
                 moment=moment1,
             ),
             ScheduledEvent(
-                scheduled_at=datetime(
-                    2026, 8, 31, 8, 15
-                ),
+                scheduled_at=datetime(2026, 8, 31, 8, 15),
                 moment=moment2,
             ),
         ),
@@ -189,12 +174,20 @@ def test_calendar_get_events():
     calendar = DayPlannerCalendar(runtime)
 
     start = datetime(
-        2026, 8, 31, 0, 0,
+        2026,
+        8,
+        31,
+        0,
+        0,
         tzinfo=dt_util.DEFAULT_TIME_ZONE,
     )
 
     end = datetime(
-        2026, 9, 1, 0, 0,
+        2026,
+        9,
+        1,
+        0,
+        0,
         tzinfo=dt_util.DEFAULT_TIME_ZONE,
     )
 
@@ -227,9 +220,7 @@ def test_calendar_get_events_filters_range():
 
     runtime.scheduler.events_for_date.return_value = (
         ScheduledEvent(
-            scheduled_at=datetime(
-                2026, 8, 31, 7, 30
-            ),
+            scheduled_at=datetime(2026, 8, 31, 7, 30),
             moment=moment,
         ),
     )
@@ -237,12 +228,20 @@ def test_calendar_get_events_filters_range():
     calendar = DayPlannerCalendar(runtime)
 
     start = datetime(
-        2026, 8, 31, 8, 0,
+        2026,
+        8,
+        31,
+        8,
+        0,
         tzinfo=dt_util.DEFAULT_TIME_ZONE,
     )
 
     end = datetime(
-        2026, 8, 31, 12, 0,
+        2026,
+        8,
+        31,
+        12,
+        0,
         tzinfo=dt_util.DEFAULT_TIME_ZONE,
     )
 
@@ -255,6 +254,7 @@ def test_calendar_get_events_filters_range():
     )
 
     assert events == []
+
 
 def test_calendar_event_prefers_current_event():
     runtime = MagicMock()
@@ -291,16 +291,10 @@ def test_calendar_event_prefers_current_event():
         moment=next_moment,
     )
 
-    runtime.scheduler.current_event.return_value = (
-        current_event
-    )
-    runtime.scheduler.next_event.return_value = (
-        next_event
-    )
+    runtime.scheduler.current_event.return_value = current_event
+    runtime.scheduler.next_event.return_value = next_event
 
-    calendar = DayPlannerCalendar(
-        runtime
-    )
+    calendar = DayPlannerCalendar(runtime)
 
     with patch(
         "custom_components.day_planner.calendar.dt_util.now",
@@ -321,16 +315,14 @@ def test_calendar_event_prefers_current_event():
     runtime.scheduler.current_event.assert_called_once()
     runtime.scheduler.next_event.assert_not_called()
 
+
 def test_calendar_extra_state_attributes():
     runtime = MagicMock()
 
-    calendar = DayPlannerCalendar(
-        runtime
-    )
+    calendar = DayPlannerCalendar(runtime)
 
     assert calendar.extra_state_attributes == {
         "integration": "Day Planner",
         "integration_version": "0.0.4",
         "release_url": "https://github.com/fmo01/hass-day_planner/releases",
     }
-

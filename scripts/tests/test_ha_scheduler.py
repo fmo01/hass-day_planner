@@ -1,11 +1,10 @@
 import asyncio
 from datetime import datetime, timedelta, timezone
-
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from custom_components.day_planner.ha_scheduler import (
-    HomeAssistantScheduler,
-)
+from custom_components.day_planner.domain.moment import Moment
+from custom_components.day_planner.domain.scheduled_event import ScheduledEvent
+from custom_components.day_planner.ha_scheduler import HomeAssistantScheduler
 
 
 def test_ha_scheduler_no_event():
@@ -23,27 +22,14 @@ def test_ha_scheduler_no_event():
         action_executor=action_executor,
     )
 
-    with patch(
-        "custom_components.day_planner.ha_scheduler.dt_util.now"
-    ) as now:
+    with patch("custom_components.day_planner.ha_scheduler.dt_util.now") as now:
         now.return_value = MagicMock()
 
-        asyncio.run(
-            ha_scheduler.async_schedule_next()
-        )
+        asyncio.run(ha_scheduler.async_schedule_next())
 
-    scheduler.next_event.assert_called_once_with(
-        now.return_value
-    )
+    scheduler.next_event.assert_called_once_with(now.return_value)
 
     action_executor.async_execute_moment.assert_not_awaited()
-
-from datetime import datetime
-
-from custom_components.day_planner.domain.moment import Moment
-from custom_components.day_planner.domain.scheduled_event import (
-    ScheduledEvent,
-)
 
 
 def test_ha_scheduler_schedules_event():
@@ -80,12 +66,9 @@ def test_ha_scheduler_schedules_event():
     )
 
     with (
+        patch("custom_components.day_planner.ha_scheduler.dt_util.now") as now,
         patch(
-            "custom_components.day_planner.ha_scheduler.dt_util.now"
-        ) as now,
-        patch(
-            "custom_components.day_planner.ha_scheduler."
-            "async_track_point_in_time",
+            "custom_components.day_planner.ha_scheduler." "async_track_point_in_time",
             return_value=cancel,
         ) as track,
     ):
@@ -98,13 +81,9 @@ def test_ha_scheduler_schedules_event():
         )
         now.return_value = current
 
-        asyncio.run(
-            ha_scheduler.async_schedule_next()
-        )
+        asyncio.run(ha_scheduler.async_schedule_next())
 
-    scheduler.next_event.assert_called_once_with(
-        current
-    )
+    scheduler.next_event.assert_called_once_with(current)
 
     track.assert_called_once()
 
@@ -113,6 +92,7 @@ def test_ha_scheduler_schedules_event():
     assert track.call_args.args[2] == event.scheduled_at
 
     assert ha_scheduler._cancel is cancel
+
 
 def test_ha_scheduler_executes_event_and_reschedules():
     hass = MagicMock()
@@ -150,8 +130,7 @@ def test_ha_scheduler_executes_event_and_reschedules():
     async def run():
         with (
             patch(
-                "custom_components.day_planner.ha_scheduler."
-                "dt_util.now",
+                "custom_components.day_planner.ha_scheduler." "dt_util.now",
                 return_value=datetime(
                     2026,
                     8,
@@ -186,13 +165,12 @@ def test_ha_scheduler_executes_event_and_reschedules():
 
     asyncio.run(run())
 
-    action_executor.async_execute_moment.assert_awaited_once_with(
-        moment
-    )
+    action_executor.async_execute_moment.assert_awaited_once_with(moment)
 
     ha_scheduler.async_schedule_next.assert_awaited_once_with()
 
     assert ha_scheduler._cancel is None
+
 
 def test_ha_scheduler_cancel():
     hass = MagicMock()
@@ -259,8 +237,7 @@ def test_ha_scheduler_reschedule_cancels_previous():
     async def run():
         with (
             patch(
-                "custom_components.day_planner.ha_scheduler."
-                "dt_util.now",
+                "custom_components.day_planner.ha_scheduler." "dt_util.now",
                 return_value=datetime(
                     2026,
                     8,
@@ -282,6 +259,7 @@ def test_ha_scheduler_reschedule_cancels_previous():
     old_cancel.assert_called_once_with()
 
     assert ha_scheduler._cancel is new_cancel
+
 
 def test_ha_scheduler_converts_naive_event_to_timezone():
     hass = MagicMock()
@@ -316,9 +294,7 @@ def test_ha_scheduler_converts_naive_event_to_timezone():
         action_executor=action_executor,
     )
 
-    local_tz = timezone(
-        timedelta(hours=2)
-    )
+    local_tz = timezone(timedelta(hours=2))
 
     now = datetime(
         2026,
@@ -335,14 +311,11 @@ def test_ha_scheduler_converts_naive_event_to_timezone():
             return_value=now,
         ),
         patch(
-            "custom_components.day_planner.ha_scheduler."
-            "async_track_point_in_time",
+            "custom_components.day_planner.ha_scheduler." "async_track_point_in_time",
             return_value=cancel,
         ) as track,
     ):
-        asyncio.run(
-            ha_scheduler.async_schedule_next()
-        )
+        asyncio.run(ha_scheduler.async_schedule_next())
 
     scheduled_at = track.call_args.args[2]
 

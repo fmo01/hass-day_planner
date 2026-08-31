@@ -2,24 +2,23 @@ from datetime import date, time
 
 import pytest
 
-from custom_components.day_planner.domain.calendar_exception import (
-     CalendarException,
-)
+from custom_components.day_planner.const import DEFAULT_MAX_CYCLES
+from custom_components.day_planner.domain.action import Action
+from custom_components.day_planner.domain.calendar_exception import \
+    CalendarException
 from custom_components.day_planner.domain.cycle import Cycle
 from custom_components.day_planner.domain.day_type import DayType
 from custom_components.day_planner.domain.moment import Moment
-from custom_components.day_planner.domain.planner_configuration import (
-    PlannerConfiguration,
-)
-from custom_components.day_planner.domain.scheduled_moment import (
-    ScheduledMoment,
-)
+from custom_components.day_planner.domain.planner_configuration import \
+    PlannerConfiguration
+from custom_components.day_planner.domain.scheduled_moment import \
+    ScheduledMoment
 from custom_components.day_planner.domain.time_definition import TimeDefinition
 from custom_components.day_planner.domain.week_schedule import WeekSchedule
 from custom_components.day_planner.planner.engine import PlannerEngine
 from custom_components.day_planner.planner.errors import (NotFoundError,
                                                           ValidationError)
-from custom_components.day_planner.domain.action import Action
+
 
 def test_engine_get_moment(moment):
     engine = PlannerEngine(
@@ -78,6 +77,7 @@ def test_engine_update_moment(
 
 def test_engine_add_moment_with_action():
     action = Action(
+        id="salon_on",
         service="light.turn_on",
         data={
             "entity_id": "light.salon",
@@ -91,16 +91,12 @@ def test_engine_add_moment_with_action():
         actions=(action,),
     )
 
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     engine.add_moment(moment)
 
     assert engine.get_moment("m1") == moment
-    assert engine.get_moment("m1").actions == (
-        action,
-    )
+    assert engine.get_moment("m1").actions == (action,)
 
 
 def test_engine_rejects_moment_with_invalid_action():
@@ -109,15 +105,14 @@ def test_engine_rejects_moment_with_invalid_action():
         name="Réveil",
         actions=(
             Action(
+                id="action_1",
                 service="",
                 data={},
             ),
         ),
     )
 
-    engine = PlannerEngine(
-        PlannerConfiguration.empty()
-    )
+    engine = PlannerEngine(PlannerConfiguration.empty())
 
     with pytest.raises(
         ValidationError,
@@ -446,6 +441,100 @@ def test_engine_remove_week_schedule_not_found():
         match="Week schedule not found: unknown",
     ):
         engine.remove_week_schedule("unknown")
+
+
+def test_engine_default_max_cycles():
+    engine = PlannerEngine(PlannerConfiguration.empty())
+
+    assert engine.max_cycles == DEFAULT_MAX_CYCLES
+
+
+def test_engine_custom_max_cycles(
+    week_schedule,
+):
+    engine = PlannerEngine(
+        PlannerConfiguration(
+            moments=(),
+            day_types=(),
+            week_schedules=(week_schedule,),
+            cycles=(),
+            calendar_exceptions=(),
+        ),
+        max_cycles=2,
+    )
+
+    cycle_1 = Cycle(
+        id="c1",
+        name="Cycle 1",
+        start_date=date(2026, 8, 31),
+        week_schedule_ids=(week_schedule.id,),
+    )
+
+    cycle_2 = Cycle(
+        id="c2",
+        name="Cycle 2",
+        start_date=date(2026, 9, 7),
+        week_schedule_ids=(week_schedule.id,),
+    )
+
+    engine.add_cycle(cycle_1)
+    engine.add_cycle(cycle_2)
+
+    assert engine.max_cycles == 2
+    assert engine.configuration.cycles == (
+        cycle_1,
+        cycle_2,
+    )
+
+
+def test_engine_max_cycles_exceeded(
+    week_schedule,
+):
+    engine = PlannerEngine(
+        PlannerConfiguration(
+            moments=(),
+            day_types=(),
+            week_schedules=(week_schedule,),
+            cycles=(),
+            calendar_exceptions=(),
+        ),
+        max_cycles=2,
+    )
+
+    cycle_1 = Cycle(
+        id="c1",
+        name="Cycle 1",
+        start_date=date(2026, 8, 31),
+        week_schedule_ids=(week_schedule.id,),
+    )
+
+    cycle_2 = Cycle(
+        id="c2",
+        name="Cycle 2",
+        start_date=date(2026, 9, 7),
+        week_schedule_ids=(week_schedule.id,),
+    )
+
+    cycle_3 = Cycle(
+        id="c3",
+        name="Cycle 3",
+        start_date=date(2026, 9, 14),
+        week_schedule_ids=(week_schedule.id,),
+    )
+
+    engine.add_cycle(cycle_1)
+    engine.add_cycle(cycle_2)
+
+    with pytest.raises(
+        ValidationError,
+        match="Maximum number of cycles exceeded: 2",
+    ):
+        engine.add_cycle(cycle_3)
+
+    assert engine.configuration.cycles == (
+        cycle_1,
+        cycle_2,
+    )
 
 
 def test_engine_get_cycle(cycle, week_schedule):
@@ -796,6 +885,7 @@ def test_engine_add_scheduled_moment_day_type_not_found(
             scheduled_moment,
         )
 
+
 def test_engine_update_scheduled_moment(
     moment,
 ):
@@ -853,15 +943,12 @@ def test_engine_update_scheduled_moment(
         updated,
     )
 
-    result = engine.get_day_type(
-        day_type.id
-    )
+    result = engine.get_day_type(day_type.id)
 
     assert result.scheduled_moments == (
         updated,
         other,
     )
-
 
 
 def test_engine_update_scheduled_moment_not_found(
@@ -931,9 +1018,7 @@ def test_engine_remove_scheduled_moment(
         moment.id,
     )
 
-    result = engine.get_day_type(
-        day_type.id
-    )
+    result = engine.get_day_type(day_type.id)
 
     assert result.scheduled_moments == ()
 
@@ -965,5 +1050,3 @@ def test_engine_remove_scheduled_moment_not_found(
             day_type.id,
             moment.id,
         )
-
-

@@ -7,34 +7,20 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.day_planner.const import (
-    DOMAIN,
-    SIGNAL_PLANNER_UPDATED,
-    SERVICE_ADD_CALENDAR_EXCEPTION,
-    SERVICE_ADD_CYCLE,
-    SERVICE_ADD_DAY_TYPE,
-    SERVICE_ADD_SCHEDULED_MOMENT,
-    SERVICE_UPDATE_SCHEDULED_MOMENT,
-    SERVICE_REMOVE_SCHEDULED_MOMENT,
-    SERVICE_UPDATE_SCHEDULED_MOMENT,
-    SERVICE_REMOVE_SCHEDULED_MOMENT,
-    SERVICE_ADD_MOMENT,
-    SERVICE_ADD_WEEK_SCHEDULE,
-    SERVICE_REMOVE_CALENDAR_EXCEPTION,
-    SERVICE_REMOVE_CYCLE,
-    SERVICE_REMOVE_DAY_TYPE,
-    SERVICE_REMOVE_MOMENT,
-    SERVICE_REMOVE_WEEK_SCHEDULE,
-    SERVICE_UPDATE_CALENDAR_EXCEPTION,
-    SERVICE_UPDATE_CYCLE,
-    SERVICE_UPDATE_DAY_TYPE,
-    SERVICE_UPDATE_MOMENT,
-    SERVICE_UPDATE_WEEK_SCHEDULE,
-)
+    DOMAIN, SERVICE_ADD_CALENDAR_EXCEPTION, SERVICE_ADD_CYCLE,
+    SERVICE_ADD_DAY_TYPE, SERVICE_ADD_MOMENT, SERVICE_ADD_SCHEDULED_MOMENT,
+    SERVICE_ADD_WEEK_SCHEDULE, SERVICE_REMOVE_CALENDAR_EXCEPTION,
+    SERVICE_REMOVE_CYCLE, SERVICE_REMOVE_DAY_TYPE, SERVICE_REMOVE_MOMENT,
+    SERVICE_REMOVE_SCHEDULED_MOMENT, SERVICE_REMOVE_WEEK_SCHEDULE,
+    SERVICE_UPDATE_CALENDAR_EXCEPTION, SERVICE_UPDATE_CYCLE,
+    SERVICE_UPDATE_DAY_TYPE, SERVICE_UPDATE_MOMENT,
+    SERVICE_UPDATE_SCHEDULED_MOMENT, SERVICE_UPDATE_WEEK_SCHEDULE,
+    SIGNAL_PLANNER_UPDATED)
+from custom_components.day_planner.domain.action import Action
+from custom_components.day_planner.domain.moment import Moment
 from custom_components.day_planner.planner.errors import PlannerError
 from custom_components.day_planner.services import (_execute, _get_runtime,
                                                     async_setup_services)
-from custom_components.day_planner.domain.action import Action
-from custom_components.day_planner.domain.moment import Moment
 
 
 class FakeStorage:
@@ -94,6 +80,7 @@ def get_registered_service(
         if call.args[1] == service_name
     )
 
+
 def test_execute_success():
     runtime = FakeRuntime()
     executed = False
@@ -116,16 +103,10 @@ def test_execute_success():
     assert executed is True
 
     assert runtime.storage.save_count == 1
-    assert (
-        runtime.storage.saved_configuration
-        is runtime.engine.configuration
-    )
+    assert runtime.storage.saved_configuration is runtime.engine.configuration
 
     assert runtime.resolver.update_count == 1
-    assert (
-        runtime.resolver.configuration
-        is runtime.engine.configuration
-    )
+    assert runtime.resolver.configuration is runtime.engine.configuration
 
     assert runtime.ha_scheduler.schedule_count == 1
 
@@ -133,6 +114,7 @@ def test_execute_success():
         runtime.hass,
         SIGNAL_PLANNER_UPDATED,
     )
+
 
 def test_execute_planner_error():
     runtime = FakeRuntime()
@@ -216,6 +198,7 @@ def test_service_add_moment():
                 "icon": "mdi:home",
                 "actions": [
                     {
+                        "id": "salon_on",
                         "service": "light.turn_on",
                         "data": {
                             "entity_id": "light.salon",
@@ -237,6 +220,7 @@ def test_service_add_moment():
     assert moment.icon == "mdi:home"
     assert moment.actions == (
         Action(
+            id="salon_on",
             service="light.turn_on",
             data={
                 "entity_id": "light.salon",
@@ -258,6 +242,7 @@ def test_service_update_moment():
     runtime.engine.update_moment = MagicMock()
 
     existing_action = Action(
+        id="salon_on",
         service="light.turn_on",
         data={
             "entity_id": "light.salon",
@@ -311,14 +296,9 @@ def test_service_update_moment():
     assert moment.id == "m1"
     assert moment.name == "Moment modifié"
     assert moment.icon == "mdi:home"
-    assert moment.actions == (
-        existing_action,
-    )
+    assert moment.actions == (existing_action,)
 
-    runtime.engine.get_moment.assert_called_once_with(
-        "m1"
-    )
-
+    runtime.engine.get_moment.assert_called_once_with("m1")
 
     runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
 
@@ -332,6 +312,7 @@ def test_service_update_moment_clear_actions():
     runtime = MagicMock()
 
     existing_action = Action(
+        id="salon_on",
         service="light.turn_on",
         data={
             "entity_id": "light.salon",
@@ -355,9 +336,7 @@ def test_service_update_moment_clear_actions():
     entry = MagicMock()
     entry.runtime_data = runtime
 
-    hass.config_entries.async_entries.return_value = [
-        entry
-    ]
+    hass.config_entries.async_entries.return_value = [entry]
 
     async def run():
         await async_setup_services(hass)
@@ -383,17 +362,13 @@ def test_service_update_moment_clear_actions():
 
     asyncio.run(run())
 
-    moment = (
-        runtime.engine.update_moment
-        .call_args.args[0]
-    )
+    moment = runtime.engine.update_moment.call_args.args[0]
 
     assert moment.id == "m1"
     assert moment.actions == ()
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_remove_moment():
     hass = MagicMock(spec=HomeAssistant)
@@ -1055,6 +1030,7 @@ def test_get_runtime_not_configured():
     ):
         _get_runtime(hass)
 
+
 def test_execute_storage_error():
     runtime = FakeRuntime()
 
@@ -1081,6 +1057,7 @@ def test_execute_storage_error():
     assert runtime.resolver.update_count == 0
     assert runtime.ha_scheduler.schedule_count == 0
 
+
 def test_service_add_scheduled_moment():
     hass = MagicMock(spec=HomeAssistant)
 
@@ -1097,9 +1074,7 @@ def test_service_add_scheduled_moment():
     entry = MagicMock()
     entry.runtime_data = runtime
 
-    hass.config_entries.async_entries.return_value = [
-        entry
-    ]
+    hass.config_entries.async_entries.return_value = [entry]
 
     async def run():
         await async_setup_services(hass)
@@ -1139,9 +1114,8 @@ def test_service_add_scheduled_moment():
         0,
     )
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_update_scheduled_moment():
     hass = MagicMock(spec=HomeAssistant)
@@ -1159,9 +1133,7 @@ def test_service_update_scheduled_moment():
     entry = MagicMock()
     entry.runtime_data = runtime
 
-    hass.config_entries.async_entries.return_value = [
-        entry
-    ]
+    hass.config_entries.async_entries.return_value = [entry]
 
     async def run():
         await async_setup_services(hass)
@@ -1186,24 +1158,17 @@ def test_service_update_scheduled_moment():
 
     asyncio.run(run())
 
-    args = (
-        runtime.engine.update_scheduled_moment
-        .call_args.args
-    )
+    args = runtime.engine.update_scheduled_moment.call_args.args
 
     assert args[0] == "test_day"
 
     scheduled_moment = args[1]
 
     assert scheduled_moment.moment_id == "test"
-    assert (
-        scheduled_moment.time_definition.fixed_time
-        == time(18, 30)
-    )
+    assert scheduled_moment.time_definition.fixed_time == time(18, 30)
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+
 
 def test_service_remove_scheduled_moment():
     hass = MagicMock(spec=HomeAssistant)
@@ -1221,9 +1186,7 @@ def test_service_remove_scheduled_moment():
     entry = MagicMock()
     entry.runtime_data = runtime
 
-    hass.config_entries.async_entries.return_value = [
-        entry
-    ]
+    hass.config_entries.async_entries.return_value = [entry]
 
     async def run():
         await async_setup_services(hass)
@@ -1252,120 +1215,4 @@ def test_service_remove_scheduled_moment():
         "test",
     )
 
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
-
-def test_service_update_scheduled_moment():
-    hass = MagicMock(spec=HomeAssistant)
-
-    hass.services = MagicMock()
-    hass.services.async_register = MagicMock()
-
-    runtime = MagicMock()
-    runtime.engine.update_scheduled_moment = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
-
-    entry = MagicMock()
-    entry.runtime_data = runtime
-
-    hass.config_entries.async_entries.return_value = [
-        entry
-    ]
-
-    async def run():
-        await async_setup_services(hass)
-
-        service = get_registered_service(
-            hass,
-            SERVICE_UPDATE_SCHEDULED_MOMENT,
-        )
-
-        call = ServiceCall(
-            hass=hass,
-            domain=DOMAIN,
-            service=SERVICE_UPDATE_SCHEDULED_MOMENT,
-            data={
-                "day_type_id": "test_day",
-                "moment_id": "test",
-                "time": "18:30:00",
-            },
-        )
-
-        await service(call)
-
-    asyncio.run(run())
-
-    args = (
-        runtime.engine.update_scheduled_moment
-        .call_args.args
-    )
-
-    assert args[0] == "test_day"
-
-    scheduled_moment = args[1]
-
-    assert scheduled_moment.moment_id == "test"
-    assert (
-        scheduled_moment.time_definition.fixed_time
-        == time(18, 30)
-    )
-
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
-
-def test_service_remove_scheduled_moment():
-    hass = MagicMock(spec=HomeAssistant)
-
-    hass.services = MagicMock()
-    hass.services.async_register = MagicMock()
-
-    runtime = MagicMock()
-    runtime.engine.remove_scheduled_moment = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
-
-    entry = MagicMock()
-    entry.runtime_data = runtime
-
-    hass.config_entries.async_entries.return_value = [
-        entry
-    ]
-
-    async def run():
-        await async_setup_services(hass)
-
-        service = get_registered_service(
-            hass,
-            SERVICE_REMOVE_SCHEDULED_MOMENT,
-        )
-
-        call = ServiceCall(
-            hass=hass,
-            domain=DOMAIN,
-            service=SERVICE_REMOVE_SCHEDULED_MOMENT,
-            data={
-                "day_type_id": "test_day",
-                "moment_id": "test",
-            },
-        )
-
-        await service(call)
-
-    asyncio.run(run())
-
-    runtime.engine.remove_scheduled_moment.assert_called_once_with(
-        "test_day",
-        "test",
-    )
-
-    runtime.storage.async_save.assert_awaited_once_with(
-        runtime.engine.configuration
-    )
-
+    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)

@@ -3,9 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, call
 
 from homeassistant.core import HomeAssistant
 
-from custom_components.day_planner.action_executor import (
-    ActionExecutor,
-)
+from custom_components.day_planner.action_executor import ActionExecutor
 from custom_components.day_planner.domain.action import Action
 from custom_components.day_planner.domain.moment import Moment
 
@@ -18,6 +16,7 @@ def test_execute_action():
     executor = ActionExecutor(hass)
 
     action = Action(
+        id="salon_on",
         service="light.turn_on",
         data={
             "entity_id": "light.salon",
@@ -25,9 +24,7 @@ def test_execute_action():
         },
     )
 
-    asyncio.run(
-        executor.async_execute_action(action)
-    )
+    asyncio.run(executor.async_execute_action(action))
 
     hass.services.async_call.assert_awaited_once_with(
         "light",
@@ -52,12 +49,14 @@ def test_execute_moment_actions():
         name="Réveil",
         actions=(
             Action(
+                id="salon_on",
                 service="light.turn_on",
                 data={
                     "entity_id": "light.salon",
                 },
             ),
             Action(
+                id="salon_off",
                 service="switch.turn_off",
                 data={
                     "entity_id": "switch.chauffage",
@@ -66,9 +65,7 @@ def test_execute_moment_actions():
         ),
     )
 
-    asyncio.run(
-        executor.async_execute_moment(moment)
-    )
+    asyncio.run(executor.async_execute_moment(moment))
 
     assert hass.services.async_call.await_count == 2
 
@@ -107,8 +104,6 @@ def test_execute_moment_without_actions():
         actions=(),
     )
 
-    asyncio.run(
-        executor.async_execute_moment(moment)
-    )
+    asyncio.run(executor.async_execute_moment(moment))
 
     hass.services.async_call.assert_not_awaited()

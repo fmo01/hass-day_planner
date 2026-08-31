@@ -2,10 +2,13 @@ from datetime import date, time
 
 import pytest
 
+from custom_components.day_planner.const import DEFAULT_MAX_CYCLES
+from custom_components.day_planner.domain.action import Action
 from custom_components.day_planner.domain.calendar_exception import \
     CalendarException
 from custom_components.day_planner.domain.cycle import Cycle
 from custom_components.day_planner.domain.day_type import DayType
+from custom_components.day_planner.domain.moment import Moment
 from custom_components.day_planner.domain.planner_configuration import \
     PlannerConfiguration
 from custom_components.day_planner.domain.scheduled_moment import \
@@ -14,8 +17,6 @@ from custom_components.day_planner.domain.time_definition import TimeDefinition
 from custom_components.day_planner.domain.week_schedule import WeekSchedule
 from custom_components.day_planner.planner.validator import (PlannerValidator,
                                                              ValidationError)
-from custom_components.day_planner.domain.action import Action
-from custom_components.day_planner.domain.moment import Moment
 
 
 def test_validator_accepts_valid_configuration(
@@ -335,12 +336,14 @@ def test_validator_rejects_unknown_day_type_in_calendar_exception():
     ):
         PlannerValidator.validate_configuration(configuration)
 
+
 def test_validator_accepts_moment_with_action():
     moment = Moment(
         id="m1",
         name="Réveil",
         actions=(
             Action(
+                id="salon_on",
                 service="light.turn_on",
                 data={
                     "entity_id": "light.salon",
@@ -357,9 +360,7 @@ def test_validator_accepts_moment_with_action():
         calendar_exceptions=(),
     )
 
-    PlannerValidator.validate_configuration(
-        configuration
-    )
+    PlannerValidator.validate_configuration(configuration)
 
 
 def test_validator_rejects_action_without_service():
@@ -368,6 +369,7 @@ def test_validator_rejects_action_without_service():
         name="Réveil",
         actions=(
             Action(
+                id="id_1",
                 service="",
                 data={},
             ),
@@ -386,9 +388,35 @@ def test_validator_rejects_action_without_service():
         ValidationError,
         match="Action service cannot be empty",
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
+        PlannerValidator.validate_configuration(configuration)
+
+
+def test_validator_rejects_action_without_id():
+    moment = Moment(
+        id="m1",
+        name="Réveil",
+        actions=(
+            Action(
+                id="",
+                service="light.turn_on",
+                data={},
+            ),
+        ),
+    )
+
+    configuration = PlannerConfiguration(
+        moments=(moment,),
+        day_types=(),
+        week_schedules=(),
+        cycles=(),
+        calendar_exceptions=(),
+    )
+
+    with pytest.raises(
+        ValidationError,
+        match="Action id cannot be empty",
+    ):
+        PlannerValidator.validate_configuration(configuration)
 
 
 def test_validator_rejects_cycle_start_date_not_monday(
@@ -398,9 +426,7 @@ def test_validator_rejects_cycle_start_date_not_monday(
         id="c1",
         name="Cycle 1",
         start_date=date(2026, 9, 1),
-        week_schedule_ids=(
-            week_schedule.id,
-        ),
+        week_schedule_ids=(week_schedule.id,),
     )
 
     configuration = PlannerConfiguration(
@@ -415,9 +441,8 @@ def test_validator_rejects_cycle_start_date_not_monday(
         ValidationError,
         match="Cycle start date must be a Monday",
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
+        PlannerValidator.validate_configuration(configuration)
+
 
 def test_validator_rejects_multiple_cycles(
     week_schedule,
@@ -426,18 +451,14 @@ def test_validator_rejects_multiple_cycles(
         id="c1",
         name="Cycle 1",
         start_date=date(2026, 8, 31),
-        week_schedule_ids=(
-            week_schedule.id,
-        ),
+        week_schedule_ids=(week_schedule.id,),
     )
 
     cycle2 = Cycle(
         id="c2",
         name="Cycle 2",
         start_date=date(2026, 8, 31),
-        week_schedule_ids=(
-            week_schedule.id,
-        ),
+        week_schedule_ids=(week_schedule.id,),
     )
 
     configuration = PlannerConfiguration(
@@ -450,11 +471,9 @@ def test_validator_rejects_multiple_cycles(
 
     with pytest.raises(
         ValidationError,
-        match="Only one cycle is allowed",
+        match=rf"Maximum number of cycles exceeded: {DEFAULT_MAX_CYCLES}",
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
+        PlannerValidator.validate_configuration(configuration)
 
 
 def test_validator_rejects_cycle_not_starting_monday(
@@ -464,9 +483,7 @@ def test_validator_rejects_cycle_not_starting_monday(
         id="c1",
         name="Cycle 1",
         start_date=date(2026, 9, 1),  # mardi
-        week_schedule_ids=(
-            week_schedule.id,
-        ),
+        week_schedule_ids=(week_schedule.id,),
     )
 
     configuration = PlannerConfiguration(
@@ -481,9 +498,42 @@ def test_validator_rejects_cycle_not_starting_monday(
         ValidationError,
         match="Cycle start date must be a Monday",
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
+        PlannerValidator.validate_configuration(configuration)
 
 
+def test_validator_rejects_duplicate_action_id():
+    moment = Moment(
+        id="wake_up",
+        name="Réveil",
+        icon="mdi:alarm",
+        actions=(
+            Action(
+                id="salon",
+                service="light.turn_on",
+                data={
+                    "entity_id": "light.salon",
+                },
+            ),
+            Action(
+                id="salon",
+                service="light.turn_off",
+                data={
+                    "entity_id": "light.salon",
+                },
+            ),
+        ),
+    )
 
+    configuration = PlannerConfiguration(
+        moments=(moment,),
+        day_types=(),
+        week_schedules=(),
+        cycles=(),
+        calendar_exceptions=(),
+    )
+
+    with pytest.raises(
+        ValidationError,
+        match=("Duplicate action id in moment " "'wake_up': salon"),
+    ):
+        PlannerValidator.validate_configuration(configuration)

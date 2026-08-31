@@ -2,24 +2,15 @@ import asyncio
 from datetime import date, datetime
 from unittest.mock import MagicMock, patch
 
-from custom_components.day_planner.const import (
-    SIGNAL_PLANNER_UPDATED,
-)
-
-from custom_components.day_planner.domain.moment import Moment
+from custom_components.day_planner.const import SIGNAL_PLANNER_UPDATED
 from custom_components.day_planner.domain.day_type import DayType
-from custom_components.day_planner.domain.resolved_day_context import (
-    ResolvedDayContext,
-)
-from custom_components.day_planner.domain.scheduled_event import (
-    ScheduledEvent,
-)
+from custom_components.day_planner.domain.moment import Moment
+from custom_components.day_planner.domain.resolved_day_context import \
+    ResolvedDayContext
+from custom_components.day_planner.domain.scheduled_event import ScheduledEvent
 from custom_components.day_planner.sensor import (
-    DayPlannerNextEventSensor,
-    DayPlannerCurrentDayTypeSensor,
-    DayPlannerCurrentMomentSensor,
-    async_setup_entry,
-)
+    DayPlannerCurrentDayTypeSensor, DayPlannerCurrentMomentSensor,
+    DayPlannerNextEventSensor, async_setup_entry)
 
 
 def test_sensor_setup_entry():
@@ -75,9 +66,7 @@ def test_sensor_next_event():
 
     runtime.scheduler.next_event.return_value = event
 
-    sensor = DayPlannerNextEventSensor(
-        runtime
-    )
+    sensor = DayPlannerNextEventSensor(runtime)
 
     current = datetime(
         2026,
@@ -105,14 +94,13 @@ def test_sensor_next_event():
 
     assert runtime.scheduler.next_event.call_count == 2
 
+
 def test_sensor_without_next_event():
     runtime = MagicMock()
 
     runtime.scheduler.next_event.return_value = None
 
-    sensor = DayPlannerNextEventSensor(
-        runtime
-    )
+    sensor = DayPlannerNextEventSensor(runtime)
 
     current = datetime(
         2026,
@@ -139,9 +127,7 @@ def test_sensor_without_next_event():
 def test_sensor_dispatcher_update():
     runtime = MagicMock()
 
-    sensor = DayPlannerNextEventSensor(
-        runtime
-    )
+    sensor = DayPlannerNextEventSensor(runtime)
 
     hass = MagicMock()
     sensor.hass = hass
@@ -154,9 +140,7 @@ def test_sensor_dispatcher_update():
     ) as dispatcher_connect:
         sensor.async_on_remove = MagicMock()
 
-        asyncio.run(
-            sensor.async_added_to_hass()
-        )
+        asyncio.run(sensor.async_added_to_hass())
 
     dispatcher_connect.assert_called_once_with(
         hass,
@@ -164,16 +148,13 @@ def test_sensor_dispatcher_update():
         sensor._handle_planner_updated,
     )
 
-    sensor.async_on_remove.assert_called_once_with(
-        remove_listener
-    )
+    sensor.async_on_remove.assert_called_once_with(remove_listener)
+
 
 def test_sensor_handle_planner_updated():
     runtime = MagicMock()
 
-    sensor = DayPlannerNextEventSensor(
-        runtime
-    )
+    sensor = DayPlannerNextEventSensor(runtime)
 
     sensor.async_write_ha_state = MagicMock()
 
@@ -199,13 +180,9 @@ def test_sensor_current_day_type():
         calendar_exception_id=None,
     )
 
-    runtime.resolver.resolve_day_context.return_value = (
-        context
-    )
+    runtime.resolver.resolve_day_context.return_value = context
 
-    sensor = DayPlannerCurrentDayTypeSensor(
-        runtime
-    )
+    sensor = DayPlannerCurrentDayTypeSensor(runtime)
 
     current = datetime(
         2026,
@@ -234,6 +211,7 @@ def test_sensor_current_day_type():
         "day_type_id": "test_day",
     }
 
+
 def test_sensor_current_day_type_none():
     runtime = MagicMock()
 
@@ -245,13 +223,9 @@ def test_sensor_current_day_type_none():
         calendar_exception_id=None,
     )
 
-    runtime.resolver.resolve_day_context.return_value = (
-        context
-    )
+    runtime.resolver.resolve_day_context.return_value = context
 
-    sensor = DayPlannerCurrentDayTypeSensor(
-        runtime
-    )
+    sensor = DayPlannerCurrentDayTypeSensor(runtime)
 
     current = datetime(
         2026,
@@ -284,9 +258,7 @@ def test_sensor_current_day_type_none():
 def test_sensor_current_day_type_dispatcher_update():
     runtime = MagicMock()
 
-    sensor = DayPlannerCurrentDayTypeSensor(
-        runtime
-    )
+    sensor = DayPlannerCurrentDayTypeSensor(runtime)
 
     hass = MagicMock()
     sensor.hass = hass
@@ -300,9 +272,7 @@ def test_sensor_current_day_type_dispatcher_update():
         "custom_components.day_planner.sensor.async_dispatcher_connect",
         return_value=remove_listener,
     ) as dispatcher_connect:
-        asyncio.run(
-            sensor.async_added_to_hass()
-        )
+        asyncio.run(sensor.async_added_to_hass())
 
     dispatcher_connect.assert_called_once_with(
         hass,
@@ -310,13 +280,12 @@ def test_sensor_current_day_type_dispatcher_update():
         sensor._handle_planner_updated,
     )
 
-    sensor.async_on_remove.assert_called_once_with(
-        remove_listener
-    )
+    sensor.async_on_remove.assert_called_once_with(remove_listener)
 
     sensor._handle_planner_updated()
 
     sensor.async_write_ha_state.assert_called_once_with()
+
 
 def test_sensor_current_moment():
     runtime = MagicMock()
@@ -337,13 +306,9 @@ def test_sensor_current_moment():
         moment=moment,
     )
 
-    runtime.scheduler.current_moment.return_value = (
-        event
-    )
+    runtime.scheduler.current_moment.return_value = event
 
-    sensor = DayPlannerCurrentMomentSensor(
-        runtime
-    )
+    sensor = DayPlannerCurrentMomentSensor(runtime)
 
     assert sensor.native_value == "Réveil"
 
@@ -361,9 +326,7 @@ def test_sensor_current_moment_none():
 
     runtime.scheduler.current_moment.return_value = None
 
-    sensor = DayPlannerCurrentMomentSensor(
-        runtime
-    )
+    sensor = DayPlannerCurrentMomentSensor(runtime)
 
     assert sensor.native_value is None
     assert sensor.extra_state_attributes == {}
@@ -372,9 +335,7 @@ def test_sensor_current_moment_none():
 def test_sensor_current_moment_dispatcher_update():
     runtime = MagicMock()
 
-    sensor = DayPlannerCurrentMomentSensor(
-        runtime
-    )
+    sensor = DayPlannerCurrentMomentSensor(runtime)
 
     hass = MagicMock()
     sensor.hass = hass
@@ -388,9 +349,7 @@ def test_sensor_current_moment_dispatcher_update():
         "custom_components.day_planner.sensor.async_dispatcher_connect",
         return_value=remove_listener,
     ) as dispatcher_connect:
-        asyncio.run(
-            sensor.async_added_to_hass()
-        )
+        asyncio.run(sensor.async_added_to_hass())
 
     dispatcher_connect.assert_called_once_with(
         hass,
@@ -398,12 +357,8 @@ def test_sensor_current_moment_dispatcher_update():
         sensor._handle_planner_updated,
     )
 
-    sensor.async_on_remove.assert_called_once_with(
-        remove_listener
-    )
+    sensor.async_on_remove.assert_called_once_with(remove_listener)
 
     sensor._handle_planner_updated()
 
     sensor.async_write_ha_state.assert_called_once_with()
-
-

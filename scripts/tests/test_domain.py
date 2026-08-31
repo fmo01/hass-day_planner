@@ -25,6 +25,7 @@ def test_moment_roundtrip(moment):
 
 def test_action_roundtrip():
     action = Action(
+        id="salon_on",
         service="light.turn_on",
         data={
             "entity_id": "light.salon",
@@ -34,6 +35,7 @@ def test_action_roundtrip():
     data = action.to_dict()
 
     assert data == {
+        "id": "salon_on",
         "service": "light.turn_on",
         "data": {
             "entity_id": "light.salon",
@@ -47,6 +49,7 @@ def test_action_roundtrip():
 
 def test_moment_with_actions_roundtrip():
     action = Action(
+        id="salon_on",
         service="light.turn_on",
         data={
             "entity_id": "light.salon",
@@ -68,6 +71,7 @@ def test_moment_with_actions_roundtrip():
         "icon": "mdi:alarm",
         "actions": [
             {
+                "id": "salon_on",
                 "service": "light.turn_on",
                 "data": {
                     "entity_id": "light.salon",
@@ -211,6 +215,7 @@ def test_planner_configuration_has_data(
 
 def test_action():
     action = Action(
+        id="salon_on",
         service="light.turn_on",
         data={"entity_id": "light.salon"},
     )

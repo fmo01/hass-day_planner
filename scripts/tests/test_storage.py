@@ -3,9 +3,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from custom_components.day_planner.domain.action import Action
 from custom_components.day_planner.domain.moment import Moment
-from custom_components.day_planner.domain.planner_configuration import (
-    PlannerConfiguration,
-)
+from custom_components.day_planner.domain.planner_configuration import \
+    PlannerConfiguration
 from custom_components.day_planner.storage import DayPlannerStorage
 
 
@@ -99,6 +98,7 @@ def test_storage_roundtrip_moment_with_actions():
                 icon="mdi:alarm",
                 actions=(
                     Action(
+                        id="salon_on",
                         service="light.turn_on",
                         data={
                             "entity_id": "light.salon",
@@ -117,21 +117,15 @@ def test_storage_roundtrip_moment_with_actions():
     async def run():
         saved_data = None
 
-        with patch(
-            "custom_components.day_planner.storage.Store"
-        ) as store_class:
+        with patch("custom_components.day_planner.storage.Store") as store_class:
             store = store_class.return_value
 
             async def fake_save(data):
                 nonlocal saved_data
                 saved_data = data
 
-            store.async_save = AsyncMock(
-                side_effect=fake_save
-            )
-            store.async_load = AsyncMock(
-                side_effect=lambda: saved_data
-            )
+            store.async_save = AsyncMock(side_effect=fake_save)
+            store.async_load = AsyncMock(side_effect=lambda: saved_data)
 
             storage = DayPlannerStorage(hass)
 
@@ -141,10 +135,7 @@ def test_storage_roundtrip_moment_with_actions():
 
         assert restored == configuration
 
-        assert (
-            restored.moments[0].actions[0].service
-            == "light.turn_on"
-        )
+        assert restored.moments[0].actions[0].service == "light.turn_on"
 
         assert restored.moments[0].actions[0].data == {
             "entity_id": "light.salon",
@@ -152,5 +143,3 @@ def test_storage_roundtrip_moment_with_actions():
         }
 
     asyncio.run(run())
-
-

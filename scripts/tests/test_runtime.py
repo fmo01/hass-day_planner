@@ -1,8 +1,6 @@
 from unittest.mock import MagicMock
 
-from custom_components.day_planner.runtime import (
-    DayPlannerRuntimeData,
-)
+from custom_components.day_planner.runtime import DayPlannerRuntimeData
 
 
 def test_runtime_data():
