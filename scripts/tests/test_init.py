@@ -6,10 +6,8 @@ from custom_components.day_planner import (_async_migrate_entity_ids,
                                            async_remove_entry,
                                            async_setup_entry,
                                            async_unload_entry)
-from custom_components.day_planner.const import (
-                                                 CONF_MAX_CYCLES,
-                                                 DEFAULT_MAX_CYCLES, PLATFORMS,
-)
+from custom_components.day_planner.const import (CONF_MAX_CYCLES,
+                                                 DEFAULT_MAX_CYCLES, PLATFORMS)
 from custom_components.day_planner.domain.planner_configuration import \
     PlannerConfiguration
 

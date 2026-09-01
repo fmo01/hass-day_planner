@@ -391,9 +391,7 @@ def test_validator_rejects_action_without_sequence():
         ValidationError,
         match="Action sequence cannot be empty",
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
+        PlannerValidator.validate_configuration(configuration)
 
 
 def test_validator_rejects_action_without_id():

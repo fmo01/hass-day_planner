@@ -28,17 +28,11 @@ def test_execute_action():
         ],
     )
 
-    with patch(
-        "custom_components.day_planner.action_executor.Script"
-    ) as script_class:
+    with patch("custom_components.day_planner.action_executor.Script") as script_class:
         script = script_class.return_value
         script.async_run = AsyncMock()
 
-        asyncio.run(
-            executor.async_execute_action(
-                action
-            )
-        )
+        asyncio.run(executor.async_execute_action(action))
 
     script_class.assert_called_once_with(
         hass,
@@ -90,11 +84,7 @@ def test_execute_moment_actions():
 
     executor.async_execute_action = AsyncMock()
 
-    asyncio.run(
-        executor.async_execute_moment(
-            moment
-        )
-    )
+    asyncio.run(executor.async_execute_moment(moment))
 
     executor.async_execute_action.assert_has_awaits(
         [
@@ -103,10 +93,7 @@ def test_execute_moment_actions():
         ]
     )
 
-    assert (
-        executor.async_execute_action.await_count
-        == 2
-    )
+    assert executor.async_execute_action.await_count == 2
 
 
 def test_execute_moment_without_actions():
@@ -122,11 +109,7 @@ def test_execute_moment_without_actions():
         actions=(),
     )
 
-    asyncio.run(
-        executor.async_execute_moment(
-            moment
-        )
-    )
+    asyncio.run(executor.async_execute_moment(moment))
 
     executor.async_execute_action.assert_not_awaited()
 
@@ -176,11 +159,7 @@ def test_execute_moment_continues_after_action_error():
         ]
     )
 
-    asyncio.run(
-        executor.async_execute_moment(
-            moment
-        )
-    )
+    asyncio.run(executor.async_execute_moment(moment))
 
     assert executor.async_execute_action.await_count == 2
 

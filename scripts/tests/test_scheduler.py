@@ -1,14 +1,13 @@
 import asyncio
-
 from datetime import date, datetime, time, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from custom_components.day_planner.ha_scheduler import HomeAssistantScheduler
 from custom_components.day_planner.domain.moment import Moment
 from custom_components.day_planner.domain.scheduled_event import ScheduledEvent
 from custom_components.day_planner.domain.scheduled_moment import \
     ScheduledMoment
 from custom_components.day_planner.domain.time_definition import TimeDefinition
+from custom_components.day_planner.ha_scheduler import HomeAssistantScheduler
 from custom_components.day_planner.planner.scheduler import PlannerScheduler
 
 
@@ -742,9 +741,7 @@ def test_scheduler_current_moment_normalizes_timezone():
 
     scheduler = PlannerScheduler(resolver)
 
-    local_tz = timezone(
-        timedelta(hours=2)
-    )
+    local_tz = timezone(timedelta(hours=2))
 
     now = datetime(
         2026,
