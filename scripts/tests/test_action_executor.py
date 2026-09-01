@@ -130,6 +130,7 @@ def test_execute_moment_without_actions():
 
     executor.async_execute_action.assert_not_awaited()
 
+
 def test_execute_moment_continues_after_action_error():
     hass = MagicMock(spec=HomeAssistant)
 

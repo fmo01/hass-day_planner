@@ -1,6 +1,9 @@
-from datetime import date, datetime, time, timedelta, timezone
-from unittest.mock import MagicMock
+import asyncio
 
+from datetime import date, datetime, time, timedelta, timezone
+from unittest.mock import AsyncMock, MagicMock, patch
+
+from custom_components.day_planner.ha_scheduler import HomeAssistantScheduler
 from custom_components.day_planner.domain.moment import Moment
 from custom_components.day_planner.domain.scheduled_event import ScheduledEvent
 from custom_components.day_planner.domain.scheduled_moment import \
@@ -495,6 +498,7 @@ def test_scheduler_current_moment_none():
 
     assert event is None
 
+
 def test_scheduler_normalizes_naive_datetime_timezone():
     naive = datetime(
         2026,
@@ -554,6 +558,7 @@ def test_scheduler_keeps_aware_datetime():
 
     assert normalized is scheduled_at
 
+
 def test_scheduler_does_not_catch_up_missed_event():
     resolver = MagicMock()
 
@@ -609,6 +614,7 @@ def test_scheduler_does_not_catch_up_missed_event():
         8,
         0,
     )
+
 
 def test_ha_scheduler_replans_after_configuration_change():
     hass = MagicMock()
@@ -712,3 +718,54 @@ def test_ha_scheduler_replans_after_configuration_change():
     asyncio.run(run())
 
     assert scheduler.next_event.call_count == 2
+
+
+def test_scheduler_current_moment_normalizes_timezone():
+    resolver = MagicMock()
+
+    moment = Moment(
+        id="m1",
+        name="Réveil",
+    )
+
+    resolver.resolve_schedule.return_value = (
+        (
+            ScheduledMoment(
+                moment_id="m1",
+                time_definition=TimeDefinition(
+                    fixed_time=time(7, 30),
+                ),
+            ),
+            moment,
+        ),
+    )
+
+    scheduler = PlannerScheduler(resolver)
+
+    local_tz = timezone(
+        timedelta(hours=2)
+    )
+
+    now = datetime(
+        2026,
+        8,
+        31,
+        8,
+        0,
+        tzinfo=local_tz,
+    )
+
+    event = scheduler.current_moment(now)
+
+    assert event is not None
+
+    assert event.scheduled_at == datetime(
+        2026,
+        8,
+        31,
+        7,
+        30,
+        tzinfo=local_tz,
+    )
+
+    assert event.moment == moment

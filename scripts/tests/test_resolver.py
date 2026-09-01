@@ -416,7 +416,7 @@ def test_resolver_day_context_before_cycle_start():
     context = resolver.resolve_day_context(date(2026, 8, 30))
 
     assert context.day_type is None
-    assert context.cycle_id == "c1"
+    assert context.cycle_id is None
     assert context.week_schedule_id is None
     assert context.calendar_exception_id is None
 
@@ -526,3 +526,171 @@ def test_resolver_day_context_calendar_exception():
     assert context.cycle_id is None
     assert context.week_schedule_id is None
     assert context.calendar_exception_id == "ce1"
+
+
+def test_resolver_uses_previous_cycle_before_next_cycle_start():
+    configuration = PlannerConfiguration(
+        moments=(),
+        day_types=(
+            DayType(
+                id="work",
+                name="Travail",
+                scheduled_moments=(),
+            ),
+        ),
+        week_schedules=(
+            WeekSchedule(
+                id="week_a",
+                name="Semaine A",
+                monday="work",
+                tuesday="work",
+                wednesday="work",
+                thursday="work",
+                friday="work",
+                saturday="work",
+                sunday="work",
+            ),
+            WeekSchedule(
+                id="week_b",
+                name="Semaine B",
+                monday="work",
+                tuesday="work",
+                wednesday="work",
+                thursday="work",
+                friday="work",
+                saturday="work",
+                sunday="work",
+            ),
+        ),
+        cycles=(
+            Cycle(
+                id="cycle_a",
+                name="Cycle A",
+                start_date=date(2026, 1, 5),
+                week_schedule_ids=("week_a",),
+            ),
+            Cycle(
+                id="cycle_b",
+                name="Cycle B",
+                start_date=date(2026, 9, 7),
+                week_schedule_ids=("week_b",),
+            ),
+        ),
+        calendar_exceptions=(),
+    )
+
+    resolver = PlannerResolver(configuration)
+
+    context = resolver.resolve_day_context(
+        date(2026, 8, 20)
+    )
+
+    assert context.cycle_id == "cycle_a"
+    assert context.week_schedule_id == "week_a"
+
+
+def test_resolver_uses_latest_started_cycle():
+    configuration = PlannerConfiguration(
+        moments=(),
+        day_types=(
+            DayType(
+                id="work",
+                name="Travail",
+                scheduled_moments=(),
+            ),
+        ),
+        week_schedules=(
+            WeekSchedule(
+                id="week_a",
+                name="Semaine A",
+                monday="work",
+                tuesday="work",
+                wednesday="work",
+                thursday="work",
+                friday="work",
+                saturday="work",
+                sunday="work",
+            ),
+            WeekSchedule(
+                id="week_b",
+                name="Semaine B",
+                monday="work",
+                tuesday="work",
+                wednesday="work",
+                thursday="work",
+                friday="work",
+                saturday="work",
+                sunday="work",
+            ),
+        ),
+        cycles=(
+            Cycle(
+                id="cycle_a",
+                name="Cycle A",
+                start_date=date(2026, 1, 5),
+                week_schedule_ids=("week_a",),
+            ),
+            Cycle(
+                id="cycle_b",
+                name="Cycle B",
+                start_date=date(2026, 9, 7),
+                week_schedule_ids=("week_b",),
+            ),
+        ),
+        calendar_exceptions=(),
+    )
+
+    resolver = PlannerResolver(configuration)
+
+    context = resolver.resolve_day_context(
+        date(2026, 9, 10)
+    )
+
+    assert context.cycle_id == "cycle_b"
+    assert context.week_schedule_id == "week_b"
+
+
+def test_resolver_returns_no_cycle_before_first_cycle_start():
+    configuration = PlannerConfiguration(
+        moments=(),
+        day_types=(
+            DayType(
+                id="work",
+                name="Travail",
+                scheduled_moments=(),
+            ),
+        ),
+        week_schedules=(
+            WeekSchedule(
+                id="week_a",
+                name="Semaine A",
+                monday="work",
+                tuesday="work",
+                wednesday="work",
+                thursday="work",
+                friday="work",
+                saturday="work",
+                sunday="work",
+            ),
+        ),
+        cycles=(
+            Cycle(
+                id="cycle_a",
+                name="Cycle A",
+                start_date=date(2026, 1, 5),
+                week_schedule_ids=("week_a",),
+            ),
+        ),
+        calendar_exceptions=(),
+    )
+
+    resolver = PlannerResolver(configuration)
+
+    context = resolver.resolve_day_context(
+        date(2025, 12, 1)
+    )
+
+    assert context.day_type is None
+    assert context.cycle_id is None
+    assert context.week_schedule_id is None
+    assert context.calendar_exception_id is None

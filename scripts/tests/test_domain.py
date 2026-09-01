@@ -60,6 +60,7 @@ def test_action_roundtrip():
 
     assert restored == action
 
+
 def test_moment_with_actions_roundtrip():
     action = Action(
         id="salon_on",
@@ -104,6 +105,7 @@ def test_moment_with_actions_roundtrip():
     restored = Moment.from_dict(data)
 
     assert restored == moment
+
 
 def test_day_type_roundtrip(day_type):
     data = day_type.to_dict()
@@ -255,6 +257,7 @@ def test_action():
             },
         }
     ]
+
 
 def test_audit():
     now = datetime.now()

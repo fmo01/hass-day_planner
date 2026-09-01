@@ -331,6 +331,7 @@ def test_ha_scheduler_converts_naive_event_to_timezone():
         tzinfo=local_tz,
     )
 
+
 def test_ha_scheduler_reschedules_after_action_error():
     hass = MagicMock()
 
@@ -418,7 +419,6 @@ def test_ha_scheduler_reschedules_after_action_error():
     assert ha_scheduler._cancel is None
 
 
-
 def test_scheduler_does_not_catch_up_missed_event():
     resolver = MagicMock()
 
@@ -474,6 +474,7 @@ def test_scheduler_does_not_catch_up_missed_event():
         8,
         0,
     )
+
 
 def test_ha_scheduler_cancels_when_no_next_event():
     hass = MagicMock()
