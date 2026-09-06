@@ -1,10 +1,10 @@
 """WebSocket API for Day Planner."""
 
+import logging
 from datetime import date, time, timedelta
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
 
@@ -14,8 +14,6 @@ from .domain.scheduled_moment import ScheduledMoment
 from .domain.time_definition import TimeDefinition
 from .planner.errors import PlannerError
 
-import logging
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -23,11 +21,7 @@ def _get_runtime(hass: HomeAssistant):
     """Return Day Planner runtime data."""
 
     entry = next(
-        iter(
-            hass.config_entries.async_entries(
-                DOMAIN
-            )
-        ),
+        iter(hass.config_entries.async_entries(DOMAIN)),
         None,
     )
 
@@ -73,11 +67,10 @@ def async_setup_websocket_api(
         websocket_remove_day_type,
     )
 
+
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/get_configuration",
+        vol.Required("type"): "day_planner/get_configuration",
     }
 )
 def websocket_get_configuration(
@@ -104,20 +97,13 @@ def websocket_get_configuration(
         configuration.to_dict(),
     )
 
+
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/update_scheduled_moment",
-        vol.Required(
-            "day_type_id"
-        ): str,
-        vol.Required(
-            "moment_id"
-        ): str,
-        vol.Required(
-            "time"
-        ): str,
+        vol.Required("type"): "day_planner/update_scheduled_moment",
+        vol.Required("day_type_id"): str,
+        vol.Required("moment_id"): str,
+        vol.Required("time"): str,
     }
 )
 @websocket_api.async_response
@@ -145,9 +131,7 @@ async def websocket_update_scheduled_moment(
         return
 
     try:
-        fixed_time = time.fromisoformat(
-            msg["time"]
-        )
+        fixed_time = time.fromisoformat(msg["time"])
     except ValueError:
         connection.send_error(
             msg["id"],
@@ -170,21 +154,15 @@ async def websocket_update_scheduled_moment(
             scheduled_moment,
         )
 
-        configuration = (
-            runtime.engine.configuration
-        )
+        configuration = runtime.engine.configuration
 
         _LOGGER.warning("WS update: storage")
 
-        await runtime.storage.async_save(
-            configuration
-        )
+        await runtime.storage.async_save(configuration)
 
         _LOGGER.warning("WS update: resolver")
 
-        runtime.resolver.update_configuration(
-            configuration
-        )
+        runtime.resolver.update_configuration(configuration)
 
         _LOGGER.warning("WS update: scheduler")
 
@@ -216,15 +194,9 @@ async def websocket_update_scheduled_moment(
 
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/get_calendar",
-        vol.Required(
-            "start_date"
-        ): str,
-        vol.Required(
-            "end_date"
-        ): str,
+        vol.Required("type"): "day_planner/get_calendar",
+        vol.Required("start_date"): str,
+        vol.Required("end_date"): str,
     }
 )
 def websocket_get_calendar(
@@ -245,13 +217,9 @@ def websocket_get_calendar(
         return
 
     try:
-        start_date = date.fromisoformat(
-            msg["start_date"]
-        )
+        start_date = date.fromisoformat(msg["start_date"])
 
-        end_date = date.fromisoformat(
-            msg["end_date"]
-        )
+        end_date = date.fromisoformat(msg["end_date"])
     except ValueError:
         connection.send_error(
             msg["id"],
@@ -273,9 +241,7 @@ def websocket_get_calendar(
     target_date = start_date
 
     while target_date <= end_date:
-        context = runtime.resolver.resolve_day_context(
-            target_date
-        )
+        context = runtime.resolver.resolve_day_context(target_date)
 
         day_type = context.day_type
 
@@ -283,9 +249,7 @@ def websocket_get_calendar(
 
         if day_type is not None:
             for scheduled in day_type.scheduled_moments:
-                moment = runtime.resolver.resolve_moment(
-                    scheduled.moment_id
-                )
+                moment = runtime.resolver.resolve_moment(scheduled.moment_id)
 
                 scheduled_moments.append(
                     {
@@ -294,28 +258,17 @@ def websocket_get_calendar(
                             "name": moment.name,
                             "icon": moment.icon,
                         },
-                        "time_definition": (
-                            scheduled.time_definition.to_dict()
-                        ),
+                        "time_definition": (scheduled.time_definition.to_dict()),
                     }
                 )
-
 
         days.append(
             {
                 "date": target_date.isoformat(),
-                "day_type": (
-                    day_type.to_dict()
-                    if day_type is not None
-                    else None
-                ),
+                "day_type": (day_type.to_dict() if day_type is not None else None),
                 "cycle_id": context.cycle_id,
-                "week_schedule_id": (
-                    context.week_schedule_id
-                ),
-                "calendar_exception_id": (
-                    context.calendar_exception_id
-                ),
+                "week_schedule_id": (context.week_schedule_id),
+                "calendar_exception_id": (context.calendar_exception_id),
                 "scheduled_moments": scheduled_moments,
             }
         )
@@ -331,17 +284,12 @@ def websocket_get_calendar(
         },
     )
 
+
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/update_day_type",
-        vol.Required(
-            "day_type_id"
-        ): str,
-        vol.Required(
-            "name"
-        ): str,
+        vol.Required("type"): "day_planner/update_day_type",
+        vol.Required("day_type_id"): str,
+        vol.Required("name"): str,
     }
 )
 @websocket_api.async_response
@@ -363,33 +311,21 @@ async def websocket_update_day_type(
         return
 
     try:
-        current = runtime.engine.get_day_type(
-            msg["day_type_id"]
-        )
+        current = runtime.engine.get_day_type(msg["day_type_id"])
 
         updated = DayType(
             id=current.id,
             name=msg["name"],
-            scheduled_moments=(
-                current.scheduled_moments
-            ),
+            scheduled_moments=(current.scheduled_moments),
         )
 
-        runtime.engine.update_day_type(
-            updated
-        )
+        runtime.engine.update_day_type(updated)
 
-        configuration = (
-            runtime.engine.configuration
-        )
+        configuration = runtime.engine.configuration
 
-        await runtime.storage.async_save(
-            configuration
-        )
+        await runtime.storage.async_save(configuration)
 
-        runtime.resolver.update_configuration(
-            configuration
-        )
+        runtime.resolver.update_configuration(configuration)
 
         await runtime.ha_scheduler.async_schedule_next()
 
@@ -409,17 +345,12 @@ async def websocket_update_day_type(
         },
     )
 
+
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/add_day_type",
-        vol.Required(
-            "day_type_id"
-        ): str,
-        vol.Required(
-            "name"
-        ): str,
+        vol.Required("type"): "day_planner/add_day_type",
+        vol.Required("day_type_id"): str,
+        vol.Required("name"): str,
     }
 )
 @websocket_api.async_response
@@ -447,21 +378,13 @@ async def websocket_add_day_type(
     )
 
     try:
-        runtime.engine.add_day_type(
-            day_type
-        )
+        runtime.engine.add_day_type(day_type)
 
-        configuration = (
-            runtime.engine.configuration
-        )
+        configuration = runtime.engine.configuration
 
-        await runtime.storage.async_save(
-            configuration
-        )
+        await runtime.storage.async_save(configuration)
 
-        runtime.resolver.update_configuration(
-            configuration
-        )
+        runtime.resolver.update_configuration(configuration)
 
         await runtime.ha_scheduler.async_schedule_next()
 
@@ -478,14 +401,11 @@ async def websocket_add_day_type(
         day_type.to_dict(),
     )
 
+
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/remove_day_type",
-        vol.Required(
-            "day_type_id"
-        ): str,
+        vol.Required("type"): "day_planner/remove_day_type",
+        vol.Required("day_type_id"): str,
     }
 )
 @websocket_api.async_response
@@ -507,21 +427,13 @@ async def websocket_remove_day_type(
         return
 
     try:
-        runtime.engine.remove_day_type(
-            msg["day_type_id"]
-        )
+        runtime.engine.remove_day_type(msg["day_type_id"])
 
-        configuration = (
-            runtime.engine.configuration
-        )
+        configuration = runtime.engine.configuration
 
-        await runtime.storage.async_save(
-            configuration
-        )
+        await runtime.storage.async_save(configuration)
 
-        runtime.resolver.update_configuration(
-            configuration
-        )
+        runtime.resolver.update_configuration(configuration)
 
         await runtime.ha_scheduler.async_schedule_next()
 
@@ -539,5 +451,3 @@ async def websocket_remove_day_type(
             "day_type_id": msg["day_type_id"],
         },
     )
-
-

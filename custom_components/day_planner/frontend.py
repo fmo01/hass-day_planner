@@ -7,10 +7,7 @@ from homeassistant.core import HomeAssistant
 
 FRONTEND_URL = "/day_planner/frontend"
 
-FRONTEND_PATH = (
-    Path(__file__).parent
-    / "frontend"
-)
+FRONTEND_PATH = Path(__file__).parent / "frontend"
 
 
 async def async_setup_frontend(
@@ -27,4 +24,3 @@ async def async_setup_frontend(
             )
         ]
     )
-

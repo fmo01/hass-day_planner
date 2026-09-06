@@ -61,9 +61,7 @@ class PlannerResolver:
                 week_schedule_id=None,
                 calendar_exception_id=calendar_exception.id,
             )
-        cycle = self._resolve_cycle(
-            target_date
-        )
+        cycle = self._resolve_cycle(target_date)
 
         if cycle is None:
             return ResolvedDayContext(

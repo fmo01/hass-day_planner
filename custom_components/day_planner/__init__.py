@@ -14,8 +14,8 @@ from .planner.scheduler import PlannerScheduler
 from .runtime import DayPlannerRuntimeData
 from .services import async_setup_services
 from .storage import DayPlannerStorage
-
 from .websocket_api import async_setup_websocket_api
+
 
 async def _async_migrate_entity_ids(
     hass: HomeAssistant,
@@ -64,13 +64,9 @@ async def async_setup(
 ) -> bool:
     """Set up Day Planner integration."""
 
-    async_setup_websocket_api(
-        hass
-    )
+    async_setup_websocket_api(hass)
 
-    await async_setup_frontend(
-        hass
-    )
+    await async_setup_frontend(hass)
 
     return True
 
