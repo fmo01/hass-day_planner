@@ -6,6 +6,7 @@ from .action_executor import ActionExecutor
 from .const import (CONF_DELETE_DATA_ON_REMOVE, CONF_MAX_CYCLES,
                     DEFAULT_DELETE_DATA_ON_REMOVE, DEFAULT_MAX_CYCLES,
                     PLATFORMS)
+from .frontend import async_setup_frontend
 from .ha_scheduler import HomeAssistantScheduler
 from .planner.engine import PlannerEngine
 from .planner.resolver import PlannerResolver
@@ -14,6 +15,7 @@ from .runtime import DayPlannerRuntimeData
 from .services import async_setup_services
 from .storage import DayPlannerStorage
 
+from .websocket_api import async_setup_websocket_api
 
 async def _async_migrate_entity_ids(
     hass: HomeAssistant,
@@ -54,6 +56,23 @@ async def _async_options_updated(
     """Reload Day Planner when options change."""
 
     await hass.config_entries.async_reload(entry.entry_id)
+
+
+async def async_setup(
+    hass: HomeAssistant,
+    config: dict,
+) -> bool:
+    """Set up Day Planner integration."""
+
+    async_setup_websocket_api(
+        hass
+    )
+
+    await async_setup_frontend(
+        hass
+    )
+
+    return True
 
 
 async def async_setup_entry(

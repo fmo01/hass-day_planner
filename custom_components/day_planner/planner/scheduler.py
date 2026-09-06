@@ -127,13 +127,10 @@ class PlannerScheduler:
                 now,
             )
 
-            if scheduled_at.tzinfo is None and now.tzinfo is not None:
-                scheduled_at = scheduled_at.replace(tzinfo=now.tzinfo)
-
             if scheduled_at > now:
                 break
 
-            if scheduled_at is event.scheduled_at:
+            if scheduled_at == event.scheduled_at:
                 current = event
             else:
                 current = ScheduledEvent(

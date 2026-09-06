@@ -20,6 +20,24 @@ class PlannerResolver:
 
         self._configuration = configuration
 
+    def _resolve_cycle(
+        self,
+        target_date: date,
+    ):
+        """Return the active cycle for a date."""
+
+        eligible_cycles = (
+            cycle
+            for cycle in self._configuration.cycles
+            if cycle.start_date <= target_date
+        )
+
+        return max(
+            eligible_cycles,
+            key=lambda cycle: cycle.start_date,
+            default=None,
+        )
+
     def resolve_day_context(
         self,
         target_date: date,
@@ -43,23 +61,15 @@ class PlannerResolver:
                 week_schedule_id=None,
                 calendar_exception_id=calendar_exception.id,
             )
+        cycle = self._resolve_cycle(
+            target_date
+        )
 
-        if not self._configuration.cycles:
+        if cycle is None:
             return ResolvedDayContext(
                 date=target_date,
                 day_type=None,
                 cycle_id=None,
-                week_schedule_id=None,
-                calendar_exception_id=None,
-            )
-
-        cycle = self._configuration.cycles[0]
-
-        if target_date < cycle.start_date:
-            return ResolvedDayContext(
-                date=target_date,
-                day_type=None,
-                cycle_id=cycle.id,
                 week_schedule_id=None,
                 calendar_exception_id=None,
             )
