@@ -1,13 +1,14 @@
 import asyncio
-from datetime import datetime, timedelta, timezone, time
+from datetime import datetime, time, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from custom_components.day_planner.domain.moment import Moment
 from custom_components.day_planner.domain.scheduled_event import ScheduledEvent
-from custom_components.day_planner.domain.scheduled_moment import ScheduledMoment
+from custom_components.day_planner.domain.scheduled_moment import \
+    ScheduledMoment
 from custom_components.day_planner.domain.time_definition import TimeDefinition
-from custom_components.day_planner.planner.scheduler import PlannerScheduler
 from custom_components.day_planner.ha_scheduler import HomeAssistantScheduler
+from custom_components.day_planner.planner.scheduler import PlannerScheduler
 
 
 def test_ha_scheduler_no_event():
@@ -404,15 +405,11 @@ def test_ha_scheduler_reschedules_after_action_error():
             except RuntimeError as err:
                 assert str(err) == "Action failed"
             else:
-                raise AssertionError(
-                    "RuntimeError was not propagated"
-                )
+                raise AssertionError("RuntimeError was not propagated")
 
     asyncio.run(run())
 
-    action_executor.async_execute_moment.assert_awaited_once_with(
-        moment
-    )
+    action_executor.async_execute_moment.assert_awaited_once_with(moment)
 
     ha_scheduler.async_schedule_next.assert_awaited_once_with()
 
@@ -624,6 +621,4 @@ def test_ha_scheduler_does_not_execute_same_callback_twice():
 
     asyncio.run(run())
 
-    action_executor.async_execute_moment.assert_awaited_once_with(
-        moment
-    )
+    action_executor.async_execute_moment.assert_awaited_once_with(moment)

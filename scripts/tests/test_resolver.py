@@ -581,9 +581,7 @@ def test_resolver_uses_previous_cycle_before_next_cycle_start():
 
     resolver = PlannerResolver(configuration)
 
-    context = resolver.resolve_day_context(
-        date(2026, 8, 20)
-    )
+    context = resolver.resolve_day_context(date(2026, 8, 20))
 
     assert context.cycle_id == "cycle_a"
     assert context.week_schedule_id == "week_a"
@@ -642,9 +640,7 @@ def test_resolver_uses_latest_started_cycle():
 
     resolver = PlannerResolver(configuration)
 
-    context = resolver.resolve_day_context(
-        date(2026, 9, 10)
-    )
+    context = resolver.resolve_day_context(date(2026, 9, 10))
 
     assert context.cycle_id == "cycle_b"
     assert context.week_schedule_id == "week_b"
@@ -686,9 +682,7 @@ def test_resolver_returns_no_cycle_before_first_cycle_start():
 
     resolver = PlannerResolver(configuration)
 
-    context = resolver.resolve_day_context(
-        date(2025, 12, 1)
-    )
+    context = resolver.resolve_day_context(date(2025, 12, 1))
 
     assert context.day_type is None
     assert context.cycle_id is None

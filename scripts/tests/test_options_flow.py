@@ -4297,10 +4297,7 @@ def test_options_flow_edit_moment_action_empty_sequence():
 
         call = flow.async_show_form.call_args
 
-        assert (
-            call.kwargs["step_id"]
-            == "edit_moment_action_details"
-        )
+        assert call.kwargs["step_id"] == "edit_moment_action_details"
 
         assert call.kwargs["errors"] == {
             "sequence": "action_sequence_required",
