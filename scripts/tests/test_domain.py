@@ -26,6 +26,7 @@ def test_moment_roundtrip(moment):
 def test_action_roundtrip():
     action = Action(
         id="salon_on",
+        label= "salon_on",
         sequence=[
             {
                 "action": "light.turn_on",
@@ -43,6 +44,7 @@ def test_action_roundtrip():
 
     assert data == {
         "id": "salon_on",
+        "label": "salon_on",
         "sequence": [
             {
                 "action": "light.turn_on",
@@ -90,6 +92,7 @@ def test_moment_with_actions_roundtrip():
         "actions": [
             {
                 "id": "salon_on",
+                "label": "salon_on",
                 "sequence": [
                     {
                         "action": "light.turn_on",
@@ -273,3 +276,48 @@ def test_audit():
     assert audit.created_at == now
     assert audit.modified_by == "user"
     assert audit.modified_at == now
+
+
+def test_action_label_defaults_to_id():
+    action = Action(
+        id="salon_on",
+        sequence=[
+            {
+                "action": "light.turn_on",
+            }
+        ],
+    )
+
+    assert action.label == "salon_on"
+
+    assert action.to_dict() == {
+        "id": "salon_on",
+        "label": "salon_on",
+        "sequence": [
+            {
+                "action": "light.turn_on",
+            }
+        ],
+    }
+
+def test_action_from_dict_without_label_is_backward_compatible():
+    action = Action.from_dict(
+        {
+            "id": "ouvrir_volets",
+            "sequence": [
+                {
+                    "action": "cover.open_cover",
+                }
+            ],
+        }
+    )
+
+    assert action.id == "ouvrir_volets"
+    assert action.label == "ouvrir_volets"
+    assert action.sequence == [
+        {
+            "action": "cover.open_cover",
+        }
+    ]
+
+

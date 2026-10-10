@@ -10,12 +10,24 @@ class Action:
 
     id: str
     sequence: list[dict[str, Any]]
+    label: str | None = None
+
+    def __post_init__(self) -> None:
+        """Initialize derived values."""
+
+        if self.label is None:
+            object.__setattr__(
+                self,
+                "label",
+                self.id,
+            )
 
     def to_dict(self) -> dict:
         """Serialize object."""
 
         return {
             "id": self.id,
+            "label": self.label,
             "sequence": self.sequence,
         }
 
@@ -28,6 +40,12 @@ class Action:
 
         return cls(
             id=str(data["id"]),
+            label=str(
+                data.get(
+                    "label",
+                    data["id"],
+                )
+            ),
             sequence=list(
                 data.get(
                     "sequence",
@@ -35,3 +53,4 @@ class Action:
                 )
             ),
         )
+

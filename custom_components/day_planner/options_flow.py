@@ -5,11 +5,10 @@ from datetime import date, time
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.helpers import selector
-from homeassistant.helpers.dispatcher import async_dispatcher_send
 
 from .const import (CONF_DELETE_DATA_ON_REMOVE, CONF_MAX_CYCLES,
                     DEFAULT_DELETE_DATA_ON_REMOVE, DEFAULT_MAX_CYCLES,
-                    MAX_MAX_CYCLES, MIN_MAX_CYCLES, SIGNAL_PLANNER_UPDATED)
+                    MAX_MAX_CYCLES, MIN_MAX_CYCLES)
 from .domain.action import Action
 from .domain.calendar_exception import CalendarException
 from .domain.cycle import Cycle
@@ -187,18 +186,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.add_moment(moment)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -277,18 +265,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.update_moment(updated_moment)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -381,18 +358,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.remove_moment(moment.id)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -492,18 +458,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.add_day_type(day_type)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -580,18 +535,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.update_day_type(updated_day_type)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -694,18 +638,7 @@ class DayPlannerOptionsFlow(
                     },
                 )
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -795,18 +728,7 @@ class DayPlannerOptionsFlow(
                 scheduled_moment,
             )
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -917,18 +839,7 @@ class DayPlannerOptionsFlow(
                 updated,
             )
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -1032,18 +943,7 @@ class DayPlannerOptionsFlow(
                 self._selected_remove_scheduled_moment_id,
             )
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -1081,18 +981,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.add_week_schedule(week_schedule)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -1197,18 +1086,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.update_week_schedule(updated)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -1355,18 +1233,7 @@ class DayPlannerOptionsFlow(
                     },
                 )
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -1427,18 +1294,7 @@ class DayPlannerOptionsFlow(
                     },
                 )
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -1530,18 +1386,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.update_cycle(updated)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -1652,18 +1497,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.remove_cycle(cycle.id)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -1696,18 +1530,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.add_calendar_exception(calendar_exception)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -1806,18 +1629,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.update_calendar_exception(updated)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -1935,18 +1747,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.remove_calendar_exception(calendar_exception.id)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -2031,6 +1832,7 @@ class DayPlannerOptionsFlow(
         schema = vol.Schema(
             {
                 vol.Required("id"): str,
+                vol.Required("label"): str,
                 vol.Required("sequence"): selector.ActionSelector(),
             }
         )
@@ -2047,6 +1849,7 @@ class DayPlannerOptionsFlow(
 
             action = Action(
                 id=user_input["id"],
+                label=user_input["label"],
                 sequence=list(user_input["sequence"]),
             )
 
@@ -2062,18 +1865,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.update_moment(updated_moment)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -2103,7 +1895,7 @@ class DayPlannerOptionsFlow(
         options = [
             selector.SelectOptionDict(
                 value=action.id,
-                label=action.id,
+                label=f"{action.label} ({action.id})",
             )
             for action in moment.actions
         ]
@@ -2141,6 +1933,10 @@ class DayPlannerOptionsFlow(
         schema = vol.Schema(
             {
                 vol.Required(
+                    "label",
+                    default=action.label,
+                ): str,
+                vol.Required(
                     "sequence",
                     default=action.sequence,
                 ): selector.ActionSelector(),
@@ -2159,6 +1955,7 @@ class DayPlannerOptionsFlow(
 
             updated_action = Action(
                 id=action.id,
+                label=user_input["label"],
                 sequence=list(user_input["sequence"]),
             )
 
@@ -2176,18 +1973,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.update_moment(updated_moment)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -2217,7 +2003,7 @@ class DayPlannerOptionsFlow(
         options = [
             selector.SelectOptionDict(
                 value=action.id,
-                label=action.id,
+                label=f"{action.label} ({action.id})",
             )
             for action in moment.actions
         ]
@@ -2269,7 +2055,7 @@ class DayPlannerOptionsFlow(
                     step_id="remove_moment_action_confirm",
                     data_schema=schema,
                     description_placeholders={
-                        "name": action.id,
+                        "name": action.label,
                     },
                 )
 
@@ -2286,18 +2072,7 @@ class DayPlannerOptionsFlow(
 
             runtime.engine.update_moment(updated_moment)
 
-            configuration = runtime.engine.configuration
-
-            await runtime.storage.async_save(configuration)
-
-            runtime.resolver.update_configuration(configuration)
-
-            await runtime.ha_scheduler.async_schedule_next()
-
-            async_dispatcher_send(
-                runtime.hass,
-                SIGNAL_PLANNER_UPDATED,
-            )
+            await runtime.async_configuration_updated()
 
             return self.async_create_entry(
                 title="",
@@ -2308,6 +2083,6 @@ class DayPlannerOptionsFlow(
             step_id="remove_moment_action_confirm",
             data_schema=schema,
             description_placeholders={
-                "name": action.id,
+                "name": action.label,
             },
         )

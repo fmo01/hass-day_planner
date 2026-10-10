@@ -523,8 +523,8 @@ def test_resolver_day_context_calendar_exception():
     context = resolver.resolve_day_context(date(2026, 9, 1))
 
     assert context.day_type == holiday
-    assert context.cycle_id is None
-    assert context.week_schedule_id is None
+    assert context.cycle_id == "c1"
+    assert context.week_schedule_id == "ws1"
     assert context.calendar_exception_id == "ce1"
 
 

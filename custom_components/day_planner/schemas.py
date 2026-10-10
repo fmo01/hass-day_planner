@@ -4,6 +4,7 @@ from homeassistant.helpers import config_validation as cv
 ACTION_SCHEMA = vol.Schema(
     {
         vol.Required("id"): cv.string,
+        vol.Optional("label"): cv.string,
         vol.Required("sequence"): list,
     }
 )

@@ -38,29 +38,12 @@ class PlannerResolver:
             default=None,
         )
 
-    def resolve_day_context(
+    def _resolve_base_day_context(
         self,
         target_date: date,
     ) -> ResolvedDayContext:
-        """Resolve the complete planning context for a date."""
+        """Resolve day context without calendar exceptions."""
 
-        calendar_exception = next(
-            (
-                item
-                for item in self._configuration.calendar_exceptions
-                if item.date == target_date
-            ),
-            None,
-        )
-
-        if calendar_exception is not None:
-            return ResolvedDayContext(
-                date=target_date,
-                day_type=self._find_day_type(calendar_exception.day_type_id),
-                cycle_id=None,
-                week_schedule_id=None,
-                calendar_exception_id=calendar_exception.id,
-            )
         cycle = self._resolve_cycle(target_date)
 
         if cycle is None:
@@ -74,9 +57,13 @@ class PlannerResolver:
 
         days_since_start = (target_date - cycle.start_date).days
 
-        week_index = (days_since_start // 7) % len(cycle.week_schedule_ids)
+        week_index = (
+            days_since_start // 7
+        ) % len(cycle.week_schedule_ids)
 
-        week_schedule_id = cycle.week_schedule_ids[week_index]
+        week_schedule_id = cycle.week_schedule_ids[
+            week_index
+        ]
 
         week_schedule = next(
             item
@@ -96,6 +83,44 @@ class PlannerResolver:
             week_schedule_id=week_schedule.id,
             calendar_exception_id=None,
         )
+
+    def resolve_base_day_context(
+        self,
+        target_date: date,
+    ) -> ResolvedDayContext:
+        """Resolve day context without calendar exceptions."""
+
+        return self._resolve_base_day_context(target_date)
+
+
+    def resolve_day_context(
+        self,
+        target_date: date,
+    ) -> ResolvedDayContext:
+        """Resolve the complete planning context for a date."""
+
+        base_context = self._resolve_base_day_context(
+            target_date
+        )
+
+        calendar_exception = next(
+            (
+                item
+                for item in self._configuration.calendar_exceptions
+                if item.date == target_date
+            ),
+            None,
+        )
+
+        if calendar_exception is not None:
+            return ResolvedDayContext(
+                date=target_date,
+                day_type=self._find_day_type(calendar_exception.day_type_id),
+                cycle_id=base_context.cycle_id,
+                week_schedule_id=base_context.week_schedule_id,
+                calendar_exception_id=calendar_exception.id,
+            )
+        return base_context
 
     def resolve_day_type(
         self,

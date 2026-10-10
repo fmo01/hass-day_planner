@@ -456,25 +456,29 @@ def test_validator_rejects_cycle_start_date_not_monday(
 def test_validator_rejects_multiple_cycles(
     week_schedule,
 ):
-    cycle1 = Cycle(
-        id="c1",
-        name="Cycle 1",
-        start_date=date(2026, 8, 31),
-        week_schedule_ids=(week_schedule.id,),
-    )
-
-    cycle2 = Cycle(
-        id="c2",
-        name="Cycle 2",
-        start_date=date(2026, 8, 31),
-        week_schedule_ids=(week_schedule.id,),
+    cycles = tuple(
+        Cycle(
+            id=f"c{index}",
+            name=f"Cycle {index}",
+            start_date=start_date,
+            week_schedule_ids=(week_schedule.id,),
+        )
+        for index, start_date in enumerate(
+            (
+                date(2026, 8, 31),
+                date(2026, 9, 7),
+                date(2026, 9, 14),
+                date(2026, 9, 21),
+            ),
+            start=1,
+        )
     )
 
     configuration = PlannerConfiguration(
         moments=(),
         day_types=(),
         week_schedules=(week_schedule,),
-        cycles=(cycle1, cycle2),
+        cycles=cycles,
         calendar_exceptions=(),
     )
 
@@ -482,7 +486,9 @@ def test_validator_rejects_multiple_cycles(
         ValidationError,
         match=rf"Maximum number of cycles exceeded: {DEFAULT_MAX_CYCLES}",
     ):
-        PlannerValidator.validate_configuration(configuration)
+        PlannerValidator.validate_configuration(
+            configuration
+        )
 
 
 def test_validator_rejects_cycle_not_starting_monday(
@@ -554,3 +560,91 @@ def test_validator_rejects_duplicate_action_id():
         match=("Duplicate action id in moment " "'wake_up': salon"),
     ):
         PlannerValidator.validate_configuration(configuration)
+
+
+def test_cycles_cannot_have_same_start_date(
+    day_type,
+    week_schedule,
+):
+    cycle1 = Cycle(
+        id="cycle1",
+        name="Cycle 1",
+        start_date=date(2026, 9, 7),
+        week_schedule_ids=(
+            week_schedule.id,
+        ),
+    )
+
+    cycle2 = Cycle(
+        id="cycle2",
+        name="Cycle 2",
+        start_date=date(2026, 9, 7),
+        week_schedule_ids=(
+            week_schedule.id,
+        ),
+    )
+
+    configuration = PlannerConfiguration(
+        moments=(),
+        day_types=(day_type,),
+        week_schedules=(
+            week_schedule,
+        ),
+        cycles=(
+            cycle1,
+            cycle2,
+        ),
+        calendar_exceptions=(),
+    )
+
+    with pytest.raises(
+        ValidationError,
+        match=(
+            "Duplicate cycle start date: "
+            "2026-09-07"
+        ),
+    ):
+        PlannerValidator.validate_configuration(
+            configuration
+        )
+
+def test_calendar_exceptions_cannot_have_same_date(
+    day_type,
+):
+    exception1 = CalendarException(
+        id="exception1",
+        date=date(2026, 9, 15),
+        day_type_id=day_type.id,
+        description="Exception 1",
+    )
+
+    exception2 = CalendarException(
+        id="exception2",
+        date=date(2026, 9, 15),
+        day_type_id=day_type.id,
+        description="Exception 2",
+    )
+
+    configuration = PlannerConfiguration(
+        moments=(),
+        day_types=(day_type,),
+        week_schedules=(),
+        cycles=(),
+        calendar_exceptions=(
+            exception1,
+            exception2,
+        ),
+    )
+
+    with pytest.raises(
+        ValidationError,
+        match=(
+            "Duplicate calendar exception date: "
+            "2026-09-15"
+        ),
+    ):
+        PlannerValidator.validate_configuration(
+            configuration
+        )
+
+

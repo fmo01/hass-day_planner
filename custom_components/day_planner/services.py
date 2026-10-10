@@ -7,7 +7,6 @@ from typing import Any
 
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.dispatcher import async_dispatcher_send
 
 from .const import (DOMAIN, SERVICE_ADD_CALENDAR_EXCEPTION, SERVICE_ADD_CYCLE,
                     SERVICE_ADD_DAY_TYPE, SERVICE_ADD_MOMENT,
@@ -19,7 +18,7 @@ from .const import (DOMAIN, SERVICE_ADD_CALENDAR_EXCEPTION, SERVICE_ADD_CYCLE,
                     SERVICE_UPDATE_CALENDAR_EXCEPTION, SERVICE_UPDATE_CYCLE,
                     SERVICE_UPDATE_DAY_TYPE, SERVICE_UPDATE_MOMENT,
                     SERVICE_UPDATE_SCHEDULED_MOMENT,
-                    SERVICE_UPDATE_WEEK_SCHEDULE, SIGNAL_PLANNER_UPDATED)
+                    SERVICE_UPDATE_WEEK_SCHEDULE)
 from .domain.action import Action
 from .domain.calendar_exception import CalendarException
 from .domain.cycle import Cycle
@@ -71,22 +70,7 @@ async def _execute(
     try:
         operation()
 
-        configuration = runtime.engine.configuration
-
-        await runtime.storage.async_save(
-            configuration,
-        )
-
-        runtime.resolver.update_configuration(
-            configuration,
-        )
-
-        await runtime.ha_scheduler.async_schedule_next()
-
-        async_dispatcher_send(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        await runtime.async_configuration_updated()
 
     except PlannerError as err:
         _LOGGER.warning(
@@ -122,6 +106,7 @@ async def async_setup_services(
             actions=tuple(
                 Action(
                     id=action["id"],
+                    label=action.get( "label", action["id"],),
                     sequence=list(action["sequence"]),
                 )
                 for action in call.data.get("actions", [])
@@ -147,6 +132,7 @@ async def async_setup_services(
             actions = tuple(
                 Action(
                     id=action["id"],
+                    label=action.get( "label", action["id"],),
                     sequence=list(action["sequence"]),
                 )
                 for action in call.data["actions"]

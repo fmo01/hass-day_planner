@@ -7,8 +7,7 @@ from homeassistant.config_entries import ConfigEntry
 from custom_components.day_planner.const import (CONF_DELETE_DATA_ON_REMOVE,
                                                  CONF_MAX_CYCLES,
                                                  DEFAULT_DELETE_DATA_ON_REMOVE,
-                                                 DEFAULT_MAX_CYCLES, DOMAIN,
-                                                 SIGNAL_PLANNER_UPDATED)
+                                                 DEFAULT_MAX_CYCLES, DOMAIN)
 from custom_components.day_planner.domain.action import Action
 from custom_components.day_planner.domain.calendar_exception import \
     CalendarException
@@ -322,11 +321,7 @@ def test_options_flow_add_moment_create():
 
         flow.config_entry.runtime_data = runtime
 
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
-
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
+        runtime.async_configuration_updated = AsyncMock()
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
@@ -336,10 +331,7 @@ def test_options_flow_add_moment_create():
             "icon": "mdi:alarm",
         }
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_add_moment(user_input)
+        result = await flow.async_step_add_moment(user_input)
 
         moment = runtime.engine.add_moment.call_args.args[0]
 
@@ -350,16 +342,7 @@ def test_options_flow_add_moment_create():
 
         runtime.engine.add_moment.assert_called_once()
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         flow.async_create_entry.assert_called_once_with(
             title="",
@@ -512,11 +495,7 @@ def test_options_flow_edit_moment_details_create():
 
         runtime.engine.get_moment.return_value = current_moment
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow._selected_moment_id = "wake_up"
 
@@ -526,15 +505,12 @@ def test_options_flow_edit_moment_details_create():
             }
         )
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_edit_moment_details(
-                {
-                    "name": "Réveil modifié",
-                    "icon": "mdi:coffee",
-                }
-            )
+        result = await flow.async_step_edit_moment_details(
+            {
+                "name": "Réveil modifié",
+                "icon": "mdi:coffee",
+            }
+        )
 
         updated = runtime.engine.update_moment.call_args.args[0]
 
@@ -545,16 +521,7 @@ def test_options_flow_edit_moment_details_create():
         # Important : les actions existantes doivent être conservées.
         assert updated.actions == (existing_action,)
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {
             "type": "create_entry",
@@ -721,11 +688,7 @@ def test_options_flow_remove_moment_confirmed():
 
         runtime.engine.get_moment.return_value = moment
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow._selected_remove_moment_id = "wake_up"
 
@@ -735,27 +698,15 @@ def test_options_flow_remove_moment_confirmed():
             }
         )
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_remove_moment_confirm(
-                {
-                    "confirm": True,
-                }
-            )
+        result = await flow.async_step_remove_moment_confirm(
+            {
+                "confirm": True,
+            }
+        )
 
         runtime.engine.remove_moment.assert_called_once_with("wake_up")
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {
             "type": "create_entry",
@@ -855,23 +806,16 @@ def test_options_flow_add_day_type_create():
         runtime = MagicMock()
         flow = create_flow(runtime=runtime)
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_add_day_type(
-                {
-                    "id": "work",
-                    "name": "Travail",
-                }
-            )
+        result = await flow.async_step_add_day_type(
+            {
+                "id": "work",
+                "name": "Travail",
+            }
+        )
 
         day_type = runtime.engine.add_day_type.call_args.args[0]
 
@@ -879,16 +823,7 @@ def test_options_flow_add_day_type_create():
         assert day_type.name == "Travail"
         assert day_type.scheduled_moments == ()
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -1004,24 +939,17 @@ def test_options_flow_edit_day_type_details_create():
 
         runtime.engine.get_day_type.return_value = day_type
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow._selected_day_type_id = "work"
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_edit_day_type_details(
-                {
-                    "name": "Travail modifié",
-                }
-            )
+        result = await flow.async_step_edit_day_type_details(
+            {
+                "name": "Travail modifié",
+            }
+        )
 
         updated = runtime.engine.update_day_type.call_args.args[0]
 
@@ -1029,16 +957,7 @@ def test_options_flow_edit_day_type_details_create():
         assert updated.name == "Travail modifié"
         assert updated.scheduled_moments == scheduled_moments
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -1186,37 +1105,21 @@ def test_options_flow_remove_day_type_confirmed():
 
         runtime.engine.get_day_type.return_value = day_type
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow._selected_remove_day_type_id = "work"
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_remove_day_type_confirm(
-                {
-                    "confirm": True,
-                }
-            )
+        result = await flow.async_step_remove_day_type_confirm(
+            {
+                "confirm": True,
+            }
+        )
 
         runtime.engine.remove_day_type.assert_called_once_with("work")
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -1350,23 +1253,16 @@ def test_options_flow_add_scheduled_moment_create():
 
         flow._selected_scheduled_day_type_id = "work"
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_add_scheduled_moment(
-                {
-                    "moment_id": "wake_up",
-                    "time": "07:30:00",
-                }
-            )
+        result = await flow.async_step_add_scheduled_moment(
+            {
+                "moment_id": "wake_up",
+                "time": "07:30:00",
+            }
+        )
 
         args = runtime.engine.add_scheduled_moment.call_args.args
 
@@ -1377,16 +1273,7 @@ def test_options_flow_add_scheduled_moment_create():
         assert scheduled.moment_id == "wake_up"
         assert scheduled.time_definition.fixed_time == time(7, 30)
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -1539,25 +1426,18 @@ def test_options_flow_edit_scheduled_moment_details_create():
 
         runtime.engine.get_day_type.return_value = day_type
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow._selected_scheduled_day_type_id = "work"
         flow._selected_scheduled_moment_id = "wake_up"
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_edit_scheduled_moment_details(
-                {
-                    "time": "08:15:00",
-                }
-            )
+        result = await flow.async_step_edit_scheduled_moment_details(
+            {
+                "time": "08:15:00",
+            }
+        )
 
         args = runtime.engine.update_scheduled_moment.call_args.args
 
@@ -1568,16 +1448,7 @@ def test_options_flow_edit_scheduled_moment_details_create():
         assert updated.moment_id == "wake_up"
         assert updated.time_definition.fixed_time == time(8, 15)
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -1748,41 +1619,25 @@ def test_options_flow_remove_scheduled_moment_confirmed():
 
         runtime.engine.get_moment.return_value = moment
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow._selected_scheduled_day_type_id = "work"
         flow._selected_remove_scheduled_moment_id = "wake_up"
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_remove_scheduled_moment_confirm(
-                {
-                    "confirm": True,
-                }
-            )
+        result = await flow.async_step_remove_scheduled_moment_confirm(
+            {
+                "confirm": True,
+            }
+        )
 
         runtime.engine.remove_scheduled_moment.assert_called_once_with(
             "work",
             "wake_up",
         )
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -1792,7 +1647,7 @@ def test_options_flow_remove_scheduled_moment_confirmed():
 def test_options_flow_remove_day_type_in_use():
     async def run():
         runtime = MagicMock()
-        runtime.storage.async_save = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
         flow = create_flow(runtime=runtime)
 
         day_type = DayType(
@@ -1830,7 +1685,7 @@ def test_options_flow_remove_day_type_in_use():
             "name": "Travail",
         }
 
-        runtime.storage.async_save.assert_not_awaited()
+        runtime.async_configuration_updated = AsyncMock()
 
         assert result == {
             "type": "form",
@@ -1921,30 +1776,23 @@ def test_options_flow_add_week_schedule_create():
         runtime = MagicMock()
         flow = create_flow(runtime=runtime)
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_add_week_schedule(
-                {
-                    "id": "week1",
-                    "name": "Semaine 1",
-                    "monday": "work",
-                    "tuesday": "work",
-                    "wednesday": "work",
-                    "thursday": "work",
-                    "friday": "work",
-                    "saturday": "weekend",
-                    "sunday": "weekend",
-                }
-            )
+        result = await flow.async_step_add_week_schedule(
+             {
+                "id": "week1",
+                "name": "Semaine 1",
+                "monday": "work",
+                "tuesday": "work",
+                "wednesday": "work",
+                "thursday": "work",
+                "friday": "work",
+                "saturday": "weekend",
+                "sunday": "weekend",
+            }
+        )
 
         week_schedule = runtime.engine.add_week_schedule.call_args.args[0]
 
@@ -1953,16 +1801,7 @@ def test_options_flow_add_week_schedule_create():
         assert week_schedule.monday == "work"
         assert week_schedule.sunday == "weekend"
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -2110,31 +1949,24 @@ def test_options_flow_edit_week_schedule_details_create():
 
         runtime.engine.get_week_schedule.return_value = week_schedule
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow._selected_week_schedule_id = "week1"
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_edit_week_schedule_details(
-                {
-                    "name": "Semaine modifiée",
-                    "monday": "work",
-                    "tuesday": "work",
-                    "wednesday": "work",
-                    "thursday": "work",
-                    "friday": "work",
-                    "saturday": "weekend",
-                    "sunday": "weekend",
-                }
-            )
+        result = await flow.async_step_edit_week_schedule_details(
+            {
+                "name": "Semaine modifiée",
+                "monday": "work",
+                "tuesday": "work",
+                "wednesday": "work",
+                "thursday": "work",
+                "friday": "work",
+                "saturday": "weekend",
+                "sunday": "weekend",
+            }
+        )
 
         updated = runtime.engine.update_week_schedule.call_args.args[0]
 
@@ -2143,16 +1975,7 @@ def test_options_flow_edit_week_schedule_details_create():
         assert updated.monday == "work"
         assert updated.sunday == "weekend"
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -2322,37 +2145,21 @@ def test_options_flow_remove_week_schedule_confirmed():
 
         runtime.engine.get_week_schedule.return_value = week_schedule
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow._selected_remove_week_schedule_id = "week1"
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_remove_week_schedule_confirm(
-                {
-                    "confirm": True,
-                }
-            )
+        result = await flow.async_step_remove_week_schedule_confirm(
+            {
+                "confirm": True,
+            }
+        )
 
         runtime.engine.remove_week_schedule.assert_called_once_with("week1")
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -2362,7 +2169,7 @@ def test_options_flow_remove_week_schedule_confirmed():
 def test_options_flow_remove_week_schedule_in_use():
     async def run():
         runtime = MagicMock()
-        runtime.storage.async_save = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow = create_flow(runtime=runtime)
 
@@ -2406,7 +2213,7 @@ def test_options_flow_remove_week_schedule_in_use():
             "name": "Semaine 1",
         }
 
-        runtime.storage.async_save.assert_not_awaited()
+        runtime.async_configuration_updated = AsyncMock()
 
         assert result == {"type": "form"}
 
@@ -2479,28 +2286,21 @@ def test_options_flow_add_cycle_create():
         runtime = MagicMock()
         flow = create_flow(runtime=runtime)
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_add_cycle(
-                {
-                    "id": "alternating",
-                    "name": "Alternance",
-                    "start_date": "2026-08-31",
-                    "week_schedule_ids": [
-                        "week_a",
-                        "week_b",
-                    ],
-                }
-            )
+        result = await flow.async_step_add_cycle(
+            {
+                "id": "alternating",
+                "name": "Alternance",
+                "start_date": "2026-08-31",
+                "week_schedule_ids": [
+                    "week_a",
+                    "week_b",
+                ],
+            }
+        )
 
         cycle = runtime.engine.add_cycle.call_args.args[0]
 
@@ -2512,16 +2312,7 @@ def test_options_flow_add_cycle_create():
             "week_b",
         )
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -2675,29 +2466,22 @@ def test_options_flow_edit_cycle_details_create():
 
         runtime.engine.get_cycle.return_value = existing_cycle
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow._selected_cycle_id = "alternating"
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_edit_cycle_details(
-                {
-                    "name": "Nouvelle alternance",
-                    "start_date": "2026-09-07",
-                    "week_schedule_ids": [
-                        "week_b",
-                        "week_a",
-                    ],
-                }
-            )
+        result = await flow.async_step_edit_cycle_details(
+           {
+               "name": "Nouvelle alternance",
+               "start_date": "2026-09-07",
+               "week_schedule_ids": [
+                   "week_b",
+                   "week_a",
+               ],
+           }
+       )
 
         cycle = runtime.engine.update_cycle.call_args.args[0]
 
@@ -2709,16 +2493,7 @@ def test_options_flow_edit_cycle_details_create():
             "week_a",
         )
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -2868,37 +2643,21 @@ def test_options_flow_remove_cycle_confirmed():
 
         runtime.engine.get_cycle.return_value = cycle
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow._selected_remove_cycle_id = "alternating"
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_remove_cycle_confirm(
-                {
-                    "confirm": True,
-                }
-            )
+        result = await flow.async_step_remove_cycle_confirm(
+            {
+                "confirm": True,
+            }
+        )
 
         runtime.engine.remove_cycle.assert_called_once_with("alternating")
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -3072,25 +2831,18 @@ def test_options_flow_add_calendar_exception_create():
         runtime = MagicMock()
         flow = create_flow(runtime=runtime)
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_add_calendar_exception(
-                {
-                    "id": "holiday",
-                    "date": "2026-12-25",
-                    "day_type_id": "work",
-                    "description": "Noël",
-                }
-            )
+        result = await flow.async_step_add_calendar_exception(
+            {
+                "id": "holiday",
+                "date": "2026-12-25",
+                "day_type_id": "work",
+                "description": "Noël",
+            }
+        )
 
         calendar_exception = runtime.engine.add_calendar_exception.call_args.args[0]
 
@@ -3099,16 +2851,7 @@ def test_options_flow_add_calendar_exception_create():
         assert calendar_exception.day_type_id == "work"
         assert calendar_exception.description == "Noël"
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -3234,26 +2977,19 @@ def test_options_flow_edit_calendar_exception_details_create():
 
         runtime.engine.get_calendar_exception.return_value = calendar_exception
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow._selected_calendar_exception_id = "holiday"
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_edit_calendar_exception_details(
-                {
-                    "date": "2026-12-26",
-                    "day_type_id": "work",
-                    "description": "Noël décalé",
-                }
-            )
+        result = await flow.async_step_edit_calendar_exception_details(
+            {
+                "date": "2026-12-26",
+                "day_type_id": "work",
+                "description": "Noël décalé",
+            }
+        )
 
         updated = runtime.engine.update_calendar_exception.call_args.args[0]
 
@@ -3262,16 +2998,7 @@ def test_options_flow_edit_calendar_exception_details_create():
         assert updated.day_type_id == "work"
         assert updated.description == "Noël décalé"
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -3421,37 +3148,21 @@ def test_options_flow_remove_calendar_exception_confirmed():
 
         runtime.engine.get_calendar_exception.return_value = calendar_exception
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow._selected_remove_calendar_exception_id = "holiday"
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_remove_calendar_exception_confirm(
-                {
-                    "confirm": True,
-                }
-            )
+        result = await flow.async_step_remove_calendar_exception_confirm(
+            {
+                "confirm": True,
+            }
+        )
 
         runtime.engine.remove_calendar_exception.assert_called_once_with("holiday")
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
 
@@ -3585,11 +3296,13 @@ def test_options_flow_add_moment_action_form():
         result_schema = schema(
             {
                 "id": "salon_on",
+                "label": "Allumer le salon",
                 "sequence": sequence,
             }
         )
 
         assert result_schema["id"] == "salon_on"
+        assert result_schema["label"] == "Allumer le salon"
         assert result_schema["sequence"] == sequence
 
         assert result == {"type": "form"}
@@ -3621,11 +3334,7 @@ def test_options_flow_add_moment_action_create():
 
         runtime.engine.get_moment.return_value = moment
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow = create_flow(runtime=runtime)
         flow._selected_action_moment_id = "wake_up"
@@ -3636,22 +3345,20 @@ def test_options_flow_add_moment_action_create():
             }
         )
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_add_moment_action(
-                {
-                    "id": "salon_on",
-                    "sequence": [
-                        {
-                            "action": "light.turn_on",
-                            "target": {
-                                "entity_id": "light.salon",
-                            },
-                        }
-                    ],
-                }
-            )
+        result = await flow.async_step_add_moment_action(
+            {
+                "id": "salon_on",
+                "label": "Allumer le salon",
+                "sequence": [
+                    {
+                        "action": "light.turn_on",
+                        "target": {
+                            "entity_id": "light.salon",
+                        },
+                    }
+                ],
+            }
+        )
 
         updated = runtime.engine.update_moment.call_args.args[0]
 
@@ -3663,6 +3370,7 @@ def test_options_flow_add_moment_action_create():
             existing_action,
             Action(
                 id="salon_on",
+                label="Allumer le salon",
                 sequence=[
                     {
                         "action": "light.turn_on",
@@ -3674,16 +3382,7 @@ def test_options_flow_add_moment_action_create():
             ),
         )
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {
             "type": "create_entry",
@@ -3883,11 +3582,7 @@ def test_options_flow_edit_moment_action_details_create():
 
         runtime.engine.get_moment.return_value = moment
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow = create_flow(runtime=runtime)
 
@@ -3900,21 +3595,19 @@ def test_options_flow_edit_moment_action_details_create():
             }
         )
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_edit_moment_action_details(
-                {
-                    "sequence": [
-                        {
-                            "action": "light.turn_off",
-                            "target": {
-                                "entity_id": "light.salon",
-                            },
-                        }
-                    ],
-                }
-            )
+        result = await flow.async_step_edit_moment_action_details(
+            {
+                "label": "Éteindre le salon",
+                "sequence": [
+                    {
+                        "action": "light.turn_off",
+                        "target": {
+                            "entity_id": "light.salon",
+                        },
+                    }
+                ],
+            }
+        )
 
         updated = runtime.engine.update_moment.call_args.args[0]
 
@@ -3925,6 +3618,7 @@ def test_options_flow_edit_moment_action_details_create():
         assert updated.actions == (
             Action(
                 id="salon_on",
+                label="Éteindre le salon",
                 sequence=[
                     {
                         "action": "light.turn_off",
@@ -3937,16 +3631,7 @@ def test_options_flow_edit_moment_action_details_create():
             action2,
         )
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {
             "type": "create_entry",
@@ -4153,11 +3838,7 @@ def test_options_flow_remove_moment_action_confirmed():
 
         runtime.engine.get_moment.return_value = moment
 
-        configuration = MagicMock()
-        runtime.engine.configuration = configuration
-
-        runtime.storage.async_save = AsyncMock()
-        runtime.ha_scheduler.async_schedule_next = AsyncMock()
+        runtime.async_configuration_updated = AsyncMock()
 
         flow = create_flow(runtime=runtime)
         flow._selected_action_moment_id = "wake_up"
@@ -4165,12 +3846,9 @@ def test_options_flow_remove_moment_action_confirmed():
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        with patch(
-            "custom_components.day_planner.options_flow." "async_dispatcher_send"
-        ) as dispatcher_send:
-            result = await flow.async_step_remove_moment_action_confirm(
-                {"confirm": True}
-            )
+        result = await flow.async_step_remove_moment_action_confirm(
+            {"confirm": True}
+        )
 
         updated = runtime.engine.update_moment.call_args.args[0]
 
@@ -4181,16 +3859,7 @@ def test_options_flow_remove_moment_action_confirmed():
         # salon_on supprimée, cuisine_on conservée.
         assert updated.actions == (preserved_action,)
 
-        runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-        runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-        runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
-
-        dispatcher_send.assert_called_once_with(
-            runtime.hass,
-            SIGNAL_PLANNER_UPDATED,
-        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {
             "type": "create_entry",

@@ -3,6 +3,9 @@
 from dataclasses import dataclass
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.dispatcher import async_dispatcher_send
+
+from .const import SIGNAL_PLANNER_UPDATED
 
 from .action_executor import ActionExecutor
 from .ha_scheduler import HomeAssistantScheduler
@@ -23,3 +26,23 @@ class DayPlannerRuntimeData:
     scheduler: PlannerScheduler
     action_executor: ActionExecutor
     ha_scheduler: HomeAssistantScheduler
+
+    async def async_configuration_updated(self) -> None:
+        """Synchronize runtime after a configuration change."""
+
+        configuration = self.engine.configuration
+
+        await self.storage.async_save(
+            configuration
+        )
+
+        self.resolver.update_configuration(
+            configuration
+        )
+
+        await self.ha_scheduler.async_schedule_next()
+
+        async_dispatcher_send(
+            self.hass,
+            SIGNAL_PLANNER_UPDATED,
+        )

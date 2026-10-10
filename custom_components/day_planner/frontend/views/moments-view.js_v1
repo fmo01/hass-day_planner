@@ -1,0 +1,93 @@
+console.info('moments-view.js v1');
+
+import { escapeHtml } from '../utils.js';
+
+export function renderMomentsView(card) {
+  const configuration = card._configuration;
+
+  if (!configuration) {
+    return '';
+  }
+
+  const moments = configuration.moments || [];
+  const dayTypes = configuration.day_types || [];
+
+  if (!moments.length) {
+    return `
+      <div class="moments-empty">
+        Aucun moment configuré.
+      </div>
+    `;
+  }
+
+  return `
+    <div class="moments-view">
+      <div class="moments-header">
+        <h2>Moments</h2>
+      </div>
+
+      <div class="moments-list">
+        ${moments
+          .map((moment) => {
+            const usageCount = dayTypes.filter((dayType) =>
+              (dayType.scheduled_moments || []).some(
+                (scheduled) => scheduled.moment_id === moment.id
+              )
+            ).length;
+
+            const actionCount = moment.actions?.length || 0;
+
+            return `
+              <div
+                class="moment-item"
+                data-moment-id="${escapeHtml(moment.id)}"
+              >
+                <div class="moment-main">
+                  ${
+                    moment.icon
+                      ? `
+                        <ha-icon
+                          icon="${escapeHtml(moment.icon)}"
+                        ></ha-icon>
+                      `
+                      : ''
+                  }
+
+                  <div class="moment-text">
+                    <strong class="moment-name">
+                      ${escapeHtml(moment.name)}
+                    </strong>
+
+                    <span class="moment-id">
+                      ${escapeHtml(moment.id)}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="moment-meta">
+                  <span>
+                    ${usageCount}
+                    type${usageCount === 1 ? '' : 's'} de journée
+                  </span>
+
+                  <span>
+                    ${actionCount}
+                    action${actionCount === 1 ? '' : 's'}
+                  </span>
+                </div>
+
+                <button
+                  class="editor-button manage-moment-actions"
+                  data-moment-id="${escapeHtml(moment.id)}"
+                  type="button"
+                >
+                  Actions
+                </button>
+              </div>
+            `;
+          })
+          .join('')}
+      </div>
+    </div>
+  `;
+}

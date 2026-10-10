@@ -16,6 +16,8 @@ from custom_components.day_planner.const import (
     SERVICE_UPDATE_DAY_TYPE, SERVICE_UPDATE_MOMENT,
     SERVICE_UPDATE_SCHEDULED_MOMENT, SERVICE_UPDATE_WEEK_SCHEDULE,
     SIGNAL_PLANNER_UPDATED)
+from custom_components.day_planner.const import SIGNAL_PLANNER_UPDATED
+from custom_components.day_planner.runtime import DayPlannerRuntimeData
 from custom_components.day_planner.domain.action import Action
 from custom_components.day_planner.domain.moment import Moment
 from custom_components.day_planner.planner.errors import PlannerError
@@ -82,38 +84,25 @@ def get_registered_service(
 
 
 def test_execute_success():
-    runtime = FakeRuntime()
+    runtime = MagicMock()
+    runtime.async_configuration_updated = AsyncMock()
+
     executed = False
 
     def operation():
         nonlocal executed
         executed = True
 
-    with patch(
-        "custom_components.day_planner.services.async_dispatcher_send"
-    ) as dispatcher_send:
-        asyncio.run(
-            _execute(
-                operation=operation,
-                runtime=runtime,
-                description="test operation",
-            )
+    asyncio.run(
+        _execute(
+            operation=operation,
+            runtime=runtime,
+            description="test operation",
         )
+    )
 
     assert executed is True
-
-    assert runtime.storage.save_count == 1
-    assert runtime.storage.saved_configuration is runtime.engine.configuration
-
-    assert runtime.resolver.update_count == 1
-    assert runtime.resolver.configuration is runtime.engine.configuration
-
-    assert runtime.ha_scheduler.schedule_count == 1
-
-    dispatcher_send.assert_called_once_with(
-        runtime.hass,
-        SIGNAL_PLANNER_UPDATED,
-    )
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_execute_planner_error():
@@ -170,10 +159,8 @@ def test_service_add_moment():
 
     runtime = MagicMock()
     runtime.engine.add_moment = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -241,7 +228,7 @@ def test_service_add_moment():
         ),
     )
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_update_moment():
@@ -273,10 +260,7 @@ def test_service_update_moment():
         )
     )
 
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -315,7 +299,7 @@ def test_service_update_moment():
 
     runtime.engine.get_moment.assert_called_once_with("m1")
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_update_moment_clear_actions():
@@ -347,10 +331,8 @@ def test_service_update_moment_clear_actions():
     )
 
     runtime.engine.update_moment = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -386,7 +368,7 @@ def test_service_update_moment_clear_actions():
     assert moment.id == "m1"
     assert moment.actions == ()
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_update_moment_actions():
@@ -406,10 +388,7 @@ def test_service_update_moment_actions():
         )
     )
 
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -476,10 +455,8 @@ def test_service_remove_moment():
 
     runtime = MagicMock()
     runtime.engine.remove_moment = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -509,7 +486,7 @@ def test_service_remove_moment():
 
     runtime.engine.remove_moment.assert_called_once_with("m1")
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_add_day_type():
@@ -520,10 +497,8 @@ def test_service_add_day_type():
 
     runtime = MagicMock()
     runtime.engine.add_day_type = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -558,7 +533,7 @@ def test_service_add_day_type():
     assert day_type.name == "Weekend"
     assert day_type.scheduled_moments == ()
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_update_day_type():
@@ -569,10 +544,8 @@ def test_service_update_day_type():
 
     runtime = MagicMock()
     runtime.engine.update_day_type = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -607,7 +580,7 @@ def test_service_update_day_type():
     assert day_type.name == "Télétravail modifié"
     assert day_type.scheduled_moments == ()
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_remove_day_type():
@@ -618,10 +591,8 @@ def test_service_remove_day_type():
 
     runtime = MagicMock()
     runtime.engine.remove_day_type = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -651,7 +622,7 @@ def test_service_remove_day_type():
 
     runtime.engine.remove_day_type.assert_called_once_with("dt1")
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_add_week_schedule():
@@ -662,10 +633,8 @@ def test_service_add_week_schedule():
 
     runtime = MagicMock()
     runtime.engine.add_week_schedule = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -712,7 +681,7 @@ def test_service_add_week_schedule():
     assert week_schedule.saturday == "dt1"
     assert week_schedule.sunday == "dt1"
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_update_week_schedule():
@@ -723,10 +692,8 @@ def test_service_update_week_schedule():
 
     runtime = MagicMock()
     runtime.engine.update_week_schedule = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -774,7 +741,7 @@ def test_service_update_week_schedule():
     assert week_schedule.saturday == "dt2"
     assert week_schedule.sunday == "dt2"
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_remove_week_schedule():
@@ -785,10 +752,8 @@ def test_service_remove_week_schedule():
 
     runtime = MagicMock()
     runtime.engine.remove_week_schedule = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -818,7 +783,7 @@ def test_service_remove_week_schedule():
 
     runtime.engine.remove_week_schedule.assert_called_once_with("ws1")
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_add_cycle():
@@ -829,10 +794,8 @@ def test_service_add_cycle():
 
     runtime = MagicMock()
     runtime.engine.add_cycle = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -870,7 +833,7 @@ def test_service_add_cycle():
     assert cycle.start_date == date(2026, 8, 31)
     assert cycle.week_schedule_ids == ("ws1", "ws2")
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_update_cycle():
@@ -881,10 +844,8 @@ def test_service_update_cycle():
 
     runtime = MagicMock()
     runtime.engine.update_cycle = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -922,7 +883,7 @@ def test_service_update_cycle():
     assert cycle.start_date == date(2026, 8, 31)
     assert cycle.week_schedule_ids == ("ws1", "ws2")
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_remove_cycle():
@@ -933,10 +894,8 @@ def test_service_remove_cycle():
 
     runtime = MagicMock()
     runtime.engine.remove_cycle = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -966,7 +925,7 @@ def test_service_remove_cycle():
 
     runtime.engine.remove_cycle.assert_called_once_with("c1")
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_add_calendar_exception():
@@ -977,10 +936,8 @@ def test_service_add_calendar_exception():
 
     runtime = MagicMock()
     runtime.engine.add_calendar_exception = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -1018,7 +975,7 @@ def test_service_add_calendar_exception():
     assert exception.day_type_id == "dt1"
     assert exception.description == "Férié"
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_update_calendar_exception():
@@ -1029,10 +986,8 @@ def test_service_update_calendar_exception():
 
     runtime = MagicMock()
     runtime.engine.update_calendar_exception = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -1070,7 +1025,7 @@ def test_service_update_calendar_exception():
     assert exception.day_type_id == "dt2"
     assert exception.description == "Congé modifié"
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_remove_calendar_exception():
@@ -1081,10 +1036,8 @@ def test_service_remove_calendar_exception():
 
     runtime = MagicMock()
     runtime.engine.remove_calendar_exception = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -1114,7 +1067,7 @@ def test_service_remove_calendar_exception():
 
     runtime.engine.remove_calendar_exception.assert_called_once_with("ce1")
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_get_runtime_not_configured():
@@ -1129,20 +1082,18 @@ def test_get_runtime_not_configured():
         _get_runtime(hass)
 
 
-def test_execute_storage_error():
-    runtime = FakeRuntime()
-
-    async def failing_save(configuration):
-        raise RuntimeError("Storage failure")
-
-    runtime.storage.async_save = failing_save
+def test_execute_configuration_update_error():
+    runtime = MagicMock()
+    runtime.async_configuration_updated = AsyncMock(
+        side_effect=RuntimeError("Configuration update failure")
+    )
 
     def operation():
         pass
 
     with pytest.raises(
         RuntimeError,
-        match="Storage failure",
+        match="Configuration update failure",
     ):
         asyncio.run(
             _execute(
@@ -1152,8 +1103,7 @@ def test_execute_storage_error():
             )
         )
 
-    assert runtime.resolver.update_count == 0
-    assert runtime.ha_scheduler.schedule_count == 0
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_add_scheduled_moment():
@@ -1164,10 +1114,8 @@ def test_service_add_scheduled_moment():
 
     runtime = MagicMock()
     runtime.engine.add_scheduled_moment = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -1212,7 +1160,7 @@ def test_service_add_scheduled_moment():
         0,
     )
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_update_scheduled_moment():
@@ -1223,10 +1171,8 @@ def test_service_update_scheduled_moment():
 
     runtime = MagicMock()
     runtime.engine.update_scheduled_moment = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -1265,7 +1211,7 @@ def test_service_update_scheduled_moment():
     assert scheduled_moment.moment_id == "test"
     assert scheduled_moment.time_definition.fixed_time == time(18, 30)
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
 
 
 def test_service_remove_scheduled_moment():
@@ -1276,10 +1222,8 @@ def test_service_remove_scheduled_moment():
 
     runtime = MagicMock()
     runtime.engine.remove_scheduled_moment = MagicMock()
-    runtime.engine.configuration = object()
-    runtime.storage.async_save = AsyncMock()
-    runtime.resolver.update_configuration = MagicMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
+
+    runtime.async_configuration_updated = AsyncMock()
 
     entry = MagicMock()
     entry.runtime_data = runtime
@@ -1313,4 +1257,56 @@ def test_service_remove_scheduled_moment():
         "test",
     )
 
-    runtime.storage.async_save.assert_awaited_once_with(runtime.engine.configuration)
+    runtime.async_configuration_updated.assert_awaited_once()
+
+
+def test_async_configuration_updated():
+    async def run():
+        hass = MagicMock()
+        storage = MagicMock()
+        storage.async_save = AsyncMock()
+
+        engine = MagicMock()
+        configuration = object()
+        engine.configuration = configuration
+
+        resolver = MagicMock()
+
+        scheduler = MagicMock()
+        action_executor = MagicMock()
+
+        ha_scheduler = MagicMock()
+        ha_scheduler.async_schedule_next = AsyncMock()
+
+        runtime = DayPlannerRuntimeData(
+            hass=hass,
+            storage=storage,
+            engine=engine,
+            resolver=resolver,
+            scheduler=scheduler,
+            action_executor=action_executor,
+            ha_scheduler=ha_scheduler,
+        )
+
+        with patch(
+            "custom_components.day_planner.runtime.async_dispatcher_send"
+        ) as dispatcher_send:
+
+            await runtime.async_configuration_updated()
+
+            storage.async_save.assert_awaited_once_with(
+                configuration
+            )
+
+            resolver.update_configuration.assert_called_once_with(
+                configuration
+            )
+
+            ha_scheduler.async_schedule_next.assert_awaited_once()
+
+            dispatcher_send.assert_called_once_with(
+                hass,
+                SIGNAL_PLANNER_UPDATED,
+            )
+
+    asyncio.run(run())

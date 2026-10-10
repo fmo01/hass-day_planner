@@ -1,5 +1,7 @@
 """Domain validation rules for Day Planner."""
 
+from datetime import date
+
 from ..const import DEFAULT_MAX_CYCLES
 from ..domain.calendar_exception import CalendarException
 from ..domain.cycle import Cycle
@@ -139,7 +141,19 @@ class PlannerValidator:
 
         week_schedule_ids = {item.id for item in configuration.week_schedules}
 
+        used_start_dates: set[date] = set()
+
         for cycle in configuration.cycles:
+            if cycle.start_date in used_start_dates:
+                raise ValidationError(
+                    "Duplicate cycle start date: "
+                    f"{cycle.start_date.isoformat()}"
+                )
+
+            used_start_dates.add(
+                cycle.start_date
+            )
+
             PlannerValidator._validate_cycle(
                 cycle,
                 week_schedule_ids,
@@ -182,7 +196,19 @@ class PlannerValidator:
 
         day_type_ids = {item.id for item in configuration.day_types}
 
+        used_dates: set[date] = set()
+
         for calendar_exception in configuration.calendar_exceptions:
+            if calendar_exception.date in used_dates:
+                raise ValidationError(
+                    "Duplicate calendar exception date: "
+                    f"{calendar_exception.date.isoformat()}"
+                )
+
+            used_dates.add(
+                calendar_exception.date
+            )
+
             PlannerValidator._validate_calendar_exception(
                 calendar_exception,
                 day_type_ids,
@@ -199,3 +225,5 @@ class PlannerValidator:
             raise ValidationError(
                 f"Unknown day type: " f"{calendar_exception.day_type_id}"
             )
+
+
