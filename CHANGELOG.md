@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0](https://github.com/fmo01/hass-day_planner/compare/0.0.4...0.1.0) (2026-10-10)
+
+### Features
+
+* Ajout tests et premiere etape de stabilité ([750adc6](https://github.com/fmo01/hass-day_planner/commit/750adc634aabb3aa424161a545a598ffe04b77f7))
+
 ## [0.0.4](https://github.com/fmo01/hass-day-planner/compare/0.0.3...0.0.4) (2026-08-03)
 
 ### Bug Fixes
