@@ -688,3 +688,15 @@ def test_resolver_returns_no_cycle_before_first_cycle_start():
     assert context.cycle_id is None
     assert context.week_schedule_id is None
     assert context.calendar_exception_id is None
+
+
+def test_resolver_base_context_without_configuration():
+    target = date(2026, 10, 11)
+    result = PlannerResolver(PlannerConfiguration.empty()).resolve_base_day_context(
+        target
+    )
+    assert result.date == target
+    assert result.day_type is None
+    assert result.cycle_id is None
+    assert result.week_schedule_id is None
+    assert result.calendar_exception_id is None

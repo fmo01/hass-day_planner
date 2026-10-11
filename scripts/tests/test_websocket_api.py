@@ -1,14 +1,8 @@
 import asyncio
-<<<<<<< HEAD
-
-from unittest.mock import AsyncMock, MagicMock, patch
-
 from datetime import date, time
-=======
-from datetime import time
 from unittest.mock import AsyncMock, MagicMock, patch
->>>>>>> 9f677627d87dcf82364979e9329b43b71eef60a9
 
+import pytest
 from homeassistant.components import websocket_api
 
 from custom_components.day_planner.domain.action import Action
@@ -22,39 +16,17 @@ from custom_components.day_planner.domain.time_definition import TimeDefinition
 from custom_components.day_planner.planner.errors import PlannerError
 from custom_components.day_planner.runtime import DayPlannerRuntimeData
 from custom_components.day_planner.websocket_api import (
-<<<<<<< HEAD
-    _get_runtime,
-    async_setup_websocket_api,
-    websocket_get_calendar,
-    websocket_get_configuration,
-    websocket_update_scheduled_moment,
-    websocket_update_day_type,
-    websocket_add_day_type,
-    websocket_remove_day_type,
-    websocket_add_scheduled_moment,
-    websocket_remove_scheduled_moment,
-    websocket_add_week_schedule,
-    websocket_update_week_schedule,
-    websocket_remove_week_schedule,
-    websocket_add_cycle,
-    websocket_update_cycle,
-    websocket_remove_cycle,
-    websocket_add_calendar_exception,
-    websocket_update_calendar_exception,
-    websocket_remove_calendar_exception,
-    websocket_add_moment,
-    websocket_update_moment,
-    websocket_remove_moment,
-    websocket_add_moment_action,
-    websocket_update_moment_action,
-    websocket_remove_moment_action,
-)
-=======
-    _get_runtime, async_setup_websocket_api, websocket_add_day_type,
-    websocket_get_calendar, websocket_get_configuration,
-    websocket_remove_day_type, websocket_update_day_type,
-    websocket_update_scheduled_moment)
->>>>>>> 9f677627d87dcf82364979e9329b43b71eef60a9
+    _get_runtime, async_setup_websocket_api, websocket_add_calendar_exception,
+    websocket_add_cycle, websocket_add_day_type, websocket_add_moment,
+    websocket_add_moment_action, websocket_add_scheduled_moment,
+    websocket_add_week_schedule, websocket_get_calendar,
+    websocket_get_configuration, websocket_remove_calendar_exception,
+    websocket_remove_cycle, websocket_remove_day_type, websocket_remove_moment,
+    websocket_remove_moment_action, websocket_remove_scheduled_moment,
+    websocket_remove_week_schedule, websocket_update_calendar_exception,
+    websocket_update_cycle, websocket_update_day_type, websocket_update_moment,
+    websocket_update_moment_action, websocket_update_scheduled_moment,
+    websocket_update_week_schedule)
 
 
 def create_hass_with_runtime(runtime):
@@ -97,10 +69,7 @@ def test_setup_websocket_api():
     ) as register:
         async_setup_websocket_api(hass)
 
-    registered_commands = {
-        call.args[1]
-        for call in register.call_args_list
-    }
+    registered_commands = {call.args[1] for call in register.call_args_list}
 
     assert registered_commands == {
         websocket_get_configuration,
@@ -127,6 +96,7 @@ def test_setup_websocket_api():
         websocket_update_moment_action,
         websocket_remove_moment_action,
     }
+
 
 def test_websocket_get_configuration():
     runtime = MagicMock()
@@ -217,7 +187,6 @@ def test_websocket_get_calendar():
         )
     )
 
-<<<<<<< HEAD
     runtime.resolver.resolve_base_day_context.side_effect = (
         lambda target_date: ResolvedDayContext(
             date=target_date,
@@ -228,12 +197,7 @@ def test_websocket_get_calendar():
         )
     )
 
-    hass = create_hass_with_runtime(
-        runtime
-    )
-=======
     hass = create_hass_with_runtime(runtime)
->>>>>>> 9f677627d87dcf82364979e9329b43b71eef60a9
 
     connection = MagicMock()
 
@@ -283,25 +247,14 @@ def test_websocket_get_calendar():
     assert result["days"][1]["date"] == "2026-09-02"
     runtime.resolver.resolve_moment.assert_called_with("wake_up")
 
-<<<<<<< HEAD
-    assert (
-        runtime.resolver.resolve_day_context.call_count
-        == 2
-    )
-
-    assert (
-        runtime.resolver.resolve_base_day_context.call_count
-        == 2
-    )
-
-=======
     assert runtime.resolver.resolve_day_context.call_count == 2
->>>>>>> 9f677627d87dcf82364979e9329b43b71eef60a9
+
+    assert runtime.resolver.resolve_base_day_context.call_count == 2
+
     runtime.resolver.resolve_moment.return_value = moment
 
 
 def test_websocket_get_calendar_without_day_type():
-
     runtime = MagicMock()
 
     runtime.resolver.resolve_day_context.return_value = ResolvedDayContext(
@@ -312,23 +265,15 @@ def test_websocket_get_calendar_without_day_type():
         calendar_exception_id=None,
     )
 
-<<<<<<< HEAD
-    runtime.resolver.resolve_base_day_context.return_value = (
-        ResolvedDayContext(
-            date=None,
-            day_type=None,
-            cycle_id=None,
-            week_schedule_id=None,
-            calendar_exception_id=None,
-        )
+    runtime.resolver.resolve_base_day_context.return_value = ResolvedDayContext(
+        date=None,
+        day_type=None,
+        cycle_id=None,
+        week_schedule_id=None,
+        calendar_exception_id=None,
     )
 
-    hass = create_hass_with_runtime(
-        runtime
-    )
-=======
     hass = create_hass_with_runtime(runtime)
->>>>>>> 9f677627d87dcf82364979e9329b43b71eef60a9
 
     connection = MagicMock()
 
@@ -492,15 +437,7 @@ def test_websocket_update_scheduled_moment():
         scheduled,
     )
 
-<<<<<<< HEAD
     runtime.async_configuration_updated.assert_awaited_once_with()
-=======
-    runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-    runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-    runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
->>>>>>> 9f677627d87dcf82364979e9329b43b71eef60a9
 
     connection.send_result.assert_called_once_with(
         10,
@@ -583,15 +520,7 @@ def test_websocket_update_day_type():
 
     runtime.engine.get_day_type.return_value = current
 
-<<<<<<< HEAD
     runtime.async_configuration_updated = AsyncMock()
-=======
-    configuration = MagicMock()
-    runtime.engine.configuration = configuration
-
-    runtime.storage.async_save = AsyncMock()
-    runtime.ha_scheduler.async_schedule_next = AsyncMock()
->>>>>>> 9f677627d87dcf82364979e9329b43b71eef60a9
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
@@ -619,15 +548,7 @@ def test_websocket_update_day_type():
     # les moments existants sont conservés.
     assert updated.scheduled_moments == current.scheduled_moments
 
-<<<<<<< HEAD
     runtime.async_configuration_updated.assert_awaited_once_with()
-=======
-    runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-    runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-    runtime.ha_scheduler.async_schedule_next.assert_awaited_once()
->>>>>>> 9f677627d87dcf82364979e9329b43b71eef60a9
 
     connection.send_error.assert_not_called()
 
@@ -707,15 +628,7 @@ def test_websocket_add_day_type():
     assert created.name == "Journée Maison"
     assert created.scheduled_moments == ()
 
-<<<<<<< HEAD
     runtime.async_configuration_updated.assert_awaited_once_with()
-=======
-    runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-    runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-    runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
->>>>>>> 9f677627d87dcf82364979e9329b43b71eef60a9
 
     connection.send_error.assert_not_called()
 
@@ -787,15 +700,7 @@ def test_websocket_remove_day_type():
 
     runtime.engine.remove_day_type.assert_called_once_with("home")
 
-<<<<<<< HEAD
     runtime.async_configuration_updated.assert_awaited_once_with()
-=======
-    runtime.storage.async_save.assert_awaited_once_with(configuration)
-
-    runtime.resolver.update_configuration.assert_called_once_with(configuration)
-
-    runtime.ha_scheduler.async_schedule_next.assert_awaited_once_with()
->>>>>>> 9f677627d87dcf82364979e9329b43b71eef60a9
 
     connection.send_error.assert_not_called()
 
@@ -839,7 +744,7 @@ def test_websocket_remove_day_type_planner_error():
     runtime.storage.async_save.assert_not_awaited()
     runtime.resolver.update_configuration.assert_not_called()
     runtime.ha_scheduler.async_schedule_next.assert_not_awaited()
-<<<<<<< HEAD
+
 
 def test_websocket_add_scheduled_moment():
     runtime = MagicMock()
@@ -865,15 +770,11 @@ def test_websocket_add_scheduled_moment():
 
     runtime.engine.add_scheduled_moment.assert_called_once()
 
-    day_type_id, scheduled_moment = (
-        runtime.engine.add_scheduled_moment.call_args.args
-    )
+    day_type_id, scheduled_moment = runtime.engine.add_scheduled_moment.call_args.args
 
     assert day_type_id == "travail"
     assert scheduled_moment.moment_id == "reveil"
-    assert scheduled_moment.time_definition.fixed_time == time(
-        7, 30
-    )
+    assert scheduled_moment.time_definition.fixed_time == time(7, 30)
 
     runtime.async_configuration_updated.assert_awaited_once_with()
 
@@ -887,6 +788,7 @@ def test_websocket_add_scheduled_moment():
             "time": "07:30:00",
         },
     )
+
 
 def test_websocket_add_scheduled_moment_invalid_time():
     runtime = MagicMock()
@@ -969,6 +871,7 @@ def test_websocket_add_scheduled_moment_planner_error():
         "Scheduled moment already exists",
     )
 
+
 def test_websocket_remove_scheduled_moment():
     runtime = MagicMock()
     runtime.async_configuration_updated = AsyncMock()
@@ -983,8 +886,7 @@ def test_websocket_remove_scheduled_moment():
             connection,
             {
                 "id": 43,
-                "type":
-                    "day_planner/remove_scheduled_moment",
+                "type": "day_planner/remove_scheduled_moment",
                 "day_type_id": "travail",
                 "moment_id": "reveil",
             },
@@ -1008,13 +910,12 @@ def test_websocket_remove_scheduled_moment():
         },
     )
 
+
 def test_websocket_remove_scheduled_moment_planner_error():
     runtime = MagicMock()
 
-    runtime.engine.remove_scheduled_moment.side_effect = (
-        PlannerError(
-            "Scheduled moment not found"
-        )
+    runtime.engine.remove_scheduled_moment.side_effect = PlannerError(
+        "Scheduled moment not found"
     )
 
     runtime.storage.async_save = AsyncMock()
@@ -1030,8 +931,7 @@ def test_websocket_remove_scheduled_moment_planner_error():
             connection,
             {
                 "id": 44,
-                "type":
-                    "day_planner/remove_scheduled_moment",
+                "type": "day_planner/remove_scheduled_moment",
                 "day_type_id": "travail",
                 "moment_id": "reveil",
             },
@@ -1086,11 +986,7 @@ def test_websocket_add_week_schedule():
 
     runtime.engine.add_week_schedule.assert_called_once()
 
-    week_schedule = (
-        runtime.engine
-        .add_week_schedule
-        .call_args.args[0]
-    )
+    week_schedule = runtime.engine.add_week_schedule.call_args.args[0]
 
     assert week_schedule.id == "normal"
     assert week_schedule.name == "Semaine normale"
@@ -1125,10 +1021,8 @@ def test_websocket_add_week_schedule():
 def test_websocket_add_week_schedule_planner_error():
     runtime = MagicMock()
 
-    runtime.engine.add_week_schedule.side_effect = (
-        PlannerError(
-            "Day type not found: travail"
-        )
+    runtime.engine.add_week_schedule.side_effect = PlannerError(
+        "Day type not found: travail"
     )
 
     runtime.storage.async_save = AsyncMock()
@@ -1172,6 +1066,7 @@ def test_websocket_add_week_schedule_planner_error():
         "Day type not found: travail",
     )
 
+
 def test_websocket_update_week_schedule():
     runtime = MagicMock()
     runtime.async_configuration_updated = AsyncMock()
@@ -1202,11 +1097,7 @@ def test_websocket_update_week_schedule():
 
     runtime.engine.update_week_schedule.assert_called_once()
 
-    week_schedule = (
-        runtime.engine
-        .update_week_schedule
-        .call_args.args[0]
-    )
+    week_schedule = runtime.engine.update_week_schedule.call_args.args[0]
 
     assert week_schedule.id == "normal"
     assert week_schedule.name == "Semaine modifiée"
@@ -1232,13 +1123,12 @@ def test_websocket_update_week_schedule():
         },
     )
 
+
 def test_websocket_update_week_schedule_planner_error():
     runtime = MagicMock()
 
-    runtime.engine.update_week_schedule.side_effect = (
-        PlannerError(
-            "Week schedule not found: normal"
-        )
+    runtime.engine.update_week_schedule.side_effect = PlannerError(
+        "Week schedule not found: normal"
     )
 
     runtime.storage.async_save = AsyncMock()
@@ -1297,16 +1187,13 @@ def test_websocket_remove_week_schedule():
             connection,
             {
                 "id": 54,
-                "type":
-                    "day_planner/remove_week_schedule",
+                "type": "day_planner/remove_week_schedule",
                 "week_schedule_id": "normal",
             },
         )
     )
 
-    runtime.engine.remove_week_schedule.assert_called_once_with(
-        "normal"
-    )
+    runtime.engine.remove_week_schedule.assert_called_once_with("normal")
 
     runtime.async_configuration_updated.assert_awaited_once_with()
 
@@ -1323,10 +1210,8 @@ def test_websocket_remove_week_schedule():
 def test_websocket_remove_week_schedule_planner_error():
     runtime = MagicMock()
 
-    runtime.engine.remove_week_schedule.side_effect = (
-        PlannerError(
-            "Cannot remove a week schedule used by a cycle"
-        )
+    runtime.engine.remove_week_schedule.side_effect = PlannerError(
+        "Cannot remove a week schedule used by a cycle"
     )
 
     runtime.storage.async_save = AsyncMock()
@@ -1342,16 +1227,13 @@ def test_websocket_remove_week_schedule_planner_error():
             connection,
             {
                 "id": 55,
-                "type":
-                    "day_planner/remove_week_schedule",
+                "type": "day_planner/remove_week_schedule",
                 "week_schedule_id": "normal",
             },
         )
     )
 
-    runtime.engine.remove_week_schedule.assert_called_once_with(
-        "normal"
-    )
+    runtime.engine.remove_week_schedule.assert_called_once_with("normal")
 
     runtime.storage.async_save.assert_not_awaited()
 
@@ -1396,16 +1278,11 @@ def test_websocket_add_cycle():
 
     runtime.engine.add_cycle.assert_called_once()
 
-    cycle = (
-        runtime.engine.add_cycle
-        .call_args.args[0]
-    )
+    cycle = runtime.engine.add_cycle.call_args.args[0]
 
     assert cycle.id == "cycle1"
     assert cycle.name == "Cycle principal"
-    assert cycle.start_date == date(
-        2026, 9, 1
-    )
+    assert cycle.start_date == date(2026, 9, 1)
 
     assert cycle.week_schedule_ids == (
         "semaine1",
@@ -1428,6 +1305,7 @@ def test_websocket_add_cycle():
             ],
         },
     )
+
 
 def test_websocket_add_cycle_invalid_date():
     runtime = MagicMock()
@@ -1470,6 +1348,7 @@ def test_websocket_add_cycle_invalid_date():
         "Invalid start date format",
     )
 
+
 def test_websocket_add_cycle_invalid_week_count():
     runtime = MagicMock()
 
@@ -1505,6 +1384,7 @@ def test_websocket_add_cycle_invalid_week_count():
         "A cycle must contain between 1 and 4 week schedules",
     )
 
+
 def test_websocket_update_cycle():
     runtime = MagicMock()
     runtime.async_configuration_updated = AsyncMock()
@@ -1533,16 +1413,11 @@ def test_websocket_update_cycle():
 
     runtime.engine.update_cycle.assert_called_once()
 
-    cycle = (
-        runtime.engine.update_cycle
-        .call_args.args[0]
-    )
+    cycle = runtime.engine.update_cycle.call_args.args[0]
 
     assert cycle.id == "cycle1"
     assert cycle.name == "Cycle été"
-    assert cycle.start_date == date(
-        2026, 9, 15
-    )
+    assert cycle.start_date == date(2026, 9, 15)
 
     assert cycle.week_schedule_ids == (
         "semaine2",
@@ -1565,6 +1440,7 @@ def test_websocket_update_cycle():
             ],
         },
     )
+
 
 def test_websocket_update_cycle_invalid_date():
     runtime = MagicMock()
@@ -1607,6 +1483,7 @@ def test_websocket_update_cycle_invalid_date():
         "Invalid start date format",
     )
 
+
 def test_websocket_update_cycle_invalid_week_count():
     runtime = MagicMock()
 
@@ -1648,6 +1525,7 @@ def test_websocket_update_cycle_invalid_week_count():
         "A cycle must contain between 1 and 4 week schedules",
     )
 
+
 def test_websocket_remove_cycle():
     runtime = MagicMock()
     runtime.async_configuration_updated = AsyncMock()
@@ -1668,9 +1546,7 @@ def test_websocket_remove_cycle():
         )
     )
 
-    runtime.engine.remove_cycle.assert_called_once_with(
-        "cycle1"
-    )
+    runtime.engine.remove_cycle.assert_called_once_with("cycle1")
 
     runtime.async_configuration_updated.assert_awaited_once_with()
 
@@ -1683,14 +1559,11 @@ def test_websocket_remove_cycle():
         },
     )
 
+
 def test_websocket_remove_cycle_planner_error():
     runtime = MagicMock()
 
-    runtime.engine.remove_cycle.side_effect = (
-        PlannerError(
-            "Cycle not found: cycle1"
-        )
-    )
+    runtime.engine.remove_cycle.side_effect = PlannerError("Cycle not found: cycle1")
 
     runtime.storage.async_save = AsyncMock()
     runtime.ha_scheduler.async_schedule_next = AsyncMock()
@@ -1711,9 +1584,7 @@ def test_websocket_remove_cycle_planner_error():
         )
     )
 
-    runtime.engine.remove_cycle.assert_called_once_with(
-        "cycle1"
-    )
+    runtime.engine.remove_cycle.assert_called_once_with("cycle1")
 
     runtime.storage.async_save.assert_not_awaited()
     runtime.resolver.update_configuration.assert_not_called()
@@ -1726,6 +1597,7 @@ def test_websocket_remove_cycle_planner_error():
         websocket_api.ERR_INVALID_FORMAT,
         "Cycle not found: cycle1",
     )
+
 
 def test_websocket_add_cycle_duplicate_start_date():
     runtime = MagicMock()
@@ -1772,6 +1644,7 @@ def test_websocket_add_cycle_duplicate_start_date():
         "Duplicate cycle start date: 2026-09-07",
     )
 
+
 def test_websocket_add_calendar_exception():
     runtime = MagicMock()
     runtime.async_configuration_updated = AsyncMock()
@@ -1786,35 +1659,23 @@ def test_websocket_add_calendar_exception():
             connection,
             {
                 "id": 70,
-                "type":
-                    "day_planner/add_calendar_exception",
-                "calendar_exception_id":
-                    "exception1",
+                "type": "day_planner/add_calendar_exception",
+                "calendar_exception_id": "exception1",
                 "date": "2026-09-14",
                 "day_type_id": "repos",
-                "description":
-                    "Jour exceptionnel",
+                "description": "Jour exceptionnel",
             },
         )
     )
 
     runtime.engine.add_calendar_exception.assert_called_once()
 
-    calendar_exception = (
-        runtime.engine
-        .add_calendar_exception
-        .call_args.args[0]
-    )
+    calendar_exception = runtime.engine.add_calendar_exception.call_args.args[0]
 
     assert calendar_exception.id == "exception1"
-    assert calendar_exception.date == date(
-        2026, 9, 14
-    )
+    assert calendar_exception.date == date(2026, 9, 14)
     assert calendar_exception.day_type_id == "repos"
-    assert (
-        calendar_exception.description
-        == "Jour exceptionnel"
-    )
+    assert calendar_exception.description == "Jour exceptionnel"
 
     runtime.async_configuration_updated.assert_awaited_once_with()
 
@@ -1829,6 +1690,7 @@ def test_websocket_add_calendar_exception():
             "description": "Jour exceptionnel",
         },
     )
+
 
 def test_websocket_add_calendar_exception_invalid_date():
     runtime = MagicMock()
@@ -1846,10 +1708,8 @@ def test_websocket_add_calendar_exception_invalid_date():
             connection,
             {
                 "id": 71,
-                "type":
-                    "day_planner/add_calendar_exception",
-                "calendar_exception_id":
-                    "exception1",
+                "type": "day_planner/add_calendar_exception",
+                "calendar_exception_id": "exception1",
                 "date": "2026-99-99",
                 "day_type_id": "repos",
             },
@@ -1870,6 +1730,7 @@ def test_websocket_add_calendar_exception_invalid_date():
         "Invalid date format",
     )
 
+
 def test_websocket_update_calendar_exception():
     runtime = MagicMock()
     runtime.async_configuration_updated = AsyncMock()
@@ -1884,39 +1745,28 @@ def test_websocket_update_calendar_exception():
             connection,
             {
                 "id": 72,
-                "type":
-                    "day_planner/update_calendar_exception",
-                "calendar_exception_id":
-                    "exception1",
+                "type": "day_planner/update_calendar_exception",
+                "calendar_exception_id": "exception1",
                 "date": "2026-09-15",
                 "day_type_id": "travail",
-                "description":
-                    "Exception modifiée",
+                "description": "Exception modifiée",
             },
         )
     )
 
     runtime.engine.update_calendar_exception.assert_called_once()
 
-    calendar_exception = (
-        runtime.engine
-        .update_calendar_exception
-        .call_args.args[0]
-    )
+    calendar_exception = runtime.engine.update_calendar_exception.call_args.args[0]
 
     assert calendar_exception.id == "exception1"
-    assert calendar_exception.date == date(
-        2026, 9, 15
-    )
+    assert calendar_exception.date == date(2026, 9, 15)
     assert calendar_exception.day_type_id == "travail"
-    assert (
-        calendar_exception.description
-        == "Exception modifiée"
-    )
+    assert calendar_exception.description == "Exception modifiée"
 
     runtime.async_configuration_updated.assert_awaited_once_with()
 
     connection.send_error.assert_not_called()
+
 
 def test_websocket_update_calendar_exception_invalid_date():
     runtime = MagicMock()
@@ -1934,10 +1784,8 @@ def test_websocket_update_calendar_exception_invalid_date():
             connection,
             {
                 "id": 73,
-                "type":
-                    "day_planner/update_calendar_exception",
-                "calendar_exception_id":
-                    "exception1",
+                "type": "day_planner/update_calendar_exception",
+                "calendar_exception_id": "exception1",
                 "date": "2026-99-99",
                 "day_type_id": "travail",
             },
@@ -1958,6 +1806,7 @@ def test_websocket_update_calendar_exception_invalid_date():
         "Invalid date format",
     )
 
+
 def test_websocket_remove_calendar_exception():
     runtime = MagicMock()
     runtime.async_configuration_updated = AsyncMock()
@@ -1972,17 +1821,13 @@ def test_websocket_remove_calendar_exception():
             connection,
             {
                 "id": 74,
-                "type":
-                    "day_planner/remove_calendar_exception",
-                "calendar_exception_id":
-                    "exception1",
+                "type": "day_planner/remove_calendar_exception",
+                "calendar_exception_id": "exception1",
             },
         )
     )
 
-    runtime.engine.remove_calendar_exception.assert_called_once_with(
-        "exception1"
-    )
+    runtime.engine.remove_calendar_exception.assert_called_once_with("exception1")
 
     runtime.async_configuration_updated.assert_awaited_once_with()
 
@@ -1991,8 +1836,7 @@ def test_websocket_remove_calendar_exception():
     connection.send_result.assert_called_once_with(
         74,
         {
-            "calendar_exception_id":
-                "exception1",
+            "calendar_exception_id": "exception1",
         },
     )
 
@@ -2000,10 +1844,8 @@ def test_websocket_remove_calendar_exception():
 def test_websocket_remove_calendar_exception_planner_error():
     runtime = MagicMock()
 
-    runtime.engine.remove_calendar_exception.side_effect = (
-        PlannerError(
-            "Calendar exception not found: exception1"
-        )
+    runtime.engine.remove_calendar_exception.side_effect = PlannerError(
+        "Calendar exception not found: exception1"
     )
 
     runtime.storage.async_save = AsyncMock()
@@ -2019,17 +1861,13 @@ def test_websocket_remove_calendar_exception_planner_error():
             connection,
             {
                 "id": 75,
-                "type":
-                    "day_planner/remove_calendar_exception",
-                "calendar_exception_id":
-                    "exception1",
+                "type": "day_planner/remove_calendar_exception",
+                "calendar_exception_id": "exception1",
             },
         )
     )
 
-    runtime.engine.remove_calendar_exception.assert_called_once_with(
-        "exception1"
-    )
+    runtime.engine.remove_calendar_exception.assert_called_once_with("exception1")
 
     runtime.storage.async_save.assert_not_awaited()
     runtime.resolver.update_configuration.assert_not_called()
@@ -2042,6 +1880,7 @@ def test_websocket_remove_calendar_exception_planner_error():
         websocket_api.ERR_INVALID_FORMAT,
         "Calendar exception not found: exception1",
     )
+
 
 def test_websocket_get_calendar_with_exception_base_day_type():
     runtime = MagicMock()
@@ -2058,24 +1897,20 @@ def test_websocket_get_calendar_with_exception_base_day_type():
         scheduled_moments=(),
     )
 
-    runtime.resolver.resolve_day_context.return_value = (
-        ResolvedDayContext(
-            date=date(2026, 9, 14),
-            day_type=exception_day_type,
-            cycle_id="cycle_1",
-            week_schedule_id="week_1",
-            calendar_exception_id="exception-2026-09-14",
-        )
+    runtime.resolver.resolve_day_context.return_value = ResolvedDayContext(
+        date=date(2026, 9, 14),
+        day_type=exception_day_type,
+        cycle_id="cycle_1",
+        week_schedule_id="week_1",
+        calendar_exception_id="exception-2026-09-14",
     )
 
-    runtime.resolver.resolve_base_day_context.return_value = (
-        ResolvedDayContext(
-            date=date(2026, 9, 14),
-            day_type=base_day_type,
-            cycle_id="cycle_1",
-            week_schedule_id="week_1",
-            calendar_exception_id=None,
-        )
+    runtime.resolver.resolve_base_day_context.return_value = ResolvedDayContext(
+        date=date(2026, 9, 14),
+        day_type=base_day_type,
+        cycle_id="cycle_1",
+        week_schedule_id="week_1",
+        calendar_exception_id=None,
     )
 
     hass = create_hass_with_runtime(runtime)
@@ -2094,10 +1929,7 @@ def test_websocket_get_calendar_with_exception_base_day_type():
 
     connection.send_error.assert_not_called()
 
-    result = (
-        connection.send_result
-        .call_args.args[1]
-    )
+    result = connection.send_result.call_args.args[1]
 
     assert result["days"][0] == {
         "date": "2026-09-14",
@@ -2105,11 +1937,10 @@ def test_websocket_get_calendar_with_exception_base_day_type():
         "base_day_type": base_day_type.to_dict(),
         "cycle_id": "cycle_1",
         "week_schedule_id": "week_1",
-        "calendar_exception_id": (
-            "exception-2026-09-14"
-        ),
+        "calendar_exception_id": ("exception-2026-09-14"),
         "scheduled_moments": [],
     }
+
 
 def test_websocket_add_moment_action():
     runtime = MagicMock()
@@ -2163,14 +1994,9 @@ def test_websocket_add_moment_action():
         )
     )
 
-    runtime.engine.get_moment.assert_called_once_with(
-        "wake_up"
-    )
+    runtime.engine.get_moment.assert_called_once_with("wake_up")
 
-    updated = (
-        runtime.engine.update_moment
-        .call_args.args[0]
-    )
+    updated = runtime.engine.update_moment.call_args.args[0]
 
     assert updated.id == "wake_up"
     assert updated.name == "Réveil"
@@ -2202,6 +2028,7 @@ def test_websocket_add_moment_action():
             "action_id": "salon_on",
         },
     )
+
 
 def test_websocket_update_moment_action():
     runtime = MagicMock()
@@ -2269,14 +2096,9 @@ def test_websocket_update_moment_action():
         )
     )
 
-    runtime.engine.get_moment.assert_called_once_with(
-        "wake_up"
-    )
+    runtime.engine.get_moment.assert_called_once_with("wake_up")
 
-    updated = (
-        runtime.engine.update_moment
-        .call_args.args[0]
-    )
+    updated = runtime.engine.update_moment.call_args.args[0]
 
     assert updated.id == current.id
     assert updated.name == current.name
@@ -2309,6 +2131,7 @@ def test_websocket_update_moment_action():
             "action_id": "salon_on",
         },
     )
+
 
 def test_websocket_remove_moment_action():
     runtime = MagicMock()
@@ -2367,22 +2190,15 @@ def test_websocket_remove_moment_action():
         )
     )
 
-    runtime.engine.get_moment.assert_called_once_with(
-        "wake_up"
-    )
+    runtime.engine.get_moment.assert_called_once_with("wake_up")
 
-    updated = (
-        runtime.engine.update_moment
-        .call_args.args[0]
-    )
+    updated = runtime.engine.update_moment.call_args.args[0]
 
     assert updated.id == current.id
     assert updated.name == current.name
     assert updated.icon == current.icon
 
-    assert updated.actions == (
-        action_to_keep,
-    )
+    assert updated.actions == (action_to_keep,)
 
     runtime.async_configuration_updated.assert_awaited_once_with()
 
@@ -2395,6 +2211,7 @@ def test_websocket_remove_moment_action():
             "action_id": "salon_on",
         },
     )
+
 
 def test_websocket_update_moment_action_not_found():
     runtime = MagicMock()
@@ -2446,6 +2263,7 @@ def test_websocket_update_moment_action_not_found():
     runtime.engine.update_moment.assert_not_called()
     runtime.async_configuration_updated.assert_not_awaited()
 
+
 def test_websocket_remove_moment_action_not_found():
     runtime = MagicMock()
 
@@ -2490,6 +2308,7 @@ def test_websocket_remove_moment_action_not_found():
 
     runtime.engine.update_moment.assert_not_called()
     runtime.async_configuration_updated.assert_not_awaited()
+
 
 def test_websocket_add_moment_action_duplicate_id():
     runtime = MagicMock()
@@ -2543,6 +2362,7 @@ def test_websocket_add_moment_action_duplicate_id():
     runtime.engine.update_moment.assert_not_called()
     runtime.async_configuration_updated.assert_not_awaited()
 
+
 def test_websocket_add_moment():
     runtime = MagicMock()
     runtime.async_configuration_updated = AsyncMock()
@@ -2565,10 +2385,7 @@ def test_websocket_add_moment():
         )
     )
 
-    created = (
-        runtime.engine.add_moment
-        .call_args.args[0]
-    )
+    created = runtime.engine.add_moment.call_args.args[0]
 
     assert created.id == "wake_up"
     assert created.name == "Réveil"
@@ -2588,6 +2405,7 @@ def test_websocket_add_moment():
             "actions": [],
         },
     )
+
 
 def test_websocket_update_moment():
     runtime = MagicMock()
@@ -2630,14 +2448,9 @@ def test_websocket_update_moment():
         )
     )
 
-    runtime.engine.get_moment.assert_called_once_with(
-        "wake_up"
-    )
+    runtime.engine.get_moment.assert_called_once_with("wake_up")
 
-    updated = (
-        runtime.engine.update_moment
-        .call_args.args[0]
-    )
+    updated = runtime.engine.update_moment.call_args.args[0]
 
     assert updated.id == "wake_up"
     assert updated.name == "Réveil semaine"
@@ -2659,6 +2472,7 @@ def test_websocket_update_moment():
         },
     )
 
+
 def test_websocket_remove_moment():
     runtime = MagicMock()
     runtime.async_configuration_updated = AsyncMock()
@@ -2679,9 +2493,7 @@ def test_websocket_remove_moment():
         )
     )
 
-    runtime.engine.remove_moment.assert_called_once_with(
-        "wake_up"
-    )
+    runtime.engine.remove_moment.assert_called_once_with("wake_up")
 
     runtime.async_configuration_updated.assert_awaited_once_with()
 
@@ -2695,5 +2507,117 @@ def test_websocket_remove_moment():
     )
 
 
-=======
->>>>>>> 9f677627d87dcf82364979e9329b43b71eef60a9
+MUTATIONS_WITHOUT_RUNTIME = [
+    "update_scheduled_moment",
+    "update_day_type",
+    "add_day_type",
+    "remove_day_type",
+    "add_scheduled_moment",
+    "remove_scheduled_moment",
+    "add_week_schedule",
+    "update_week_schedule",
+    "remove_week_schedule",
+    "add_cycle",
+    "update_cycle",
+    "remove_cycle",
+    "add_calendar_exception",
+    "update_calendar_exception",
+    "remove_calendar_exception",
+    "add_moment_action",
+    "update_moment_action",
+    "remove_moment_action",
+    "add_moment",
+    "update_moment",
+    "remove_moment",
+]
+
+
+@pytest.mark.parametrize("command", MUTATIONS_WITHOUT_RUNTIME)
+def test_websocket_mutation_not_configured(command):
+    async def run():
+        hass = MagicMock()
+        hass.config_entries.async_entries.return_value = []
+        connection = MagicMock()
+        await run_websocket_handler(
+            hass,
+            globals()[f"websocket_{command}"],
+            connection,
+            {"id": 1, "type": f"day_planner/{command}"},
+        )
+        connection.send_error.assert_called_once_with(
+            1,
+            websocket_api.ERR_NOT_FOUND,
+            "Day Planner is not configured",
+        )
+        connection.send_result.assert_not_called()
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "update_cycle",
+        "add_calendar_exception",
+        "update_calendar_exception",
+        "add_moment_action",
+        "update_moment_action",
+        "remove_moment_action",
+        "add_moment",
+        "update_moment",
+        "remove_moment",
+    ],
+)
+def test_websocket_mutation_configuration_update_error(command):
+    async def run():
+        runtime = MagicMock()
+        runtime.async_configuration_updated = AsyncMock(
+            side_effect=PlannerError("Save failed")
+        )
+        actions = (
+            ()
+            if command == "add_moment_action"
+            else (
+                Action(id="a1", label="Action", sequence=[{"action": "light.turn_on"}]),
+            )
+        )
+        runtime.engine.get_moment.return_value = Moment(
+            id="m1",
+            name="Moment",
+            icon=None,
+            actions=actions,
+        )
+        hass = MagicMock()
+        entry = MagicMock()
+        entry.runtime_data = runtime
+        hass.config_entries.async_entries.return_value = [entry]
+        connection = MagicMock()
+        msg = {
+            "id": 2,
+            "type": f"day_planner/{command}",
+            "moment_id": "m1",
+            "action_id": "a1",
+            "cycle_id": "c1",
+            "calendar_exception_id": "ce1",
+            "day_type_id": "dt1",
+            "name": "Name",
+            "icon": None,
+            "start_date": "2026-10-12",
+            "week_schedule_ids": ["ws1"],
+            "date": "2026-10-12",
+            "description": "Exception",
+            "sequence": [{"action": "light.turn_on"}],
+            "label": "Action",
+        }
+        await run_websocket_handler(
+            hass, globals()[f"websocket_{command}"], connection, msg
+        )
+        runtime.async_configuration_updated.assert_awaited_once_with()
+        connection.send_error.assert_called_once_with(
+            2,
+            websocket_api.ERR_INVALID_FORMAT,
+            "Save failed",
+        )
+        connection.send_result.assert_not_called()
+
+    asyncio.run(run())

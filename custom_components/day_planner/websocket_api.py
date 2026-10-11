@@ -157,6 +157,7 @@ def async_setup_websocket_api(
         websocket_remove_moment,
     )
 
+
 @websocket_api.websocket_command(
     {
         vol.Required("type"): "day_planner/get_configuration",
@@ -239,7 +240,6 @@ async def websocket_update_scheduled_moment(
         await runtime.async_configuration_updated()
 
     except PlannerError as err:
-
         connection.send_error(
             msg["id"],
             websocket_api.ERR_INVALID_FORMAT,
@@ -307,9 +307,7 @@ def websocket_get_calendar(
 
     while target_date <= end_date:
         context = runtime.resolver.resolve_day_context(target_date)
-        base_context = runtime.resolver.resolve_base_day_context(
-            target_date
-        )
+        base_context = runtime.resolver.resolve_base_day_context(target_date)
 
         day_type = context.day_type
 
@@ -507,20 +505,13 @@ async def websocket_remove_day_type(
         },
     )
 
+
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/add_scheduled_moment",
-        vol.Required(
-            "day_type_id"
-        ): str,
-        vol.Required(
-            "moment_id"
-        ): str,
-        vol.Required(
-            "time"
-        ): str,
+        vol.Required("type"): "day_planner/add_scheduled_moment",
+        vol.Required("day_type_id"): str,
+        vol.Required("moment_id"): str,
+        vol.Required("time"): str,
     }
 )
 @websocket_api.async_response
@@ -542,9 +533,7 @@ async def websocket_add_scheduled_moment(
         return
 
     try:
-        fixed_time = time.fromisoformat(
-            msg["time"]
-        )
+        fixed_time = time.fromisoformat(msg["time"])
     except ValueError:
         connection.send_error(
             msg["id"],
@@ -588,15 +577,9 @@ async def websocket_add_scheduled_moment(
 
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/remove_scheduled_moment",
-        vol.Required(
-            "day_type_id"
-        ): str,
-        vol.Required(
-            "moment_id"
-        ): str,
+        vol.Required("type"): "day_planner/remove_scheduled_moment",
+        vol.Required("day_type_id"): str,
+        vol.Required("moment_id"): str,
     }
 )
 @websocket_api.async_response
@@ -644,9 +627,7 @@ async def websocket_remove_scheduled_moment(
 
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/add_week_schedule",
+        vol.Required("type"): "day_planner/add_week_schedule",
         vol.Required("week_schedule_id"): str,
         vol.Required("name"): str,
         vol.Required("monday"): str,
@@ -689,9 +670,7 @@ async def websocket_add_week_schedule(
     )
 
     try:
-        runtime.engine.add_week_schedule(
-            week_schedule
-        )
+        runtime.engine.add_week_schedule(week_schedule)
 
         await runtime.async_configuration_updated()
 
@@ -721,9 +700,7 @@ async def websocket_add_week_schedule(
 
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/update_week_schedule",
+        vol.Required("type"): "day_planner/update_week_schedule",
         vol.Required("week_schedule_id"): str,
         vol.Required("name"): str,
         vol.Required("monday"): str,
@@ -766,9 +743,7 @@ async def websocket_update_week_schedule(
     )
 
     try:
-        runtime.engine.update_week_schedule(
-            week_schedule
-        )
+        runtime.engine.update_week_schedule(week_schedule)
 
         await runtime.async_configuration_updated()
 
@@ -795,11 +770,10 @@ async def websocket_update_week_schedule(
         },
     )
 
+
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/remove_week_schedule",
+        vol.Required("type"): "day_planner/remove_week_schedule",
         vol.Required("week_schedule_id"): str,
     }
 )
@@ -822,9 +796,7 @@ async def websocket_remove_week_schedule(
         return
 
     try:
-        runtime.engine.remove_week_schedule(
-            msg["week_schedule_id"]
-        )
+        runtime.engine.remove_week_schedule(msg["week_schedule_id"])
 
         await runtime.async_configuration_updated()
 
@@ -839,29 +811,18 @@ async def websocket_remove_week_schedule(
     connection.send_result(
         msg["id"],
         {
-            "week_schedule_id":
-                msg["week_schedule_id"],
+            "week_schedule_id": msg["week_schedule_id"],
         },
     )
 
 
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/add_cycle",
-        vol.Required(
-            "cycle_id"
-        ): str,
-        vol.Required(
-            "name"
-        ): str,
-        vol.Required(
-            "start_date"
-        ): str,
-        vol.Required(
-            "week_schedule_ids"
-        ): [str],
+        vol.Required("type"): "day_planner/add_cycle",
+        vol.Required("cycle_id"): str,
+        vol.Required("name"): str,
+        vol.Required("start_date"): str,
+        vol.Required("week_schedule_ids"): [str],
     }
 )
 @websocket_api.async_response
@@ -883,9 +844,7 @@ async def websocket_add_cycle(
         return
 
     try:
-        start_date = date.fromisoformat(
-            msg["start_date"]
-        )
+        start_date = date.fromisoformat(msg["start_date"])
     except ValueError:
         connection.send_error(
             msg["id"],
@@ -894,9 +853,7 @@ async def websocket_add_cycle(
         )
         return
 
-    week_schedule_ids = tuple(
-        msg["week_schedule_ids"]
-    )
+    week_schedule_ids = tuple(msg["week_schedule_ids"])
 
     if not 1 <= len(week_schedule_ids) <= 4:
         connection.send_error(
@@ -914,9 +871,7 @@ async def websocket_add_cycle(
     )
 
     try:
-        runtime.engine.add_cycle(
-            cycle
-        )
+        runtime.engine.add_cycle(cycle)
 
         await runtime.async_configuration_updated()
 
@@ -933,23 +888,14 @@ async def websocket_add_cycle(
         cycle.to_dict(),
     )
 
+
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/update_cycle",
-        vol.Required(
-            "cycle_id"
-        ): str,
-        vol.Required(
-            "name"
-        ): str,
-        vol.Required(
-            "start_date"
-        ): str,
-        vol.Required(
-            "week_schedule_ids"
-        ): [str],
+        vol.Required("type"): "day_planner/update_cycle",
+        vol.Required("cycle_id"): str,
+        vol.Required("name"): str,
+        vol.Required("start_date"): str,
+        vol.Required("week_schedule_ids"): [str],
     }
 )
 @websocket_api.async_response
@@ -971,9 +917,7 @@ async def websocket_update_cycle(
         return
 
     try:
-        start_date = date.fromisoformat(
-            msg["start_date"]
-        )
+        start_date = date.fromisoformat(msg["start_date"])
     except ValueError:
         connection.send_error(
             msg["id"],
@@ -982,9 +926,7 @@ async def websocket_update_cycle(
         )
         return
 
-    week_schedule_ids = tuple(
-        msg["week_schedule_ids"]
-    )
+    week_schedule_ids = tuple(msg["week_schedule_ids"])
 
     if not 1 <= len(week_schedule_ids) <= 4:
         connection.send_error(
@@ -1002,9 +944,7 @@ async def websocket_update_cycle(
     )
 
     try:
-        runtime.engine.update_cycle(
-            cycle
-        )
+        runtime.engine.update_cycle(cycle)
 
         await runtime.async_configuration_updated()
 
@@ -1021,14 +961,11 @@ async def websocket_update_cycle(
         cycle.to_dict(),
     )
 
+
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/remove_cycle",
-        vol.Required(
-            "cycle_id"
-        ): str,
+        vol.Required("type"): "day_planner/remove_cycle",
+        vol.Required("cycle_id"): str,
     }
 )
 @websocket_api.async_response
@@ -1050,9 +987,7 @@ async def websocket_remove_cycle(
         return
 
     try:
-        runtime.engine.remove_cycle(
-            msg["cycle_id"]
-        )
+        runtime.engine.remove_cycle(msg["cycle_id"])
 
         await runtime.async_configuration_updated()
 
@@ -1071,23 +1006,14 @@ async def websocket_remove_cycle(
         },
     )
 
+
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/add_calendar_exception",
-        vol.Required(
-            "calendar_exception_id"
-        ): str,
-        vol.Required(
-            "date"
-        ): str,
-        vol.Required(
-            "day_type_id"
-        ): str,
-        vol.Optional(
-            "description"
-        ): str,
+        vol.Required("type"): "day_planner/add_calendar_exception",
+        vol.Required("calendar_exception_id"): str,
+        vol.Required("date"): str,
+        vol.Required("day_type_id"): str,
+        vol.Optional("description"): str,
     }
 )
 @websocket_api.async_response
@@ -1109,9 +1035,7 @@ async def websocket_add_calendar_exception(
         return
 
     try:
-        exception_date = date.fromisoformat(
-            msg["date"]
-        )
+        exception_date = date.fromisoformat(msg["date"])
     except ValueError:
         connection.send_error(
             msg["id"],
@@ -1124,15 +1048,11 @@ async def websocket_add_calendar_exception(
         id=msg["calendar_exception_id"],
         date=exception_date,
         day_type_id=msg["day_type_id"],
-        description=msg.get(
-            "description"
-        ),
+        description=msg.get("description"),
     )
 
     try:
-        runtime.engine.add_calendar_exception(
-            calendar_exception
-        )
+        runtime.engine.add_calendar_exception(calendar_exception)
 
         await runtime.async_configuration_updated()
 
@@ -1149,23 +1069,14 @@ async def websocket_add_calendar_exception(
         calendar_exception.to_dict(),
     )
 
+
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/update_calendar_exception",
-        vol.Required(
-            "calendar_exception_id"
-        ): str,
-        vol.Required(
-            "date"
-        ): str,
-        vol.Required(
-            "day_type_id"
-        ): str,
-        vol.Optional(
-            "description"
-        ): str,
+        vol.Required("type"): "day_planner/update_calendar_exception",
+        vol.Required("calendar_exception_id"): str,
+        vol.Required("date"): str,
+        vol.Required("day_type_id"): str,
+        vol.Optional("description"): str,
     }
 )
 @websocket_api.async_response
@@ -1187,9 +1098,7 @@ async def websocket_update_calendar_exception(
         return
 
     try:
-        exception_date = date.fromisoformat(
-            msg["date"]
-        )
+        exception_date = date.fromisoformat(msg["date"])
     except ValueError:
         connection.send_error(
             msg["id"],
@@ -1202,15 +1111,11 @@ async def websocket_update_calendar_exception(
         id=msg["calendar_exception_id"],
         date=exception_date,
         day_type_id=msg["day_type_id"],
-        description=msg.get(
-            "description"
-        ),
+        description=msg.get("description"),
     )
 
     try:
-        runtime.engine.update_calendar_exception(
-            calendar_exception
-        )
+        runtime.engine.update_calendar_exception(calendar_exception)
 
         await runtime.async_configuration_updated()
 
@@ -1227,14 +1132,11 @@ async def websocket_update_calendar_exception(
         calendar_exception.to_dict(),
     )
 
+
 @websocket_api.websocket_command(
     {
-        vol.Required(
-            "type"
-        ): "day_planner/remove_calendar_exception",
-        vol.Required(
-            "calendar_exception_id"
-        ): str,
+        vol.Required("type"): "day_planner/remove_calendar_exception",
+        vol.Required("calendar_exception_id"): str,
     }
 )
 @websocket_api.async_response
@@ -1256,9 +1158,7 @@ async def websocket_remove_calendar_exception(
         return
 
     try:
-        runtime.engine.remove_calendar_exception(
-            msg["calendar_exception_id"]
-        )
+        runtime.engine.remove_calendar_exception(msg["calendar_exception_id"])
 
         await runtime.async_configuration_updated()
 
@@ -1273,10 +1173,10 @@ async def websocket_remove_calendar_exception(
     connection.send_result(
         msg["id"],
         {
-            "calendar_exception_id":
-                msg["calendar_exception_id"],
+            "calendar_exception_id": msg["calendar_exception_id"],
         },
     )
+
 
 @websocket_api.websocket_command(
     {
@@ -1306,14 +1206,9 @@ async def websocket_add_moment_action(
         return
 
     try:
-        moment = runtime.engine.get_moment(
-            msg["moment_id"]
-        )
+        moment = runtime.engine.get_moment(msg["moment_id"])
 
-        if any(
-            action.id == msg["action_id"]
-            for action in moment.actions
-        ):
+        if any(action.id == msg["action_id"] for action in moment.actions):
             connection.send_error(
                 msg["id"],
                 websocket_api.ERR_INVALID_FORMAT,
@@ -1323,7 +1218,10 @@ async def websocket_add_moment_action(
 
         action = Action(
             id=msg["action_id"],
-            label=msg.get( "label", msg["action_id"],),
+            label=msg.get(
+                "label",
+                msg["action_id"],
+            ),
             sequence=list(msg["sequence"]),
         )
 
@@ -1337,9 +1235,7 @@ async def websocket_add_moment_action(
             ),
         )
 
-        runtime.engine.update_moment(
-            updated_moment
-        )
+        runtime.engine.update_moment(updated_moment)
 
         await runtime.async_configuration_updated()
 
@@ -1358,6 +1254,7 @@ async def websocket_add_moment_action(
             "action_id": msg["action_id"],
         },
     )
+
 
 @websocket_api.websocket_command(
     {
@@ -1387,14 +1284,9 @@ async def websocket_update_moment_action(
         return
 
     try:
-        moment = runtime.engine.get_moment(
-            msg["moment_id"]
-        )
+        moment = runtime.engine.get_moment(msg["moment_id"])
 
-        if not any(
-            action.id == msg["action_id"]
-            for action in moment.actions
-        ):
+        if not any(action.id == msg["action_id"] for action in moment.actions):
             connection.send_error(
                 msg["id"],
                 websocket_api.ERR_NOT_FOUND,
@@ -1402,22 +1294,17 @@ async def websocket_update_moment_action(
             )
             return
 
-        current_action = next(
-            action
-            for action in moment.actions
-            if action.id == msg["action_id"]
-        )
-
         updated_action = Action(
             id=msg["action_id"],
-            label=msg.get( "label", msg["action_id"],),
+            label=msg.get(
+                "label",
+                msg["action_id"],
+            ),
             sequence=list(msg["sequence"]),
         )
 
         actions = tuple(
-            updated_action
-            if action.id == msg["action_id"]
-            else action
+            updated_action if action.id == msg["action_id"] else action
             for action in moment.actions
         )
 
@@ -1428,9 +1315,7 @@ async def websocket_update_moment_action(
             actions=actions,
         )
 
-        runtime.engine.update_moment(
-            updated_moment
-        )
+        runtime.engine.update_moment(updated_moment)
 
         await runtime.async_configuration_updated()
 
@@ -1477,14 +1362,9 @@ async def websocket_remove_moment_action(
         return
 
     try:
-        moment = runtime.engine.get_moment(
-            msg["moment_id"]
-        )
+        moment = runtime.engine.get_moment(msg["moment_id"])
 
-        if not any(
-            action.id == msg["action_id"]
-            for action in moment.actions
-        ):
+        if not any(action.id == msg["action_id"] for action in moment.actions):
             connection.send_error(
                 msg["id"],
                 websocket_api.ERR_NOT_FOUND,
@@ -1493,9 +1373,7 @@ async def websocket_remove_moment_action(
             return
 
         actions = tuple(
-            action
-            for action in moment.actions
-            if action.id != msg["action_id"]
+            action for action in moment.actions if action.id != msg["action_id"]
         )
 
         updated_moment = Moment(
@@ -1505,9 +1383,7 @@ async def websocket_remove_moment_action(
             actions=actions,
         )
 
-        runtime.engine.update_moment(
-            updated_moment
-        )
+        runtime.engine.update_moment(updated_moment)
 
         await runtime.async_configuration_updated()
 
@@ -1526,6 +1402,7 @@ async def websocket_remove_moment_action(
             "action_id": msg["action_id"],
         },
     )
+
 
 @websocket_api.websocket_command(
     {
@@ -1561,9 +1438,7 @@ async def websocket_add_moment(
             actions=(),
         )
 
-        runtime.engine.add_moment(
-            moment
-        )
+        runtime.engine.add_moment(moment)
 
         await runtime.async_configuration_updated()
 
@@ -1579,6 +1454,7 @@ async def websocket_add_moment(
         msg["id"],
         moment.to_dict(),
     )
+
 
 @websocket_api.websocket_command(
     {
@@ -1607,9 +1483,7 @@ async def websocket_update_moment(
         return
 
     try:
-        current = runtime.engine.get_moment(
-            msg["moment_id"]
-        )
+        current = runtime.engine.get_moment(msg["moment_id"])
 
         updated_moment = Moment(
             id=current.id,
@@ -1618,9 +1492,7 @@ async def websocket_update_moment(
             actions=current.actions,
         )
 
-        runtime.engine.update_moment(
-            updated_moment
-        )
+        runtime.engine.update_moment(updated_moment)
 
         await runtime.async_configuration_updated()
 
@@ -1667,9 +1539,7 @@ async def websocket_remove_moment(
         return
 
     try:
-        runtime.engine.remove_moment(
-            msg["moment_id"]
-        )
+        runtime.engine.remove_moment(msg["moment_id"])
 
         await runtime.async_configuration_updated()
 
@@ -1687,5 +1557,3 @@ async def websocket_remove_moment(
             "moment_id": msg["moment_id"],
         },
     )
-
-

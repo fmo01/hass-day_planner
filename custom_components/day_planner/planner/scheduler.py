@@ -68,7 +68,6 @@ class PlannerScheduler:
             target_date = now.date() + timedelta(days=day_offset)
 
             for event in self.events_for_date(target_date):
-
                 scheduled_at = self._normalize_scheduled_at(
                     event.scheduled_at,
                     now,

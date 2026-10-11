@@ -1,5 +1,7 @@
 """Resolved Day Planner context for a date."""
 
+from datetime import date
+
 from dataclasses import dataclass
 
 from .day_type import DayType

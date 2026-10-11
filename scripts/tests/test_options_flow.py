@@ -70,6 +70,7 @@ def test_options_flow_init_menu():
         flow.async_show_menu.assert_called_once_with(
             step_id="init",
             menu_options=[
+                "management",
                 "moments",
                 "day_types",
                 "week_schedules",
@@ -1781,7 +1782,7 @@ def test_options_flow_add_week_schedule_create():
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
         result = await flow.async_step_add_week_schedule(
-             {
+            {
                 "id": "week1",
                 "name": "Semaine 1",
                 "monday": "work",
@@ -2473,15 +2474,15 @@ def test_options_flow_edit_cycle_details_create():
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
         result = await flow.async_step_edit_cycle_details(
-           {
-               "name": "Nouvelle alternance",
-               "start_date": "2026-09-07",
-               "week_schedule_ids": [
-                   "week_b",
-                   "week_a",
-               ],
-           }
-       )
+            {
+                "name": "Nouvelle alternance",
+                "start_date": "2026-09-07",
+                "week_schedule_ids": [
+                    "week_b",
+                    "week_a",
+                ],
+            }
+        )
 
         cycle = runtime.engine.update_cycle.call_args.args[0]
 
@@ -3846,9 +3847,7 @@ def test_options_flow_remove_moment_action_confirmed():
 
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
 
-        result = await flow.async_step_remove_moment_action_confirm(
-            {"confirm": True}
-        )
+        result = await flow.async_step_remove_moment_action_confirm({"confirm": True})
 
         updated = runtime.engine.update_moment.call_args.args[0]
 
@@ -3975,5 +3974,62 @@ def test_options_flow_edit_moment_action_empty_sequence():
         assert result == {
             "type": "form",
         }
+
+    asyncio.run(run())
+
+
+def test_options_flow_management_link():
+    async def run():
+        flow = create_flow()
+        flow.async_show_form = MagicMock(return_value={"type": "form"})
+        flow.async_create_entry = MagicMock()
+
+        result = await flow.async_step_management()
+
+        call = flow.async_show_form.call_args
+        assert call.kwargs["step_id"] == "management"
+        assert call.kwargs["description_placeholders"] == {"url": "/day-planner"}
+        assert call.kwargs["data_schema"]({}) == {}
+        flow.async_create_entry.assert_not_called()
+        assert result == {"type": "form"}
+
+    asyncio.run(run())
+
+
+def test_options_flow_management_returns_to_menu():
+    async def run():
+        flow = create_flow()
+        flow.async_step_init = AsyncMock(return_value={"type": "menu"})
+        result = await flow.async_step_management({})
+        flow.async_step_init.assert_awaited_once_with()
+        assert result == {"type": "menu"}
+
+    asyncio.run(run())
+
+
+def test_options_flow_settings_preserves_other_options():
+    async def run():
+        runtime = MagicMock()
+        runtime.engine.configuration.cycles = ()
+        flow = create_flow(
+            options={
+                CONF_DELETE_DATA_ON_REMOVE: True,
+                CONF_MAX_CYCLES: 3,
+                "show_sidebar_panel": True,
+                "other_option": "keep",
+            },
+            runtime=runtime,
+        )
+        flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
+        await flow.async_step_settings({"show_sidebar_panel": False})
+        flow.async_create_entry.assert_called_once_with(
+            title="",
+            data={
+                CONF_DELETE_DATA_ON_REMOVE: True,
+                CONF_MAX_CYCLES: 3,
+                "show_sidebar_panel": False,
+                "other_option": "keep",
+            },
+        )
 
     asyncio.run(run())

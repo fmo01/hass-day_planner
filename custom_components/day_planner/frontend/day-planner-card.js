@@ -4531,7 +4531,9 @@ ${
   }
 }
 
-customElements.define('day-planner-card', DayPlannerCard);
+if (!customElements.get('day-planner-card')) {
+  customElements.define('day-planner-card', DayPlannerCard);
+}
 
 console.info(
   '%c DAY-PLANNER-CARD %c v0.0.3',
@@ -4541,8 +4543,10 @@ console.info(
 
 window.customCards = window.customCards || [];
 
-window.customCards.push({
+if (!window.customCards.some((card) => card.type === 'day-planner-card')) {
+  window.customCards.push({
   type: 'day-planner-card',
   name: 'Day Planner',
   description: 'Graphical Day Planner configuration card',
 });
+}

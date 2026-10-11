@@ -6,7 +6,7 @@
         "description": "Créer votre instance Day Planner."
       }
     }
-  } ,
+  },
   "options": {
     "error": {
       "day_type_in_use": "Ce type de journée ne peut pas être supprimé car il est encore utilisé par une semaine ou une exception.",
@@ -24,14 +24,16 @@
           "week_schedules": "Semaines",
           "cycles": "Cycles",
           "calendar_exceptions": "Exceptions",
-          "settings": "Paramètres"
+          "settings": "Paramètres",
+          "management": "Ouvrir la gestion"
         }
       },
       "settings": {
         "title": "Paramètres",
         "data": {
           "delete_data_on_remove": "Supprimer les données lors de la suppression de l'intégration",
-          "max_cycles": "Nombre maximum de cycles"
+          "max_cycles": "Nombre maximum de cycles",
+          "show_sidebar_panel": "Afficher Day Planner dans le menu latéral"
         }
       },
       "moments": {
@@ -325,6 +327,10 @@
         "data": {
           "confirm": "Confirmer la suppression"
         }
+      },
+      "management": {
+        "title": "Gestion Day Planner",
+        "description": "[Ouvrir l’écran de gestion Day Planner]({url})\n\nCe lien reste disponible lorsque le panneau est masqué du menu latéral."
       }
     }
   }

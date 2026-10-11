@@ -6,7 +6,9 @@
   ],
   "config_flow": true,
   "dependencies": [
-    "http"
+    "http",
+    "frontend",
+    "panel_custom"
   ],
   "documentation": "https://github.com/fmo01/hass-day_planner",
   "integration_type": "hub",

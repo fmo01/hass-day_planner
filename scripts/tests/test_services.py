@@ -16,11 +16,10 @@ from custom_components.day_planner.const import (
     SERVICE_UPDATE_DAY_TYPE, SERVICE_UPDATE_MOMENT,
     SERVICE_UPDATE_SCHEDULED_MOMENT, SERVICE_UPDATE_WEEK_SCHEDULE,
     SIGNAL_PLANNER_UPDATED)
-from custom_components.day_planner.const import SIGNAL_PLANNER_UPDATED
-from custom_components.day_planner.runtime import DayPlannerRuntimeData
 from custom_components.day_planner.domain.action import Action
 from custom_components.day_planner.domain.moment import Moment
 from custom_components.day_planner.planner.errors import PlannerError
+from custom_components.day_planner.runtime import DayPlannerRuntimeData
 from custom_components.day_planner.services import (_execute, _get_runtime,
                                                     async_setup_services)
 
@@ -1291,16 +1290,11 @@ def test_async_configuration_updated():
         with patch(
             "custom_components.day_planner.runtime.async_dispatcher_send"
         ) as dispatcher_send:
-
             await runtime.async_configuration_updated()
 
-            storage.async_save.assert_awaited_once_with(
-                configuration
-            )
+            storage.async_save.assert_awaited_once_with(configuration)
 
-            resolver.update_configuration.assert_called_once_with(
-                configuration
-            )
+            resolver.update_configuration.assert_called_once_with(configuration)
 
             ha_scheduler.async_schedule_next.assert_awaited_once()
 

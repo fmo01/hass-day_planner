@@ -26,7 +26,7 @@ def test_moment_roundtrip(moment):
 def test_action_roundtrip():
     action = Action(
         id="salon_on",
-        label= "salon_on",
+        label="salon_on",
         sequence=[
             {
                 "action": "light.turn_on",
@@ -300,6 +300,7 @@ def test_action_label_defaults_to_id():
         ],
     }
 
+
 def test_action_from_dict_without_label_is_backward_compatible():
     action = Action.from_dict(
         {
@@ -319,5 +320,3 @@ def test_action_from_dict_without_label_is_backward_compatible():
             "action": "cover.open_cover",
         }
     ]
-
-

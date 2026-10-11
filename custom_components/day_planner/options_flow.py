@@ -7,8 +7,9 @@ from homeassistant import config_entries
 from homeassistant.helpers import selector
 
 from .const import (CONF_DELETE_DATA_ON_REMOVE, CONF_MAX_CYCLES,
-                    DEFAULT_DELETE_DATA_ON_REMOVE, DEFAULT_MAX_CYCLES,
-                    MAX_MAX_CYCLES, MIN_MAX_CYCLES)
+                    CONF_SHOW_SIDEBAR_PANEL, DEFAULT_DELETE_DATA_ON_REMOVE,
+                    DEFAULT_MAX_CYCLES, DEFAULT_SHOW_SIDEBAR_PANEL,
+                    MAX_MAX_CYCLES, MIN_MAX_CYCLES, PANEL_URL_PATH)
 from .domain.action import Action
 from .domain.calendar_exception import CalendarException
 from .domain.cycle import Cycle
@@ -53,6 +54,7 @@ class DayPlannerOptionsFlow(
         return self.async_show_menu(
             step_id="init",
             menu_options=[
+                "management",
                 "moments",
                 "day_types",
                 "week_schedules",
@@ -60,6 +62,17 @@ class DayPlannerOptionsFlow(
                 "calendar_exceptions",
                 "settings",
             ],
+        )
+
+    async def async_step_management(self, user_input=None):
+        """Offer a link to the existing graphical management interface."""
+        if user_input is not None:
+            return await self.async_step_init()
+
+        return self.async_show_form(
+            step_id="management",
+            data_schema=vol.Schema({}),
+            description_placeholders={"url": f"/{PANEL_URL_PATH}"},
         )
 
     async def async_step_calendar_exceptions(
@@ -89,6 +102,13 @@ class DayPlannerOptionsFlow(
 
         schema = vol.Schema(
             {
+                vol.Optional(
+                    CONF_SHOW_SIDEBAR_PANEL,
+                    default=self.config_entry.options.get(
+                        CONF_SHOW_SIDEBAR_PANEL,
+                        DEFAULT_SHOW_SIDEBAR_PANEL,
+                    ),
+                ): bool,
                 vol.Optional(
                     CONF_DELETE_DATA_ON_REMOVE,
                     default=self.config_entry.options.get(
@@ -143,7 +163,7 @@ class DayPlannerOptionsFlow(
 
             return self.async_create_entry(
                 title="",
-                data=user_input,
+                data={**self.config_entry.options, **user_input},
             )
 
         return self.async_show_form(

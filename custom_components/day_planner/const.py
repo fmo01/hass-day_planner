@@ -80,3 +80,9 @@ DEFAULT_MOMENTS = [
         "icon": "mdi:moon-waning-crescent",
     },
 ]
+
+CONF_SHOW_SIDEBAR_PANEL = "show_sidebar_panel"
+DEFAULT_SHOW_SIDEBAR_PANEL = True
+PANEL_URL_PATH = "day-planner"
+PANEL_ICON = "mdi:calendar-clock"
+PANEL_COMPONENT_NAME = "day-planner-panel"

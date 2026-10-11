@@ -146,13 +146,10 @@ class PlannerValidator:
         for cycle in configuration.cycles:
             if cycle.start_date in used_start_dates:
                 raise ValidationError(
-                    "Duplicate cycle start date: "
-                    f"{cycle.start_date.isoformat()}"
+                    "Duplicate cycle start date: " f"{cycle.start_date.isoformat()}"
                 )
 
-            used_start_dates.add(
-                cycle.start_date
-            )
+            used_start_dates.add(cycle.start_date)
 
             PlannerValidator._validate_cycle(
                 cycle,
@@ -205,9 +202,7 @@ class PlannerValidator:
                     f"{calendar_exception.date.isoformat()}"
                 )
 
-            used_dates.add(
-                calendar_exception.date
-            )
+            used_dates.add(calendar_exception.date)
 
             PlannerValidator._validate_calendar_exception(
                 calendar_exception,
@@ -225,5 +220,3 @@ class PlannerValidator:
             raise ValidationError(
                 f"Unknown day type: " f"{calendar_exception.day_type_id}"
             )
-
-

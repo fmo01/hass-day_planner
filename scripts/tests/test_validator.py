@@ -486,9 +486,7 @@ def test_validator_rejects_multiple_cycles(
         ValidationError,
         match=rf"Maximum number of cycles exceeded: {DEFAULT_MAX_CYCLES}",
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
+        PlannerValidator.validate_configuration(configuration)
 
 
 def test_validator_rejects_cycle_not_starting_monday(
@@ -570,26 +568,20 @@ def test_cycles_cannot_have_same_start_date(
         id="cycle1",
         name="Cycle 1",
         start_date=date(2026, 9, 7),
-        week_schedule_ids=(
-            week_schedule.id,
-        ),
+        week_schedule_ids=(week_schedule.id,),
     )
 
     cycle2 = Cycle(
         id="cycle2",
         name="Cycle 2",
         start_date=date(2026, 9, 7),
-        week_schedule_ids=(
-            week_schedule.id,
-        ),
+        week_schedule_ids=(week_schedule.id,),
     )
 
     configuration = PlannerConfiguration(
         moments=(),
         day_types=(day_type,),
-        week_schedules=(
-            week_schedule,
-        ),
+        week_schedules=(week_schedule,),
         cycles=(
             cycle1,
             cycle2,
@@ -599,14 +591,10 @@ def test_cycles_cannot_have_same_start_date(
 
     with pytest.raises(
         ValidationError,
-        match=(
-            "Duplicate cycle start date: "
-            "2026-09-07"
-        ),
+        match=("Duplicate cycle start date: " "2026-09-07"),
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
+        PlannerValidator.validate_configuration(configuration)
+
 
 def test_calendar_exceptions_cannot_have_same_date(
     day_type,
@@ -638,13 +626,6 @@ def test_calendar_exceptions_cannot_have_same_date(
 
     with pytest.raises(
         ValidationError,
-        match=(
-            "Duplicate calendar exception date: "
-            "2026-09-15"
-        ),
+        match=("Duplicate calendar exception date: " "2026-09-15"),
     ):
-        PlannerValidator.validate_configuration(
-            configuration
-        )
-
-
+        PlannerValidator.validate_configuration(configuration)

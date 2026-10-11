@@ -3,16 +3,20 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from custom_components.day_planner import (_async_migrate_entity_ids,
                                            _async_options_updated,
-                                           async_remove_entry,
+                                           async_remove_entry, async_setup,
                                            async_setup_entry,
                                            async_unload_entry)
 from custom_components.day_planner.const import (CONF_MAX_CYCLES,
                                                  DEFAULT_MAX_CYCLES, PLATFORMS)
 from custom_components.day_planner.domain.planner_configuration import \
     PlannerConfiguration
+from custom_components.day_planner.frontend import (FRONTEND_PATH,
+                                                    FRONTEND_URL,
+                                                    async_setup_frontend)
 
 
-def test_async_setup_entry_empty_configuration():
+@patch("custom_components.day_planner.async_setup_panel", new_callable=AsyncMock)
+def test_async_setup_entry_empty_configuration(setup_panel):
     async def run():
         hass = MagicMock()
         entry = MagicMock()
@@ -62,6 +66,7 @@ def test_async_setup_entry_empty_configuration():
             )
 
             assert result is True
+            setup_panel.assert_awaited_once_with(hass, entry)
 
             storage.async_load.assert_awaited_once_with()
             storage.async_save.assert_awaited_once_with(configuration)
@@ -106,7 +111,8 @@ def test_async_setup_entry_empty_configuration():
     asyncio.run(run())
 
 
-def test_async_setup_entry_existing_configuration():
+@patch("custom_components.day_planner.async_setup_panel", new_callable=AsyncMock)
+def test_async_setup_entry_existing_configuration(setup_panel):
     async def run():
         hass = MagicMock()
         entry = MagicMock()
@@ -153,6 +159,7 @@ def test_async_setup_entry_existing_configuration():
             )
 
             assert result is True
+            setup_panel.assert_awaited_once_with(hass, entry)
 
             storage.async_load.assert_awaited_once_with()
 
@@ -187,7 +194,8 @@ def test_async_setup_entry_existing_configuration():
     asyncio.run(run())
 
 
-def test_async_unload_entry():
+@patch("custom_components.day_planner.async_unload_panel")
+def test_async_unload_entry(unload_panel):
     async def run():
         hass = MagicMock()
         entry = MagicMock()
@@ -208,6 +216,8 @@ def test_async_unload_entry():
             entry,
             PLATFORMS,
         )
+
+        unload_panel.assert_called_once_with(hass)
 
         ha_scheduler.cancel.assert_called_once_with()
 
@@ -260,7 +270,8 @@ def test_async_remove_entry_delete_disabled():
     asyncio.run(run())
 
 
-def test_async_unload_entry_failure():
+@patch("custom_components.day_planner.async_unload_panel")
+def test_async_unload_entry_failure(unload_panel):
     async def run():
         hass = MagicMock()
         entry = MagicMock()
@@ -281,6 +292,8 @@ def test_async_unload_entry_failure():
             entry,
             PLATFORMS,
         )
+
+        unload_panel.assert_not_called()
 
         ha_scheduler.cancel.assert_not_called()
 
@@ -417,7 +430,8 @@ def test_migrate_entity_ids_missing():
     asyncio.run(run())
 
 
-def test_async_setup_entry_custom_max_cycles():
+@patch("custom_components.day_planner.async_setup_panel", new_callable=AsyncMock)
+def test_async_setup_entry_custom_max_cycles(setup_panel):
     async def run():
         hass = MagicMock()
         entry = MagicMock()
@@ -451,6 +465,7 @@ def test_async_setup_entry_custom_max_cycles():
             )
 
             assert result is True
+            setup_panel.assert_awaited_once_with(hass, entry)
 
             engine_class.assert_called_once_with(
                 configuration,
@@ -473,5 +488,39 @@ def test_async_options_updated():
         )
 
         hass.config_entries.async_reload.assert_awaited_once_with(entry.entry_id)
+
+    asyncio.run(run())
+
+
+def test_integration_setup_registers_websocket_and_frontend():
+    async def run():
+        hass = MagicMock()
+        with (
+            patch(
+                "custom_components.day_planner.async_setup_websocket_api"
+            ) as register,
+            patch(
+                "custom_components.day_planner.async_setup_frontend",
+                new_callable=AsyncMock,
+            ) as setup,
+        ):
+            assert await async_setup(hass, {}) is True
+            register.assert_called_once_with(hass)
+            setup.assert_awaited_once_with(hass)
+
+    asyncio.run(run())
+
+
+def test_frontend_registers_static_directory():
+    async def run():
+        hass = MagicMock()
+        hass.http.async_register_static_paths = AsyncMock()
+        await async_setup_frontend(hass)
+        hass.http.async_register_static_paths.assert_awaited_once()
+        paths = hass.http.async_register_static_paths.call_args.args[0]
+        assert len(paths) == 1
+        assert paths[0].url_path == FRONTEND_URL
+        assert paths[0].path == str(FRONTEND_PATH)
+        assert paths[0].cache_headers is False
 
     asyncio.run(run())

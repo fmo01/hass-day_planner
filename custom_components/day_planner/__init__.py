@@ -8,6 +8,7 @@ from .const import (CONF_DELETE_DATA_ON_REMOVE, CONF_MAX_CYCLES,
                     PLATFORMS)
 from .frontend import async_setup_frontend
 from .ha_scheduler import HomeAssistantScheduler
+from .panel import async_setup_panel, async_unload_panel
 from .planner.engine import PlannerEngine
 from .planner.resolver import PlannerResolver
 from .planner.scheduler import PlannerScheduler
@@ -127,6 +128,8 @@ async def async_setup_entry(
 
     await ha_scheduler.async_schedule_next()
 
+    await async_setup_panel(hass, entry)
+
     return True
 
 
@@ -143,6 +146,7 @@ async def async_unload_entry(
 
     if unload_ok:
         entry.runtime_data.ha_scheduler.cancel()
+        async_unload_panel(hass)
 
     return unload_ok
 

@@ -57,13 +57,9 @@ class PlannerResolver:
 
         days_since_start = (target_date - cycle.start_date).days
 
-        week_index = (
-            days_since_start // 7
-        ) % len(cycle.week_schedule_ids)
+        week_index = (days_since_start // 7) % len(cycle.week_schedule_ids)
 
-        week_schedule_id = cycle.week_schedule_ids[
-            week_index
-        ]
+        week_schedule_id = cycle.week_schedule_ids[week_index]
 
         week_schedule = next(
             item
@@ -92,16 +88,13 @@ class PlannerResolver:
 
         return self._resolve_base_day_context(target_date)
 
-
     def resolve_day_context(
         self,
         target_date: date,
     ) -> ResolvedDayContext:
         """Resolve the complete planning context for a date."""
 
-        base_context = self._resolve_base_day_context(
-            target_date
-        )
+        base_context = self._resolve_base_day_context(target_date)
 
         calendar_exception = next(
             (

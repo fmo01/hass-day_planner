@@ -6,5 +6,326 @@
         "description": "Create your Day Planner instance."
       }
     }
+  },
+  "options": {
+    "error": {
+      "day_type_in_use": "This day type cannot be removed because it is still used by a week schedule or a calendar exception.",
+      "week_schedule_in_use": "This week schedule cannot be removed because it is still used by a cycle.",
+      "maximum_cycles_reached": "The maximum number of allowed cycles has been reached.",
+      "max_cycles_too_small": "The value {value} is too small. The minimum value is {minimum}.",
+      "action_sequence_required": "At least one Home Assistant action is required."
+    },
+    "step": {
+      "init": {
+        "title": "Day Planner",
+        "menu_options": {
+          "moments": "Moments",
+          "day_types": "Day types",
+          "week_schedules": "Week schedules",
+          "cycles": "Cycles",
+          "calendar_exceptions": "Calendar exceptions",
+          "settings": "Settings",
+          "management": "Open management"
+        }
+      },
+      "settings": {
+        "title": "Settings",
+        "data": {
+          "delete_data_on_remove": "Delete data when removing the integration",
+          "max_cycles": "Maximum number of cycles",
+          "show_sidebar_panel": "Show Day Planner in the sidebar"
+        }
+      },
+      "moments": {
+        "title": "Moments",
+        "menu_options": {
+          "add_moment": "Add moment",
+          "edit_moment": "Edit moment",
+          "remove_moment": "Remove moment",
+          "moment_actions": "Actions"
+        }
+      },
+      "remove_moment_confirm": {
+        "title": "Remove moment",
+        "description": "Are you sure you want to remove {name}?",
+        "data": {
+          "confirm": "Confirm removal"
+        }
+      },
+      "day_types": {
+        "title": "Day types",
+        "menu_options": {
+          "add_day_type": "Add day type",
+          "edit_day_type": "Edit day type",
+          "remove_day_type": "Remove day type",
+          "scheduled_moments": "Scheduled moments"
+        }
+      },
+      "add_day_type": {
+        "title": "Add day type",
+        "data": {
+          "id": "Identifier",
+          "name": "Name"
+        }
+      },
+      "edit_day_type": {
+        "title": "Edit day type",
+        "data": {
+          "id": "Day type"
+        }
+      },
+      "edit_day_type_details": {
+        "title": "Edit day type",
+        "data": {
+          "name": "Name"
+        }
+      },
+      "remove_day_type": {
+        "title": "Remove day type",
+        "data": {
+          "id": "Day type"
+        }
+      },
+      "remove_day_type_confirm": {
+        "title": "Remove day type",
+        "description": "Are you sure you want to remove {name}?",
+        "data": {
+          "confirm": "Confirm removal"
+        }
+      },
+      "scheduled_moments": {
+        "title": "Scheduled moments",
+        "data": {
+          "day_type_id": "Day type"
+        }
+      },
+      "scheduled_moments_menu": {
+        "title": "Scheduled moments",
+        "menu_options": {
+          "add_scheduled_moment": "Add scheduled moment",
+          "edit_scheduled_moment": "Edit scheduled moment",
+          "remove_scheduled_moment": "Remove scheduled moment"
+        }
+      },
+      "add_scheduled_moment": {
+        "title": "Add scheduled moment",
+        "data": {
+          "moment_id": "Moment",
+          "time": "Time"
+        }
+      },
+      "edit_scheduled_moment": {
+        "title": "Edit scheduled moment",
+        "data": {
+          "moment_id": "Moment"
+        }
+      },
+      "edit_scheduled_moment_details": {
+        "title": "Edit scheduled moment",
+        "description": "Scheduled moment: {name}",
+        "data": {
+          "time": "Time"
+        }
+      },
+      "remove_scheduled_moment": {
+        "title": "Remove scheduled moment",
+        "data": {
+          "moment_id": "Moment"
+        }
+      },
+      "remove_scheduled_moment_confirm": {
+        "title": "Remove scheduled moment",
+        "description": "Are you sure you want to remove {name}?",
+        "data": {
+          "confirm": "Confirm removal"
+        }
+      },
+      "week_schedules": {
+        "title": "Week schedules",
+        "menu_options": {
+          "add_week_schedule": "Add week schedule",
+          "edit_week_schedule": "Edit week schedule",
+          "remove_week_schedule": "Remove week schedule"
+        }
+      },
+      "add_week_schedule": {
+        "title": "Add week schedule",
+        "data": {
+          "id": "Identifier",
+          "name": "Name",
+          "monday": "Monday",
+          "tuesday": "Tuesday",
+          "wednesday": "Wednesday",
+          "thursday": "Thursday",
+          "friday": "Friday",
+          "saturday": "Saturday",
+          "sunday": "Sunday"
+        }
+      },
+      "edit_week_schedule": {
+        "title": "Edit week schedule",
+        "data": {
+          "id": "Week schedule"
+        }
+      },
+      "edit_week_schedule_details": {
+        "title": "Edit week schedule",
+        "data": {
+          "name": "Name",
+          "monday": "Monday",
+          "tuesday": "Tuesday",
+          "wednesday": "Wednesday",
+          "thursday": "Thursday",
+          "friday": "Friday",
+          "saturday": "Saturday",
+          "sunday": "Sunday"
+        }
+      },
+      "remove_week_schedule": {
+        "title": "Remove week schedule",
+        "data": {
+          "id": "Week schedule"
+        }
+      },
+      "remove_week_schedule_confirm": {
+        "title": "Remove week schedule",
+        "description": "Are you sure you want to remove {name}?",
+        "data": {
+          "confirm": "Confirm removal"
+        }
+      },
+      "cycles": {
+        "title": "Cycles",
+        "menu_options": {
+          "add_cycle": "Add cycle",
+          "edit_cycle": "Edit cycle",
+          "remove_cycle": "Remove cycle"
+        }
+      },
+      "add_cycle": {
+        "title": "Add cycle",
+        "data": {
+          "id": "Identifier",
+          "name": "Name",
+          "start_date": "Start date",
+          "week_schedule_ids": "Week schedules"
+        }
+      },
+      "edit_cycle": {
+        "title": "Edit cycle",
+        "data": {
+          "id": "Cycle"
+        }
+      },
+      "edit_cycle_details": {
+        "title": "Edit cycle",
+        "data": {
+          "name": "Name",
+          "start_date": "Start date",
+          "week_schedule_ids": "Week schedules"
+        }
+      },
+      "remove_cycle": {
+        "title": "Remove cycle",
+        "data": {
+          "id": "Cycle"
+        }
+      },
+      "remove_cycle_confirm": {
+        "title": "Remove cycle",
+        "description": "Are you sure you want to remove {name}?",
+        "data": {
+          "confirm": "Confirm removal"
+        }
+      },
+      "calendar_exceptions": {
+        "title": "Calendar exceptions",
+        "menu_options": {
+          "add_calendar_exception": "Add calendar exception",
+          "edit_calendar_exception": "Edit calendar exception",
+          "remove_calendar_exception": "Remove calendar exception"
+        }
+      },
+      "add_calendar_exception": {
+        "title": "Add calendar exception",
+        "data": {
+          "id": "Identifier",
+          "date": "Date",
+          "day_type_id": "Day type",
+          "description": "Description"
+        }
+      },
+      "edit_calendar_exception": {
+        "title": "Edit calendar exception",
+        "data": {
+          "id": "Calendar exception"
+        }
+      },
+      "edit_calendar_exception_details": {
+        "title": "Edit calendar exception",
+        "data": {
+          "date": "Date",
+          "day_type_id": "Day type",
+          "description": "Description"
+        }
+      },
+      "remove_calendar_exception": {
+        "title": "Remove calendar exception",
+        "data": {
+          "id": "Calendar exception"
+        }
+      },
+      "remove_calendar_exception_confirm": {
+        "title": "Remove calendar exception",
+        "description": "Are you sure you want to remove {name}?",
+        "data": {
+          "confirm": "Confirm removal"
+        }
+      },
+      "moment_actions_menu": {
+        "title": "Moment actions",
+        "menu_options": {
+          "add_moment_action": "Add action",
+          "edit_moment_action": "Edit action",
+          "remove_moment_action": "Remove action"
+        }
+      },
+      "add_moment_action": {
+        "title": "Add action",
+        "data": {
+          "id": "Identifier",
+          "sequence": "Home Assistant action"
+        }
+      },
+      "edit_moment_action": {
+        "title": "Edit action",
+        "data": {
+          "id": "Action"
+        }
+      },
+      "edit_moment_action_details": {
+        "title": "Edit action",
+        "data": {
+          "sequence": "Home Assistant action"
+        }
+      },
+      "remove_moment_action": {
+        "title": "Remove action",
+        "data": {
+          "id": "Action"
+        }
+      },
+      "remove_moment_action_confirm": {
+        "title": "Remove action",
+        "description": "Are you sure you want to remove {name}?",
+        "data": {
+          "confirm": "Confirm removal"
+        }
+      },
+      "management": {
+        "title": "Day Planner management",
+        "description": "[Open the Day Planner management screen]({url})\n\nThis link remains available when the panel is hidden from the sidebar."
+      }
+    }
   }
 }

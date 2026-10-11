@@ -6,7 +6,7 @@
         "description": "Create your Day Planner instance."
       }
     }
-  } ,
+  },
   "options": {
     "error": {
       "day_type_in_use": "This day type cannot be removed because it is still used by a week schedule or a calendar exception.",
@@ -14,7 +14,7 @@
       "maximum_cycles_reached": "The maximum number of allowed cycles has been reached.",
       "max_cycles_too_small": "The value {value} is too small. The minimum value is {minimum}.",
       "action_sequence_required": "At least one Home Assistant action is required."
-           },
+    },
     "step": {
       "init": {
         "title": "Day Planner",
@@ -24,14 +24,16 @@
           "week_schedules": "Week schedules",
           "cycles": "Cycles",
           "calendar_exceptions": "Calendar exceptions",
-          "settings": "Settings"
+          "settings": "Settings",
+          "management": "Open management"
         }
       },
       "settings": {
         "title": "Settings",
         "data": {
           "delete_data_on_remove": "Delete data when removing the integration",
-          "max_cycles": "Maximum number of cycles"
+          "max_cycles": "Maximum number of cycles",
+          "show_sidebar_panel": "Show Day Planner in the sidebar"
         }
       },
       "moments": {
@@ -50,7 +52,6 @@
           "confirm": "Confirm removal"
         }
       },
-
       "day_types": {
         "title": "Day types",
         "menu_options": {
@@ -320,6 +321,10 @@
         "data": {
           "confirm": "Confirm removal"
         }
+      },
+      "management": {
+        "title": "Day Planner management",
+        "description": "[Open the Day Planner management screen]({url})\n\nThis link remains available when the panel is hidden from the sidebar."
       }
     }
   }
