@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.0](https://github.com/fmo01/hass-day_planner/compare/0.0.4...0.1.0) (2026-10-12)
+
+### Features
+
+* Ajout du panneau dans le menu ([65f2e9f](https://github.com/fmo01/hass-day_planner/commit/65f2e9f8add6479e614e3e78788110d7a547ee96))
+* Ajout tests et premiere etape de stabilité ([750adc6](https://github.com/fmo01/hass-day_planner/commit/750adc634aabb3aa424161a545a598ffe04b77f7))
+
+### Bug Fixes
+
+* rendu conforme pour flake8 ([e7d68bf](https://github.com/fmo01/hass-day_planner/commit/e7d68bf416c2e59ce1846cd0a8432f6d81b1f4c8))
+
 ## [0.1.0](https://github.com/fmo01/hass-day_planner/compare/0.0.4...0.1.0) (2026-10-11)
 
 ### Features
