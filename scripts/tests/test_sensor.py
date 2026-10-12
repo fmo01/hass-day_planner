@@ -8,6 +8,7 @@ from custom_components.day_planner.domain.moment import Moment
 from custom_components.day_planner.domain.resolved_day_context import \
     ResolvedDayContext
 from custom_components.day_planner.domain.scheduled_event import ScheduledEvent
+from custom_components.day_planner.integration_info import INTEGRATION_VERSION
 from custom_components.day_planner.sensor import (
     DayPlannerCurrentDayTypeSensor, DayPlannerCurrentMomentSensor,
     DayPlannerNextEventSensor, async_setup_entry)
@@ -86,7 +87,7 @@ def test_sensor_next_event():
 
     assert attributes == {
         "integration": "Day Planner",
-        "integration_version": "0.0.4",
+        "integration_version": INTEGRATION_VERSION,
         "release_url": "https://github.com/fmo01/hass-day_planner/releases",
         "moment_id": "wake_up",
         "scheduled_at": "2026-08-31T07:30:00",
@@ -117,7 +118,7 @@ def test_sensor_without_next_event():
         assert sensor.native_value is None
         assert sensor.extra_state_attributes == {
             "integration": "Day Planner",
-            "integration_version": "0.0.4",
+            "integration_version": INTEGRATION_VERSION,
             "release_url": "https://github.com/fmo01/hass-day_planner/releases",
             "moment_id": None,
             "scheduled_at": None,
@@ -202,7 +203,7 @@ def test_sensor_current_day_type():
 
     assert attributes == {
         "integration": "Day Planner",
-        "integration_version": "0.0.4",
+        "integration_version": INTEGRATION_VERSION,
         "release_url": "https://github.com/fmo01/hass-day_planner/releases",
         "date": "2026-08-29",
         "cycle_id": "test_cycle",
@@ -245,7 +246,7 @@ def test_sensor_current_day_type_none():
 
     assert attributes == {
         "integration": "Day Planner",
-        "integration_version": "0.0.4",
+        "integration_version": INTEGRATION_VERSION,
         "release_url": "https://github.com/fmo01/hass-day_planner/releases",
         "date": "2026-08-29",
         "cycle_id": None,
@@ -314,7 +315,7 @@ def test_sensor_current_moment():
 
     assert sensor.extra_state_attributes == {
         "integration": "Day Planner",
-        "integration_version": "0.0.4",
+        "integration_version": INTEGRATION_VERSION,
         "release_url": "https://github.com/fmo01/hass-day_planner/releases",
         "moment_id": "m1",
         "scheduled_at": "2026-08-29T08:00:00",

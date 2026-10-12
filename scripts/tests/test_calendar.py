@@ -10,6 +10,7 @@ from custom_components.day_planner.calendar import (DayPlannerCalendar,
 from custom_components.day_planner.const import SIGNAL_PLANNER_UPDATED
 from custom_components.day_planner.domain.moment import Moment
 from custom_components.day_planner.domain.scheduled_event import ScheduledEvent
+from custom_components.day_planner.integration_info import INTEGRATION_VERSION
 
 
 def test_calendar_setup_entry():
@@ -323,6 +324,6 @@ def test_calendar_extra_state_attributes():
 
     assert calendar.extra_state_attributes == {
         "integration": "Day Planner",
-        "integration_version": "0.0.4",
+        "integration_version": INTEGRATION_VERSION,
         "release_url": "https://github.com/fmo01/hass-day_planner/releases",
     }
