@@ -24,8 +24,6 @@ La dernière exécution réussie mesurant `custom_components/day_planner` et ses
 
 ## Organisation des tests
 
-Les fichiers ci-dessous correspondent au ZIP Day Planner 0.1.0 relu.
-
 ### Cœur de l'intégration
 
 - `test_init.py`
@@ -162,13 +160,13 @@ Exécuter les commandes depuis la racine du projet, avec l'environnement virtuel
 ### Exécuter toute la suite
 
 ```bash
-PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest  -p pytest_asyncio scripts/tests/   
+PYTHONPATH=. python3 -m pytest scripts/tests/
 ```
 
 Pour un affichage détaillé et des traces courtes :
 
 ```bash
-PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest  -p pytest_asyncio scripts/tests/ -v --tb=short
+PYTHONPATH=. python3 -m pytest scripts/tests/ -v --tb=short
 ```
 
 Pytest découvre les fichiers `test_*.py`. Aucun `test_all.py` n'est présent dans le ZIP de référence ; la découverte automatique est utilisée.
@@ -178,12 +176,11 @@ Pytest découvre les fichiers `test_*.py`. Aucun `test_all.py` n'est présent da
 ## Exécuter un module de tests
 
 ```bash
-
-PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest  -p pytest_asyncio scripts/tests/test_init.py -v
-PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest  -p pytest_asyncio scripts/tests/test_engine.py -v   
-PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest  -p pytest_asyncio scripts/tests/test_ha_scheduler.py -v   
-PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest  -p pytest_asyncio scripts/tests/test_config_flow.py -v   
-PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest  -p pytest_asyncio scripts/tests/test_options_flow.py -v   
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest   -p pytest_asyncio scripts/tests/test_init.py -v
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest   -p pytest_asyncio scripts/tests/test_engine.py -v
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest   -p pytest_asyncio scripts/tests/test_ha_scheduler.py -v
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest   -p pytest_asyncio scripts/tests/test_config_flow.py -v
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest   -p pytest_asyncio scripts/tests/test_options_flow.py -v
 ```
 
 ---
@@ -191,7 +188,8 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest  -p pytest_asyncio scripts/te
 ## Exécuter un test individuel
 
 ```bash
-PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest  \
+
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest \
   -p pytest_asyncio \
   scripts/tests/test_ha_scheduler.py::test_ha_scheduler_does_not_execute_same_callback_twice \
   -v
@@ -206,7 +204,9 @@ Le workflow **Run Tests** calcule la couverture, produit les rapports et actuali
 Commande à utiliser pour Day Planner, également exécutable localement :
 
 ```bash
-PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -p pytest_asyncio \
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest \
+  -p pytest_asyncio \
+  -p pytest_cov \
   scripts/tests/ \
   -v \
   --tb=short \
@@ -246,13 +246,13 @@ htmlcov/index.html
 
 ### Résultat de référence
 
-Les résultats Day Planner du workflow et les blocs automatiques ci-dessous font référence. Les anciens résultats eedomus ne décrivent pas la couverture de ce projet.
+Les résultats Day Planner du workflow et les blocs automatiques ci-dessous font référence.
 
 ---
 
 ## Couverture par module
 
-Le tableau est remplacé automatiquement depuis `coverage.xml`, après une exécution réussie. Les résultats sont datés en heure de Paris.
+ Les valeurs ci-dessous proviennent de l'exécution locale réussie et ne sauraurent être considérées comme définitivement à jour.
 
 <!-- COVERAGE-MODULES-START -->
 Dernière mise à jour : **en attente d'une exécution Day Planner**
@@ -262,7 +262,21 @@ Dernière mise à jour : **en attente d'une exécution Day Planner**
 | **TOTAL** | **à mesurer** | **à mesurer** | **à mesurer** |
 <!-- COVERAGE-MODULES-END -->
 
-Pour distinguer les modules imbriqués, le générateur devrait afficher leur chemin relatif plutôt que leur seul nom : par exemple `domain/__init__.py` et `__init__.py`.
+---
+
+## GitHub Actions
+
+Le workflow fourni conserve ce fonctionnement :
+
+1. Push et pull requests ciblant `main` ou `unstable`, pour les chemins surveillés, ou lancement manuel.
+2. Installation de Python 3.14 et des dépendances de développement.
+3. Exécution de pytest avec couverture et rapport JUnit.
+4. Génération de la synthèse après succès.
+5. Remplacement des trois blocs automatiques du README.
+6. Commit et push du README modifié après un événement `push` réussi. Aucun commit automatique pour une pull request ou un lancement manuel.
+7. Publication du rapport HTML même après échec, s'il existe, et de la synthèse après succès.
+
+La commande pytest ne masque plus les erreurs : un échec fait échouer l'étape de tests.
 
 ---
 
@@ -277,6 +291,7 @@ Les commandes documentées conservent le chargement automatique des plugins pyte
 La couverture ne garantit pas à elle seule la correction des règles métier. Vérifier les résultats attendus, limites et erreurs, puis compléter par les essais Home Assistant nécessaires.
 
 ---
+
 ## Dépendances de développement
 
 ```bash
@@ -284,10 +299,6 @@ python3 -m pip install -r requirements-dev.txt
 ```
 
 Le workflow fourni utilise aussi `pytest-cov` pour les rapports et lit la version de `pytest-homeassistant-custom-component` pour le bloc d'environnement.
-
-Ces paquets doivent être déclarés dans les dépendances de développement si ce fonctionnement est conservé. Ils ne sont pas déclarés dans le `requirements-dev.txt` du ZIP 0.1.0 relu.
-
-Si `pytest-homeassistant-custom-component` n'est pas utilisé, adapter aussi l'affichage et la lecture de sa version dans le workflow : la lecture actuelle échoue lorsque le paquet est absent.
 
 ---
 
@@ -329,7 +340,7 @@ Cette liste décrit les tests présents ; elle ne garantit pas une couverture ex
 
 ## État de l'environnement de test
 
-Ce bloc est remplacé automatiquement avec les versions et résultats mesurés. Les anciennes valeurs eedomus ont été retirées.
+L'exécution locale récente réussie a utilisé:
 
 <!-- TEST-ENV-START -->
 ```text
@@ -345,5 +356,3 @@ Dernière exécution : en attente d'une exécution Day Planner
 <!-- TEST-ENV-END -->
 
 Les versions GitHub Actions peuvent différer de l'environnement local. La dernière exécution réussie ciblant Day Planner et ses rapports font référence.
-
-

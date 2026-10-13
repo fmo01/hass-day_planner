@@ -221,12 +221,19 @@ jobs:
 
           modules = []
 
-          for class_node in coverage_root.findall(".//class"):
+          for package_node in coverage_root.findall(".//package"):
+
+            package = package_node.get("name","") 
+            package_name = "" if package == "."  else package
+
+            for class_node in package_node.findall("classes/class"):
 
               filename = class_node.attrib.get("filename", "")
 
               if not filename.endswith(".py"):
-                  continue
+                continue
+            
+              module_name = Path(filename).name
 
               # Nom affiché dans le README
               module_name = Path(filename).name
@@ -236,35 +243,38 @@ jobs:
               module_statements = len(lines)
 
               module_covered = sum(
-                  1
-                  for line in lines
-                  if int(line.attrib.get("hits", "0")) > 0
+            	  1
+            	  for line in lines
+            	  if int(line.attrib.get("hits", "0")) > 0
               )
 
               module_missing = (
-                  module_statements - module_covered
+            	  module_statements - module_covered
               )
 
               if module_statements:
-                  module_coverage = (
-                      module_covered
-                      / module_statements
-                      * 100
-                  )
+            	  module_coverage = (
+            		  module_covered
+            		  / module_statements
+            		  * 100
+            	  )
               else:
-                  module_coverage = 100.0
+            	  module_coverage = 100.0
 
               modules.append(
-                  (
-                      module_name,
-                      module_statements,
-                      module_missing,
-                      module_coverage,
-                  )
+            	  (
+                            package_name, 
+            		  module_name,
+            		  module_statements,
+            		  module_missing,
+            		  module_coverage,
+            	  )
               )
 
-          # Tri alphabétique
-          modules.sort(key=lambda item: item[0].lower())
+          # Tri alphabétique nom module
+          modules.sort(key=lambda item: item[1].lower() )
+          # Tri alphabétique nom package
+          modules.sort(key=lambda item: item[0].lower() )
 
           # =========================================================
           # Création tableau Markdown
@@ -274,11 +284,12 @@ jobs:
               "<!-- COVERAGE-MODULES-START -->",
               f"Dernière mise à jour : **{run_date}**",
               "",
-              "| Composant | Instructions | Non couvertes | Couverture |",
-              "|---|---:|---:|---:|",
+              "| Package | Composant | Instructions | Non couvertes | Couverture |",
+              "|---|---|---:|---:|---:|",
           ]
 
           for (
+              package_name,
               module_name,
               module_statements,
               module_missing,
@@ -286,6 +297,7 @@ jobs:
           ) in modules:
 
               table.append(
+                  f"| {f'`{package_name}`' if package_name else ''} "
                   f"| `{module_name}` "
                   f"| {module_statements} "
                   f"| {module_missing} "
@@ -294,6 +306,7 @@ jobs:
 
           table.append(
               f"| **TOTAL** "
+              f"| "
               f"| **{statements}** "
               f"| **{missing}** "
               f"| **{coverage:.2f}%** |"
