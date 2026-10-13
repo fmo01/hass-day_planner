@@ -255,46 +255,46 @@ Les résultats Day Planner du workflow et les blocs automatiques ci-dessous font
  Les valeurs ci-dessous proviennent de l'exécution locale réussie et ne sauraurent être considérées comme définitivement à jour.
 
 <!-- COVERAGE-MODULES-START -->
-Dernière mise à jour : **2026-10-12 15:47:50 Europe/Paris**
+Dernière mise à jour : **2026-10-13 12:54:10 Europe/Paris**
 
-| Composant | Instructions | Non couvertes | Couverture |
-|---|---:|---:|---:|
-| `__init__.py` | 58 | 0 | 100.00% |
-| `__init__.py` | 11 | 0 | 100.00% |
-| `action.py` | 13 | 0 | 100.00% |
-| `action_executor.py` | 18 | 0 | 100.00% |
-| `calendar.py` | 56 | 0 | 100.00% |
-| `calendar_exception.py` | 10 | 0 | 100.00% |
-| `config_flow.py` | 12 | 0 | 100.00% |
-| `const.py` | 39 | 0 | 100.00% |
-| `cycle.py` | 9 | 0 | 100.00% |
-| `day_type.py` | 9 | 0 | 100.00% |
-| `engine.py` | 133 | 0 | 100.00% |
-| `errors.py` | 3 | 0 | 100.00% |
-| `frontend.py` | 7 | 0 | 100.00% |
-| `ha_scheduler.py` | 37 | 0 | 100.00% |
-| `integration_info.py` | 9 | 0 | 100.00% |
-| `metadata.py` | 4 | 0 | 100.00% |
-| `moment.py` | 11 | 0 | 100.00% |
-| `options_flow.py` | 454 | 0 | 100.00% |
-| `panel.py` | 10 | 0 | 100.00% |
-| `planner_configuration.py` | 18 | 0 | 100.00% |
-| `protocols.py` | 2 | 0 | 100.00% |
-| `resolved_day_context.py` | 5 | 0 | 100.00% |
-| `resolver.py` | 45 | 0 | 100.00% |
-| `runtime.py` | 18 | 0 | 100.00% |
-| `scheduled_event.py` | 5 | 0 | 100.00% |
-| `scheduled_moment.py` | 9 | 0 | 100.00% |
-| `scheduler.py` | 48 | 0 | 100.00% |
-| `schemas.py` | 21 | 0 | 100.00% |
-| `sensor.py` | 99 | 0 | 100.00% |
-| `services.py` | 126 | 0 | 100.00% |
-| `storage.py` | 16 | 0 | 100.00% |
-| `time_definition.py` | 9 | 0 | 100.00% |
-| `validator.py` | 96 | 0 | 100.00% |
-| `websocket_api.py` | 449 | 0 | 100.00% |
-| `week_schedule.py` | 8 | 0 | 100.00% |
-| **TOTAL** | **1877** | **0** | **100.00%** |
+| Package | Composant | Instructions | Non couvertes | Couverture |
+|---|---|---:|---:|---:|
+|  | `__init__.py` | 58 | 0 | 100.00% |
+|  | `action_executor.py` | 18 | 0 | 100.00% |
+|  | `calendar.py` | 56 | 0 | 100.00% |
+|  | `config_flow.py` | 12 | 0 | 100.00% |
+|  | `const.py` | 39 | 0 | 100.00% |
+|  | `frontend.py` | 7 | 0 | 100.00% |
+|  | `ha_scheduler.py` | 37 | 0 | 100.00% |
+|  | `integration_info.py` | 9 | 0 | 100.00% |
+|  | `options_flow.py` | 454 | 0 | 100.00% |
+|  | `panel.py` | 10 | 0 | 100.00% |
+|  | `runtime.py` | 18 | 0 | 100.00% |
+|  | `schemas.py` | 21 | 0 | 100.00% |
+|  | `sensor.py` | 99 | 0 | 100.00% |
+|  | `services.py` | 126 | 0 | 100.00% |
+|  | `storage.py` | 16 | 0 | 100.00% |
+|  | `websocket_api.py` | 449 | 0 | 100.00% |
+| `domain` | `__init__.py` | 11 | 0 | 100.00% |
+| `domain` | `action.py` | 13 | 0 | 100.00% |
+| `domain` | `calendar_exception.py` | 10 | 0 | 100.00% |
+| `domain` | `cycle.py` | 9 | 0 | 100.00% |
+| `domain` | `day_type.py` | 9 | 0 | 100.00% |
+| `domain` | `metadata.py` | 4 | 0 | 100.00% |
+| `domain` | `moment.py` | 11 | 0 | 100.00% |
+| `domain` | `planner_configuration.py` | 18 | 0 | 100.00% |
+| `domain` | `resolved_day_context.py` | 5 | 0 | 100.00% |
+| `domain` | `scheduled_event.py` | 5 | 0 | 100.00% |
+| `domain` | `scheduled_moment.py` | 9 | 0 | 100.00% |
+| `domain` | `time_definition.py` | 9 | 0 | 100.00% |
+| `domain` | `week_schedule.py` | 8 | 0 | 100.00% |
+| `planner` | `engine.py` | 133 | 0 | 100.00% |
+| `planner` | `errors.py` | 3 | 0 | 100.00% |
+| `planner` | `protocols.py` | 2 | 0 | 100.00% |
+| `planner` | `resolver.py` | 45 | 0 | 100.00% |
+| `planner` | `scheduler.py` | 48 | 0 | 100.00% |
+| `planner` | `validator.py` | 96 | 0 | 100.00% |
+| **TOTAL** | | **1877** | **0** | **100.00%** |
 <!-- COVERAGE-MODULES-END -->
 
 ---
@@ -386,7 +386,7 @@ pytest-homeassistant-custom-component 0.13.372
 Tests exécutés : 394 
 Tests réussis : 394 
 Couverture totale : 100.00% total coverage
-Dernière exécution : 2026-10-12 15:47:50 Europe/Paris
+Dernière exécution : 2026-10-13 12:54:10 Europe/Paris
 ```
 <!-- TEST-ENV-END -->
 
