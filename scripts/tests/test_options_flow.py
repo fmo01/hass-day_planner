@@ -1,6 +1,6 @@
 import asyncio
 from datetime import date, time
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from homeassistant.config_entries import ConfigEntry
 

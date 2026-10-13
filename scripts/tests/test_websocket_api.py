@@ -14,7 +14,6 @@ from custom_components.day_planner.domain.scheduled_moment import \
     ScheduledMoment
 from custom_components.day_planner.domain.time_definition import TimeDefinition
 from custom_components.day_planner.planner.errors import PlannerError
-from custom_components.day_planner.runtime import DayPlannerRuntimeData
 from custom_components.day_planner.websocket_api import (
     _get_runtime, async_setup_websocket_api, websocket_add_calendar_exception,
     websocket_add_cycle, websocket_add_day_type, websocket_add_moment,
