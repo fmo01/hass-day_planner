@@ -346,7 +346,7 @@ jobs:
               pytest-homeassistant-custom-component {pytest_ha_version}
               Tests exécutés : {tests} 
               Tests réussis : {passed} 
-              Couverture totale : {coverage:.2f}% total coverage
+              Couverture totale : {coverage:.2f}%
               Dernière exécution : {run_date}
               ```
               <!-- TEST-ENV-END -->

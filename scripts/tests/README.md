@@ -160,13 +160,13 @@ Exécuter les commandes depuis la racine du projet, avec l'environnement virtuel
 ### Exécuter toute la suite
 
 ```bash
-PYTHONPATH=. python3 -m pytest scripts/tests/
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest   -p pytest_asyncio scripts/tests/
 ```
 
 Pour un affichage détaillé et des traces courtes :
 
 ```bash
-PYTHONPATH=. python3 -m pytest scripts/tests/ -v --tb=short
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest   -p pytest_asyncio scripts/tests/ -v --tb=short
 ```
 
 Pytest découvre les fichiers `test_*.py`. Aucun `test_all.py` n'est présent dans le ZIP de référence ; la découverte automatique est utilisée.
