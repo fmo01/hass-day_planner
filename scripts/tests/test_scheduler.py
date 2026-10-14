@@ -1,5 +1,6 @@
 import asyncio
 from datetime import date, datetime, time, timedelta, timezone
+from zoneinfo import ZoneInfo
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from custom_components.day_planner.domain.moment import Moment
@@ -646,9 +647,15 @@ def test_ha_scheduler_replans_after_configuration_change():
     )
 
     scheduler = MagicMock()
+
     scheduler.next_event.side_effect = [
         old_event,
         new_event,
+    ]
+
+    scheduler.events_at.side_effect = [
+        (old_event,),
+        (new_event,),
     ]
 
     action_executor = MagicMock()
@@ -766,3 +773,232 @@ def test_scheduler_current_moment_normalizes_timezone():
     )
 
     assert event.moment == moment
+
+
+def test_scheduler_events_at_returns_simultaneous_moments():
+    moment1 = Moment(
+        id="m1",
+        name="Réveil",
+    )
+
+    moment2 = Moment(
+        id="m2",
+        name="Chauffage",
+    )
+
+    resolver = MagicMock()
+    resolver.resolve_schedule.return_value = (
+        (
+            ScheduledMoment(
+                moment_id="m1",
+                time_definition=TimeDefinition(
+                    fixed_time=time(8, 0),
+                ),
+            ),
+            moment1,
+        ),
+        (
+            ScheduledMoment(
+                moment_id="m2",
+                time_definition=TimeDefinition(
+                    fixed_time=time(8, 0),
+                ),
+            ),
+            moment2,
+        ),
+    )
+
+    scheduler = PlannerScheduler(resolver)
+
+    scheduled_at = datetime(
+        2026,
+        10,
+        13,
+        8,
+        0,
+        tzinfo=timezone.utc,
+    )
+
+    events = scheduler.events_at(scheduled_at)
+
+    assert len(events) == 2
+    assert [event.moment for event in events] == [
+        moment1,
+        moment2,
+    ]
+    assert all(
+        event.scheduled_at == scheduled_at
+        for event in events
+    )
+
+def test_scheduler_handles_midnight_transition():
+    evening = Moment(
+        id="evening",
+        name="Soir",
+    )
+
+    morning = Moment(
+        id="morning",
+        name="Réveil",
+    )
+
+    resolver = MagicMock()
+    resolver.resolve_schedule.return_value = (
+        (
+            ScheduledMoment(
+                moment_id="evening",
+                time_definition=TimeDefinition(
+                    fixed_time=time(23, 55),
+                ),
+            ),
+            evening,
+        ),
+        (
+            ScheduledMoment(
+                moment_id="morning",
+                time_definition=TimeDefinition(
+                    fixed_time=time(0, 5),
+                ),
+            ),
+            morning,
+        ),
+    )
+
+    scheduler = PlannerScheduler(resolver)
+
+    # Avant minuit, le dernier moment atteint est celui du soir.
+    before_midnight = datetime(2026, 10, 13, 23, 59)
+
+    current = scheduler.current_moment(before_midnight)
+
+    assert current is not None
+    assert current.moment == evening
+
+    # Le prochain événement doit être celui du lendemain à 00:05.
+    next_event = scheduler.next_event(before_midnight)
+
+    assert next_event is not None
+    assert next_event.moment == morning
+    assert next_event.scheduled_at == datetime(
+        2026, 10, 14, 0, 5
+    )
+
+    # Après minuit, le moment de la veille n'est pas reporté.
+    assert scheduler.current_moment(
+        datetime(2026, 10, 14, 0, 0)
+    ) is None
+
+    # À 00:05, le premier moment du nouveau jour est atteint.
+    current = scheduler.current_moment(
+        datetime(2026, 10, 14, 0, 5)
+    )
+
+    assert current is not None
+    assert current.moment == morning
+    assert current.scheduled_at == datetime(
+        2026, 10, 14, 0, 5
+    )
+
+
+def _make_dst_scheduler(*hours):
+    resolver = MagicMock()
+
+    resolver.resolve_schedule.return_value = tuple(
+        (
+            ScheduledMoment(
+                moment_id=f"m{index}",
+                time_definition=TimeDefinition(
+                    fixed_time=time(hour, minute),
+                ),
+            ),
+            Moment(
+                id=f"m{index}",
+                name=f"Moment {index}",
+            ),
+        )
+        for index, (hour, minute) in enumerate(hours)
+    )
+
+    return PlannerScheduler(resolver)
+
+
+def test_scheduler_dst_spring_runs_missing_time_at_three():
+    paris = ZoneInfo("Europe/Paris")
+
+    scheduler = _make_dst_scheduler((2, 30))
+
+    now = datetime(
+        2026, 3, 29, 1, 59,
+        tzinfo=paris,
+    )
+
+    event = scheduler.next_event(now)
+
+    assert event is not None
+    assert event.scheduled_at.isoformat() == (
+        "2026-03-29T03:00:00+02:00"
+    )
+
+
+def test_scheduler_dst_autumn_runs_only_first_occurrence():
+    paris = ZoneInfo("Europe/Paris")
+
+    scheduler = _make_dst_scheduler((2, 30))
+
+    # Premier passage à 02:15 : 02:30 reste à venir.
+    first_pass = datetime(
+        2026, 10, 25, 2, 15,
+        tzinfo=paris,
+        fold=0,
+    )
+
+    event = scheduler.next_event(first_pass)
+
+    assert event is not None
+    assert event.scheduled_at.isoformat() == (
+        "2026-10-25T02:30:00+02:00"
+    )
+
+    # Second passage à 02:15 : le premier 02:30 est déjà passé.
+    second_pass = datetime(
+        2026, 10, 25, 2, 15,
+        tzinfo=paris,
+        fold=1,
+    )
+
+    event = scheduler.next_event(second_pass)
+
+    assert event is not None
+    assert event.scheduled_at.isoformat() == (
+        "2026-10-26T02:30:00+01:00"
+    )
+
+def test_scheduler_dst_spring_groups_missing_and_regular_moments():
+    paris = ZoneInfo("Europe/Paris")
+
+    scheduler = _make_dst_scheduler(
+        (2, 10),
+        (2, 30),
+        (3, 0),
+    )
+
+    scheduled_at = datetime(
+        2026, 3, 29, 3, 0,
+        tzinfo=paris,
+    )
+
+    events = scheduler.events_at(scheduled_at)
+
+    assert [event.moment.id for event in events] == [
+        "m0",
+        "m1",
+        "m2",
+    ]
+
+    assert all(
+        event.scheduled_at.isoformat()
+        == "2026-03-29T03:00:00+02:00"
+        for event in events
+    )
+
+

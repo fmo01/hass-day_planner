@@ -8,7 +8,7 @@ Ce document est destiné à `scripts/tests/README.md`. Il conserve la mise à jo
 
 ## État actuel des tests
 
-Ce bloc est remplacé automatiquement après une exécution réussie. Les anciens résultats eedomus ont été retirés ; les valeurs Day Planner restent à mesurer.
+Ce bloc est remplacé automatiquement après une exécution réussie.
 
 <!-- TEST-STATS-START -->
 - Tests réussis : **394**
@@ -311,7 +311,7 @@ Le workflow fourni conserve ce fonctionnement :
 6. Commit et push du README modifié après un événement `push` réussi. Aucun commit automatique pour une pull request ou un lancement manuel.
 7. Publication du rapport HTML même après échec, s'il existe, et de la synthèse après succès.
 
-La commande pytest ne masque plus les erreurs : un échec fait échouer l'étape de tests.
+Un échec fait échouer l'étape de tests.
 
 ---
 

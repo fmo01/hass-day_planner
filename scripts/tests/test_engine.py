@@ -326,11 +326,11 @@ def test_engine_remove_day_type_used_by_calendar_exception(
     assert engine.configuration.day_types == (day_type,)
 
 
-def test_engine_get_week_schedule1(week_schedule):
+def test_engine_get_week_schedule1(week_schedule, day_type,):
     engine = PlannerEngine(
         PlannerConfiguration(
             moments=(),
-            day_types=(),
+            day_types=(day_type,),
             week_schedules=(week_schedule,),
             cycles=(),
             calendar_exceptions=(),
@@ -454,11 +454,12 @@ def test_engine_default_max_cycles():
 
 def test_engine_custom_max_cycles(
     week_schedule,
+    day_type,
 ):
     engine = PlannerEngine(
         PlannerConfiguration(
             moments=(),
-            day_types=(),
+            day_types=(day_type,),
             week_schedules=(week_schedule,),
             cycles=(),
             calendar_exceptions=(),
@@ -492,11 +493,12 @@ def test_engine_custom_max_cycles(
 
 def test_engine_max_cycles_exceeded(
     week_schedule,
+    day_type,
 ):
     engine = PlannerEngine(
         PlannerConfiguration(
             moments=(),
-            day_types=(),
+            day_types=(day_type,),
             week_schedules=(week_schedule,),
             cycles=(),
             calendar_exceptions=(),
@@ -540,11 +542,11 @@ def test_engine_max_cycles_exceeded(
     )
 
 
-def test_engine_get_cycle(cycle, week_schedule):
+def test_engine_get_cycle(cycle, week_schedule, day_type):
     engine = PlannerEngine(
         PlannerConfiguration(
             moments=(),
-            day_types=(),
+            day_types=(day_type, ),
             week_schedules=(week_schedule,),
             cycles=(cycle,),
             calendar_exceptions=(),
@@ -564,11 +566,11 @@ def test_engine_get_cycle_not_found():
         engine.get_cycle("unknown")
 
 
-def test_engine_add_cycle(cycle, week_schedule):
+def test_engine_add_cycle(cycle, week_schedule, day_type,):
     engine = PlannerEngine(
         PlannerConfiguration(
             moments=(),
-            day_types=(),
+            day_types=(day_type,),
             week_schedules=(week_schedule,),
             cycles=(),
             calendar_exceptions=(),
@@ -580,11 +582,11 @@ def test_engine_add_cycle(cycle, week_schedule):
     assert engine.get_cycle(cycle.id) == cycle
 
 
-def test_engine_update_cycle(cycle, week_schedule):
+def test_engine_update_cycle(cycle, week_schedule, day_type,):
     engine = PlannerEngine(
         PlannerConfiguration(
             moments=(),
-            day_types=(),
+            day_types=(day_type,),
             week_schedules=(week_schedule,),
             cycles=(cycle,),
             calendar_exceptions=(),
@@ -603,11 +605,11 @@ def test_engine_update_cycle(cycle, week_schedule):
     assert engine.get_cycle(cycle.id) == updated
 
 
-def test_engine_remove_cycle(cycle, week_schedule):
+def test_engine_remove_cycle(cycle, week_schedule, day_type, ):
     engine = PlannerEngine(
         PlannerConfiguration(
             moments=(),
-            day_types=(),
+            day_types=(day_type, ),
             week_schedules=(week_schedule,),
             cycles=(cycle,),
             calendar_exceptions=(),
@@ -636,6 +638,7 @@ def test_engine_remove_cycle_not_found():
 def test_engine_add_cycle_with_week_schedule(
     cycle,
     week_schedule,
+    day_type,
 ):
     cycle = Cycle(
         id="c2",
@@ -647,7 +650,7 @@ def test_engine_add_cycle_with_week_schedule(
     engine = PlannerEngine(
         PlannerConfiguration(
             moments=(),
-            day_types=(),
+            day_types=(day_type,),
             week_schedules=(week_schedule,),
             cycles=(),
             calendar_exceptions=(),
@@ -831,11 +834,12 @@ def test_engine_update_calendar_exception_unknown_day_type(
 def test_engine_remove_week_schedule_used_by_cycle(
     week_schedule,
     cycle,
+    day_type,
 ):
     engine = PlannerEngine(
         PlannerConfiguration(
             moments=(),
-            day_types=(),
+            day_types=(day_type,),
             week_schedules=(week_schedule,),
             cycles=(cycle,),
             calendar_exceptions=(),

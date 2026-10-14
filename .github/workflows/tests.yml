@@ -10,7 +10,7 @@ on:
       - "scripts/tests/**"
       - "requirements-dev.txt"
       - "pyproject.toml"
-      - ".github/workflows/tests.yaml"
+      - ".github/workflows/tests.yml"
 
   pull_request:
     branches:
@@ -21,7 +21,7 @@ on:
       - "scripts/tests/**"
       - "requirements-dev.txt"
       - "pyproject.toml"
-      - ".github/workflows/tests.yaml"
+      - ".github/workflows/tests.yml"
 
   workflow_dispatch:
 
@@ -96,7 +96,7 @@ jobs:
           - Lignes mesurées : {lines_valid}
           - Lignes couvertes : {lines_covered}
           - Lignes non couvertes : {lines_missing}
-          - Couverture : {coverage}
+          - Couverture : **{coverage:.2f}%**
 
           Generated automatically by GitHub Actions.
           """
@@ -222,59 +222,56 @@ jobs:
           modules = []
 
           for package_node in coverage_root.findall(".//package"):
+              package = package_node.get("name", "")
+              package_name = "" if package == "." else package
 
-            package = package_node.get("name","") 
-            package_name = "" if package == "."  else package
+              for class_node in package_node.findall("classes/class"):
+                  filename = class_node.attrib.get("filename", "")
 
-            for class_node in package_node.findall("classes/class"):
+                  if not filename.endswith(".py"):
+                      continue
 
-              filename = class_node.attrib.get("filename", "")
+                  module_name = Path(filename).name
+                  lines = class_node.findall("./lines/line")
 
-              if not filename.endswith(".py"):
-                continue
-            
-              module_name = Path(filename).name
+                  module_statements = len(lines)
 
-              # Nom affiché dans le README
-              module_name = Path(filename).name
+                  module_covered = sum(
+                      1
+                      for line in lines
+                      if int(line.attrib.get("hits", "0")) > 0
+                  )
 
-              lines = class_node.findall("./lines/line")
+                  module_missing = (
+                      module_statements - module_covered
+                  )
 
-              module_statements = len(lines)
+                  if module_statements:
+                      module_coverage = (
+                          module_covered
+                          / module_statements
+                          * 100
+                      )
+                  else:
+                      module_coverage = 100.0
 
-              module_covered = sum(
-            	  1
-            	  for line in lines
-            	  if int(line.attrib.get("hits", "0")) > 0
+                  modules.append(
+                      (
+                          package_name,
+                          module_name,
+                          module_statements,
+                          module_missing,
+                          module_coverage,
+                      )
+                  )
+
+          # Tri par package, puis par nom de module.
+          modules.sort(
+              key=lambda item: (
+                  item[0].lower(),
+                  item[1].lower(),
               )
-
-              module_missing = (
-            	  module_statements - module_covered
-              )
-
-              if module_statements:
-            	  module_coverage = (
-            		  module_covered
-            		  / module_statements
-            		  * 100
-            	  )
-              else:
-            	  module_coverage = 100.0
-
-              modules.append(
-            	  (
-                            package_name, 
-            		  module_name,
-            		  module_statements,
-            		  module_missing,
-            		  module_coverage,
-            	  )
-              )
-
-          # Tri alphabétique nom module
-          modules.sort(key=lambda item: item[1].lower() )
-          # Tri alphabétique nom package
-          modules.sort(key=lambda item: item[0].lower() )
+          )
 
           # =========================================================
           # Création tableau Markdown

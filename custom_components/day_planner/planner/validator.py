@@ -26,6 +26,8 @@ class PlannerValidator:
 
         PlannerValidator._validate_day_types(configuration)
 
+        PlannerValidator._validate_week_schedules(configuration)
+
         PlannerValidator._validate_cycles(configuration)
 
         PlannerValidator._validate_cycle_count(
@@ -132,6 +134,37 @@ class PlannerValidator:
                 )
 
             used_moments.add(scheduled.moment_id)
+
+    @staticmethod
+    def _validate_week_schedules(
+        configuration: PlannerConfiguration,
+    ) -> None:
+        """Validate day type references in weekly schedules."""
+
+        day_type_ids = {
+            item.id for item in configuration.day_types
+        }
+
+        weekdays = (
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday",
+        )
+
+        for week_schedule in configuration.week_schedules:
+            for weekday in weekdays:
+                day_type_id = getattr(week_schedule, weekday)
+
+                if day_type_id not in day_type_ids:
+                    raise ValidationError(
+                        f"Unknown day type: {day_type_id} "
+                        f"in week schedule '{week_schedule.id}' "
+                        f"for {weekday}"
+                    )
 
     @staticmethod
     def _validate_cycles(

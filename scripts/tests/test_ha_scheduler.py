@@ -57,6 +57,7 @@ def test_ha_scheduler_schedules_event():
 
     scheduler = MagicMock()
     scheduler.next_event.return_value = event
+    scheduler.events_at.return_value = (event,)
 
     action_executor = MagicMock()
     action_executor.async_execute_moment = AsyncMock()
@@ -119,6 +120,7 @@ def test_ha_scheduler_executes_event_and_reschedules():
 
     scheduler = MagicMock()
     scheduler.next_event.return_value = event
+    scheduler.events_at.return_value = (event,)
 
     action_executor = MagicMock()
     action_executor.async_execute_moment = AsyncMock()
@@ -223,6 +225,7 @@ def test_ha_scheduler_reschedule_cancels_previous():
 
     scheduler = MagicMock()
     scheduler.next_event.return_value = event
+    scheduler.events_at.return_value = (event,)
 
     action_executor = MagicMock()
     action_executor.async_execute_moment = AsyncMock()
@@ -286,6 +289,7 @@ def test_ha_scheduler_converts_naive_event_to_timezone():
 
     scheduler = MagicMock()
     scheduler.next_event.return_value = event
+    scheduler.events_at.return_value = (event,)
 
     action_executor = MagicMock()
     action_executor.async_execute_moment = AsyncMock()
@@ -354,6 +358,7 @@ def test_ha_scheduler_reschedules_after_action_error():
 
     scheduler = MagicMock()
     scheduler.next_event.return_value = event
+    scheduler.events_at.return_value = (event,)
 
     action_executor = MagicMock()
     action_executor.async_execute_moment = AsyncMock(
@@ -498,6 +503,8 @@ def test_ha_scheduler_cancels_when_no_next_event():
         None,
     ]
 
+    scheduler.events_at.return_value = (event,)
+
     action_executor = MagicMock()
     action_executor.async_execute_moment = AsyncMock()
 
@@ -570,6 +577,7 @@ def test_ha_scheduler_does_not_execute_same_callback_twice():
 
     scheduler = MagicMock()
     scheduler.next_event.return_value = event
+    scheduler.events_at.return_value = (event,)
 
     action_executor = MagicMock()
     action_executor.async_execute_moment = AsyncMock()
@@ -622,3 +630,98 @@ def test_ha_scheduler_does_not_execute_same_callback_twice():
     asyncio.run(run())
 
     action_executor.async_execute_moment.assert_awaited_once_with(moment)
+
+def test_ha_scheduler_executes_all_simultaneous_moments():
+    moment1 = Moment(
+        id="m1",
+        name="Réveil",
+    )
+
+    moment2 = Moment(
+        id="m2",
+        name="Chauffage",
+    )
+
+    resolver = MagicMock()
+    resolver.resolve_schedule.return_value = tuple(
+        (
+            ScheduledMoment(
+                moment_id=moment.id,
+                time_definition=TimeDefinition(
+                    fixed_time=time(8, 0),
+                ),
+            ),
+            moment,
+        )
+        for moment in (moment1, moment2)
+    )
+
+    scheduler = PlannerScheduler(resolver)
+
+    action_executor = MagicMock()
+    action_executor.async_execute_moment = AsyncMock()
+
+    ha_scheduler = HomeAssistantScheduler(
+        hass=MagicMock(),
+        scheduler=scheduler,
+        action_executor=action_executor,
+    )
+
+    async def run():
+        with (
+            patch(
+                "custom_components.day_planner.ha_scheduler.dt_util.now",
+                return_value=datetime(2026, 10, 13, 7, 0),
+            ) as now,
+            patch(
+                "custom_components.day_planner.ha_scheduler."
+                "async_track_point_in_time",
+                return_value=MagicMock(),
+            ) as track,
+        ):
+            await ha_scheduler.async_schedule_next()
+
+            callback = track.call_args.args[1]
+
+            assert track.call_args.args[2] == datetime(
+                2026, 10, 13, 8, 0
+            )
+
+            now.return_value = datetime(
+                2026, 10, 13, 8, 0, 1
+            )
+
+            await callback(now.return_value)
+
+            executed_moments = [
+                invocation.args[0]
+                for invocation in (
+                    action_executor
+                    .async_execute_moment
+                    .await_args_list
+                )
+            ]
+
+            assert executed_moments == [
+                moment1,
+                moment2,
+            ]
+
+            assert track.call_count == 2
+
+            assert track.call_args.args[2] == datetime(
+                2026, 10, 14, 8, 0
+            )
+
+            # Le même rappel ne doit pas réexécuter les moments.
+            await callback(now.return_value)
+
+            assert (
+                action_executor.async_execute_moment.await_count
+                == 2
+            )
+            assert track.call_count == 2
+
+    asyncio.run(run())
+
+

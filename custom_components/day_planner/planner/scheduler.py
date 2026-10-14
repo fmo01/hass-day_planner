@@ -1,6 +1,6 @@
 """Scheduling logic for Day Planner."""
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from ..domain.scheduled_event import ScheduledEvent
 from .resolver import PlannerResolver
@@ -18,16 +18,44 @@ class PlannerScheduler:
         self._resolver = resolver
 
     @staticmethod
+    def _comparison_time(
+        value: datetime,
+    ) -> datetime:
+        """Compare timezone-aware datetimes using UTC."""
+
+        if value.tzinfo is not None:
+            return value.astimezone(timezone.utc)
+
+        return value
+
+    @staticmethod
     def _normalize_scheduled_at(
         scheduled_at: datetime,
         reference: datetime,
     ) -> datetime:
-        """Return scheduled datetime with reference timezone if needed."""
+        """Apply the local timezone and handle missing clock times."""
 
-        if scheduled_at.tzinfo is None and reference.tzinfo is not None:
-            return scheduled_at.replace(tzinfo=reference.tzinfo)
+        if scheduled_at.tzinfo is not None or reference.tzinfo is None:
+            return scheduled_at
 
-        return scheduled_at
+        local = scheduled_at.replace(
+            tzinfo=reference.tzinfo,
+            fold=0,
+        )
+
+        while True:
+            roundtrip = local.astimezone(timezone.utc).astimezone(
+                reference.tzinfo
+            )
+
+            if roundtrip.replace(tzinfo=None) == local.replace(tzinfo=None):
+                return local
+
+            local = (local + timedelta(minutes=1)).replace(
+                second=0,
+                microsecond=0,
+                fold=0,
+            )
 
     def events_for_date(
         self,
@@ -57,6 +85,31 @@ class PlannerScheduler:
             )
         )
 
+    def events_at(
+        self,
+        scheduled_at: datetime,
+    ) -> tuple[ScheduledEvent, ...]:
+        """Return all events executed at the given instant."""
+
+        events = []
+        target = self._comparison_time(scheduled_at)
+
+        for event in self.events_for_date(scheduled_at.date()):
+            event_time = self._normalize_scheduled_at(
+                event.scheduled_at,
+                scheduled_at,
+            )
+
+            if self._comparison_time(event_time) == target:
+                events.append(
+                    ScheduledEvent(
+                        scheduled_at=event_time,
+                        moment=event.moment,
+                    )
+                )
+
+        return tuple(events)
+
     def next_event(
         self,
         now: datetime,
@@ -73,7 +126,9 @@ class PlannerScheduler:
                     now,
                 )
 
-                if scheduled_at > now:
+                if self._comparison_time(
+                    scheduled_at
+                ) > self._comparison_time(now):
                     if scheduled_at == event.scheduled_at:
                         return event
 
@@ -99,9 +154,10 @@ class PlannerScheduler:
                     now,
                 )
 
-            event_end = scheduled_at + timedelta(minutes=1)
+            event_start = self._comparison_time(scheduled_at)
+            event_end = event_start + timedelta(minutes=1)
 
-            if scheduled_at <= now < event_end:
+            if event_start <= self._comparison_time(now) < event_end:
                 if scheduled_at is event.scheduled_at:
                     return event
 
@@ -126,7 +182,9 @@ class PlannerScheduler:
                 now,
             )
 
-            if scheduled_at > now:
+            if self._comparison_time(
+                scheduled_at
+            ) > self._comparison_time(now):
                 break
 
             if scheduled_at == event.scheduled_at:
