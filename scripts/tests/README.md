@@ -255,7 +255,7 @@ Les résultats Day Planner du workflow et les blocs automatiques ci-dessous font
  Les valeurs ci-dessous proviennent de l'exécution GitHub Actions réussie et ne sauraurent être considérées comme définitivement à jour.
 
 <!-- COVERAGE-MODULES-START -->
-Dernière mise à jour : **2026-10-14 12:15:34 Europe/Paris**
+Dernière mise à jour : **2026-10-14 12:27:12 Europe/Paris**
 
 | Package | Composant | Instructions | Non couvertes | Couverture |
 |---|---|---:|---:|---:|
@@ -386,7 +386,7 @@ pytest-homeassistant-custom-component 0.13.372
 Tests exécutés : 407 
 Tests réussis : 407 
 Couverture totale : 100.00%
-Dernière exécution : 2026-10-14 12:15:34 Europe/Paris
+Dernière exécution : 2026-10-14 12:27:12 Europe/Paris
 ```
 <!-- TEST-ENV-END -->
 
