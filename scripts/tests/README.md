@@ -11,9 +11,9 @@ Ce document est destiné à `scripts/tests/README.md`. Il conserve la mise à jo
 Ce bloc est remplacé automatiquement après une exécution réussie.
 
 <!-- TEST-STATS-START -->
-- Tests réussis : **394**
-- Lignes mesurées : **1877**
-- Lignes couvertes : **1877**
+- Tests réussis : **407**
+- Lignes mesurées : **1908**
+- Lignes couvertes : **1908**
 - Lignes non couvertes : **0**
 - Couverture : **100.00%**
 <!-- TEST-STATS-END -->
@@ -255,7 +255,7 @@ Les résultats Day Planner du workflow et les blocs automatiques ci-dessous font
  Les valeurs ci-dessous proviennent de l'exécution locale réussie et ne sauraurent être considérées comme définitivement à jour.
 
 <!-- COVERAGE-MODULES-START -->
-Dernière mise à jour : **2026-10-13 15:28:05 Europe/Paris**
+Dernière mise à jour : **2026-10-14 12:15:34 Europe/Paris**
 
 | Package | Composant | Instructions | Non couvertes | Couverture |
 |---|---|---:|---:|---:|
@@ -265,7 +265,7 @@ Dernière mise à jour : **2026-10-13 15:28:05 Europe/Paris**
 |  | `config_flow.py` | 12 | 0 | 100.00% |
 |  | `const.py` | 39 | 0 | 100.00% |
 |  | `frontend.py` | 7 | 0 | 100.00% |
-|  | `ha_scheduler.py` | 37 | 0 | 100.00% |
+|  | `ha_scheduler.py` | 39 | 0 | 100.00% |
 |  | `integration_info.py` | 9 | 0 | 100.00% |
 |  | `options_flow.py` | 454 | 0 | 100.00% |
 |  | `panel.py` | 10 | 0 | 100.00% |
@@ -292,9 +292,9 @@ Dernière mise à jour : **2026-10-13 15:28:05 Europe/Paris**
 | `planner` | `errors.py` | 3 | 0 | 100.00% |
 | `planner` | `protocols.py` | 2 | 0 | 100.00% |
 | `planner` | `resolver.py` | 45 | 0 | 100.00% |
-| `planner` | `scheduler.py` | 48 | 0 | 100.00% |
-| `planner` | `validator.py` | 96 | 0 | 100.00% |
-| **TOTAL** | | **1877** | **0** | **100.00%** |
+| `planner` | `scheduler.py` | 67 | 0 | 100.00% |
+| `planner` | `validator.py` | 106 | 0 | 100.00% |
+| **TOTAL** | | **1908** | **0** | **100.00%** |
 <!-- COVERAGE-MODULES-END -->
 
 ---
@@ -383,10 +383,10 @@ Python 3.14.8
 pytest 9.0.3
 pytest-cov 7.1.0
 pytest-homeassistant-custom-component 0.13.372
-Tests exécutés : 394 
-Tests réussis : 394 
+Tests exécutés : 407 
+Tests réussis : 407 
 Couverture totale : 100.00%
-Dernière exécution : 2026-10-13 15:28:05 Europe/Paris
+Dernière exécution : 2026-10-14 12:15:34 Europe/Paris
 ```
 <!-- TEST-ENV-END -->
 
