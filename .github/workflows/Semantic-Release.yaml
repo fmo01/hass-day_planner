@@ -1,11 +1,12 @@
 name: Semantic Release
+name: Semantic Release
 
 on:
   push:
-    paths:
-      - 'custom_components/**' # Se déclenche uniquement si des fichiers ici changent
+    paths: # Se déclenche uniquement si des fichiers ici changent
+      - 'custom_components/**'
 
-    workflow_dispatch:
+  workflow_dispatch:
     
 jobs:
   release:
