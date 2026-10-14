@@ -12,8 +12,8 @@ Ce bloc est remplacé automatiquement après une exécution réussie. Les valeur
 
 <!-- TEST-STATS-START -->
 - Tests réussis : **407**
-- Lignes mesurées : **1908**
-- Lignes couvertes : **1908**
+- Lignes mesurées : **1907**
+- Lignes couvertes : **1907**
 - Lignes non couvertes : **0**
 - Couverture : **100.00%**
 <!-- TEST-STATS-END -->
@@ -261,7 +261,7 @@ La couverture est suivie sans seuil bloquant. L'objectif de 100 % ne nécessite 
 Les valeurs ci-dessous proviennent de l'exécution GitHub Actions réussie datée dans le tableau. Elles seront actualisées automatiquement lors d'une prochaine exécution.
 
 <!-- COVERAGE-MODULES-START -->
-Dernière mise à jour : **2026-10-14 12:15:34 Europe/Paris**
+Dernière mise à jour : **2026-10-14 14:48:20 Europe/Paris**
 
 | Package | Composant | Instructions | Non couvertes | Couverture |
 |---|---|---:|---:|---:|
@@ -269,7 +269,7 @@ Dernière mise à jour : **2026-10-14 12:15:34 Europe/Paris**
 |  | `action_executor.py` | 18 | 0 | 100.00% |
 |  | `calendar.py` | 56 | 0 | 100.00% |
 |  | `config_flow.py` | 12 | 0 | 100.00% |
-|  | `const.py` | 39 | 0 | 100.00% |
+|  | `const.py` | 38 | 0 | 100.00% |
 |  | `frontend.py` | 7 | 0 | 100.00% |
 |  | `ha_scheduler.py` | 39 | 0 | 100.00% |
 |  | `integration_info.py` | 9 | 0 | 100.00% |
@@ -300,7 +300,7 @@ Dernière mise à jour : **2026-10-14 12:15:34 Europe/Paris**
 | `planner` | `resolver.py` | 45 | 0 | 100.00% |
 | `planner` | `scheduler.py` | 67 | 0 | 100.00% |
 | `planner` | `validator.py` | 106 | 0 | 100.00% |
-| **TOTAL** | | **1908** | **0** | **100.00%** |
+| **TOTAL** | | **1907** | **0** | **100.00%** |
 <!-- COVERAGE-MODULES-END -->
 
 ---
@@ -389,10 +389,10 @@ Python 3.14.8
 pytest 9.0.3
 pytest-cov 7.1.0
 pytest-homeassistant-custom-component 0.13.372
-Tests exécutés : 407
-Tests réussis : 407
+Tests exécutés : 407 
+Tests réussis : 407 
 Couverture totale : 100.00%
-Dernière exécution : 2026-10-14 12:15:34 Europe/Paris
+Dernière exécution : 2026-10-14 14:48:20 Europe/Paris
 ```
 <!-- TEST-ENV-END -->
 
