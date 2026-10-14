@@ -141,9 +141,7 @@ class PlannerValidator:
     ) -> None:
         """Validate day type references in weekly schedules."""
 
-        day_type_ids = {
-            item.id for item in configuration.day_types
-        }
+        day_type_ids = {item.id for item in configuration.day_types}
 
         weekdays = (
             "monday",

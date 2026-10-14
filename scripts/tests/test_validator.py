@@ -1,8 +1,7 @@
+from dataclasses import replace
 from datetime import date, time
 
 import pytest
-
-from dataclasses import replace
 
 from custom_components.day_planner.const import DEFAULT_MAX_CYCLES
 from custom_components.day_planner.domain.action import Action
@@ -156,9 +155,7 @@ def test_validator_rejects_duplicate_moment_in_day_type(
         PlannerValidator.validate_configuration(configuration)
 
 
-def test_validator_accepts_cycle_with_one_week_schedule(
-    week_schedule, day_type
-):
+def test_validator_accepts_cycle_with_one_week_schedule(week_schedule, day_type):
     cycle = Cycle(
         id="c1",
         name="Cycle 1",
@@ -431,7 +428,8 @@ def test_validator_rejects_action_without_id():
 
 
 def test_validator_rejects_cycle_start_date_not_monday(
-    week_schedule, day_type,
+    week_schedule,
+    day_type,
 ):
     cycle = Cycle(
         id="c1",
@@ -456,7 +454,8 @@ def test_validator_rejects_cycle_start_date_not_monday(
 
 
 def test_validator_rejects_multiple_cycles(
-    week_schedule, day_type,
+    week_schedule,
+    day_type,
 ):
     cycles = tuple(
         Cycle(
@@ -492,7 +491,8 @@ def test_validator_rejects_multiple_cycles(
 
 
 def test_validator_rejects_cycle_not_starting_monday(
-    week_schedule, day_type,
+    week_schedule,
+    day_type,
 ):
     cycle = Cycle(
         id="c1",
@@ -632,6 +632,7 @@ def test_calendar_exceptions_cannot_have_same_date(
     ):
         PlannerValidator.validate_configuration(configuration)
 
+
 @pytest.mark.parametrize(
     "weekday",
     (
@@ -667,4 +668,3 @@ def test_validator_rejects_unknown_day_type_in_week_schedule(
         match="Unknown day type: unknown",
     ):
         PlannerValidator.validate_configuration(configuration)
-

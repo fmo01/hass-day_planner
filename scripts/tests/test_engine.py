@@ -326,7 +326,10 @@ def test_engine_remove_day_type_used_by_calendar_exception(
     assert engine.configuration.day_types == (day_type,)
 
 
-def test_engine_get_week_schedule1(week_schedule, day_type,):
+def test_engine_get_week_schedule1(
+    week_schedule,
+    day_type,
+):
     engine = PlannerEngine(
         PlannerConfiguration(
             moments=(),
@@ -546,7 +549,7 @@ def test_engine_get_cycle(cycle, week_schedule, day_type):
     engine = PlannerEngine(
         PlannerConfiguration(
             moments=(),
-            day_types=(day_type, ),
+            day_types=(day_type,),
             week_schedules=(week_schedule,),
             cycles=(cycle,),
             calendar_exceptions=(),
@@ -566,7 +569,11 @@ def test_engine_get_cycle_not_found():
         engine.get_cycle("unknown")
 
 
-def test_engine_add_cycle(cycle, week_schedule, day_type,):
+def test_engine_add_cycle(
+    cycle,
+    week_schedule,
+    day_type,
+):
     engine = PlannerEngine(
         PlannerConfiguration(
             moments=(),
@@ -582,7 +589,11 @@ def test_engine_add_cycle(cycle, week_schedule, day_type,):
     assert engine.get_cycle(cycle.id) == cycle
 
 
-def test_engine_update_cycle(cycle, week_schedule, day_type,):
+def test_engine_update_cycle(
+    cycle,
+    week_schedule,
+    day_type,
+):
     engine = PlannerEngine(
         PlannerConfiguration(
             moments=(),
@@ -605,11 +616,15 @@ def test_engine_update_cycle(cycle, week_schedule, day_type,):
     assert engine.get_cycle(cycle.id) == updated
 
 
-def test_engine_remove_cycle(cycle, week_schedule, day_type, ):
+def test_engine_remove_cycle(
+    cycle,
+    week_schedule,
+    day_type,
+):
     engine = PlannerEngine(
         PlannerConfiguration(
             moments=(),
-            day_types=(day_type, ),
+            day_types=(day_type,),
             week_schedules=(week_schedule,),
             cycles=(cycle,),
             calendar_exceptions=(),

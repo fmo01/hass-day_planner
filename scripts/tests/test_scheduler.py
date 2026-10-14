@@ -1,7 +1,7 @@
 import asyncio
 from datetime import date, datetime, time, timedelta, timezone
-from zoneinfo import ZoneInfo
 from unittest.mock import AsyncMock, MagicMock, patch
+from zoneinfo import ZoneInfo
 
 from custom_components.day_planner.domain.moment import Moment
 from custom_components.day_planner.domain.scheduled_event import ScheduledEvent
@@ -826,10 +826,8 @@ def test_scheduler_events_at_returns_simultaneous_moments():
         moment1,
         moment2,
     ]
-    assert all(
-        event.scheduled_at == scheduled_at
-        for event in events
-    )
+    assert all(event.scheduled_at == scheduled_at for event in events)
+
 
 def test_scheduler_handles_midnight_transition():
     evening = Moment(
@@ -879,25 +877,17 @@ def test_scheduler_handles_midnight_transition():
 
     assert next_event is not None
     assert next_event.moment == morning
-    assert next_event.scheduled_at == datetime(
-        2026, 10, 14, 0, 5
-    )
+    assert next_event.scheduled_at == datetime(2026, 10, 14, 0, 5)
 
     # Après minuit, le moment de la veille n'est pas reporté.
-    assert scheduler.current_moment(
-        datetime(2026, 10, 14, 0, 0)
-    ) is None
+    assert scheduler.current_moment(datetime(2026, 10, 14, 0, 0)) is None
 
     # À 00:05, le premier moment du nouveau jour est atteint.
-    current = scheduler.current_moment(
-        datetime(2026, 10, 14, 0, 5)
-    )
+    current = scheduler.current_moment(datetime(2026, 10, 14, 0, 5))
 
     assert current is not None
     assert current.moment == morning
-    assert current.scheduled_at == datetime(
-        2026, 10, 14, 0, 5
-    )
+    assert current.scheduled_at == datetime(2026, 10, 14, 0, 5)
 
 
 def _make_dst_scheduler(*hours):
@@ -928,16 +918,18 @@ def test_scheduler_dst_spring_runs_missing_time_at_three():
     scheduler = _make_dst_scheduler((2, 30))
 
     now = datetime(
-        2026, 3, 29, 1, 59,
+        2026,
+        3,
+        29,
+        1,
+        59,
         tzinfo=paris,
     )
 
     event = scheduler.next_event(now)
 
     assert event is not None
-    assert event.scheduled_at.isoformat() == (
-        "2026-03-29T03:00:00+02:00"
-    )
+    assert event.scheduled_at.isoformat() == ("2026-03-29T03:00:00+02:00")
 
 
 def test_scheduler_dst_autumn_runs_only_first_occurrence():
@@ -947,7 +939,11 @@ def test_scheduler_dst_autumn_runs_only_first_occurrence():
 
     # Premier passage à 02:15 : 02:30 reste à venir.
     first_pass = datetime(
-        2026, 10, 25, 2, 15,
+        2026,
+        10,
+        25,
+        2,
+        15,
         tzinfo=paris,
         fold=0,
     )
@@ -955,13 +951,15 @@ def test_scheduler_dst_autumn_runs_only_first_occurrence():
     event = scheduler.next_event(first_pass)
 
     assert event is not None
-    assert event.scheduled_at.isoformat() == (
-        "2026-10-25T02:30:00+02:00"
-    )
+    assert event.scheduled_at.isoformat() == ("2026-10-25T02:30:00+02:00")
 
     # Second passage à 02:15 : le premier 02:30 est déjà passé.
     second_pass = datetime(
-        2026, 10, 25, 2, 15,
+        2026,
+        10,
+        25,
+        2,
+        15,
         tzinfo=paris,
         fold=1,
     )
@@ -969,9 +967,8 @@ def test_scheduler_dst_autumn_runs_only_first_occurrence():
     event = scheduler.next_event(second_pass)
 
     assert event is not None
-    assert event.scheduled_at.isoformat() == (
-        "2026-10-26T02:30:00+01:00"
-    )
+    assert event.scheduled_at.isoformat() == ("2026-10-26T02:30:00+01:00")
+
 
 def test_scheduler_dst_spring_groups_missing_and_regular_moments():
     paris = ZoneInfo("Europe/Paris")
@@ -983,7 +980,11 @@ def test_scheduler_dst_spring_groups_missing_and_regular_moments():
     )
 
     scheduled_at = datetime(
-        2026, 3, 29, 3, 0,
+        2026,
+        3,
+        29,
+        3,
+        0,
         tzinfo=paris,
     )
 
@@ -996,9 +997,6 @@ def test_scheduler_dst_spring_groups_missing_and_regular_moments():
     ]
 
     assert all(
-        event.scheduled_at.isoformat()
-        == "2026-03-29T03:00:00+02:00"
+        event.scheduled_at.isoformat() == "2026-03-29T03:00:00+02:00"
         for event in events
     )
-
-

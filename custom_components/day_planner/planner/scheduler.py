@@ -44,9 +44,7 @@ class PlannerScheduler:
         )
 
         while True:
-            roundtrip = local.astimezone(timezone.utc).astimezone(
-                reference.tzinfo
-            )
+            roundtrip = local.astimezone(timezone.utc).astimezone(reference.tzinfo)
 
             if roundtrip.replace(tzinfo=None) == local.replace(tzinfo=None):
                 return local
@@ -126,9 +124,7 @@ class PlannerScheduler:
                     now,
                 )
 
-                if self._comparison_time(
-                    scheduled_at
-                ) > self._comparison_time(now):
+                if self._comparison_time(scheduled_at) > self._comparison_time(now):
                     if scheduled_at == event.scheduled_at:
                         return event
 
@@ -182,9 +178,7 @@ class PlannerScheduler:
                 now,
             )
 
-            if self._comparison_time(
-                scheduled_at
-            ) > self._comparison_time(now):
+            if self._comparison_time(scheduled_at) > self._comparison_time(now):
                 break
 
             if scheduled_at == event.scheduled_at:

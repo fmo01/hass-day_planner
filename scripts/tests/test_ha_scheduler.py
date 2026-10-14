@@ -631,6 +631,7 @@ def test_ha_scheduler_does_not_execute_same_callback_twice():
 
     action_executor.async_execute_moment.assert_awaited_once_with(moment)
 
+
 def test_ha_scheduler_executes_all_simultaneous_moments():
     moment1 = Moment(
         id="m1",
@@ -683,23 +684,15 @@ def test_ha_scheduler_executes_all_simultaneous_moments():
 
             callback = track.call_args.args[1]
 
-            assert track.call_args.args[2] == datetime(
-                2026, 10, 13, 8, 0
-            )
+            assert track.call_args.args[2] == datetime(2026, 10, 13, 8, 0)
 
-            now.return_value = datetime(
-                2026, 10, 13, 8, 0, 1
-            )
+            now.return_value = datetime(2026, 10, 13, 8, 0, 1)
 
             await callback(now.return_value)
 
             executed_moments = [
                 invocation.args[0]
-                for invocation in (
-                    action_executor
-                    .async_execute_moment
-                    .await_args_list
-                )
+                for invocation in (action_executor.async_execute_moment.await_args_list)
             ]
 
             assert executed_moments == [
@@ -709,19 +702,12 @@ def test_ha_scheduler_executes_all_simultaneous_moments():
 
             assert track.call_count == 2
 
-            assert track.call_args.args[2] == datetime(
-                2026, 10, 14, 8, 0
-            )
+            assert track.call_args.args[2] == datetime(2026, 10, 14, 8, 0)
 
             # Le même rappel ne doit pas réexécuter les moments.
             await callback(now.return_value)
 
-            assert (
-                action_executor.async_execute_moment.await_count
-                == 2
-            )
+            assert action_executor.async_execute_moment.await_count == 2
             assert track.call_count == 2
 
     asyncio.run(run())
-
-
