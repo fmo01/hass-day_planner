@@ -238,7 +238,7 @@ Télécharger `coverage-summary` et consulter `coverage-summary.md`.
 
 ### Rapport HTML local
 
-Après une exécution locale avec couverture, ouvrir :
+Après une exécution GitHub Actions avec couverture, ouvrir :
 
 ```text
 htmlcov/index.html
@@ -252,7 +252,7 @@ Les résultats Day Planner du workflow et les blocs automatiques ci-dessous font
 
 ## Couverture par module
 
- Les valeurs ci-dessous proviennent de l'exécution locale réussie et ne sauraurent être considérées comme définitivement à jour.
+ Les valeurs ci-dessous proviennent de l'exécution GitHub Actions réussie et ne sauraurent être considérées comme définitivement à jour.
 
 <!-- COVERAGE-MODULES-START -->
 Dernière mise à jour : **2026-10-14 12:15:34 Europe/Paris**
@@ -321,7 +321,7 @@ La suite utilise pytest, les tests asynchrones et des doublures adaptées aux co
 
 Les tests ne doivent pas agir sur des appareils réels ni dépendre d'un calendrier externe. Les rappels temporels, appels de services, écritures de stockage et ressources Home Assistant sont isolés selon les scénarios.
 
-Les commandes documentées conservent le chargement automatique des plugins pytest de l'environnement actif.
+Les commandes documentées conservent Le chargement automatique des plugins pytest est désactivé. Les commandes chargent explicitement pytest_asyncio et, pour la couverture, pytest_cov.
 
 La couverture ne garantit pas à elle seule la correction des règles métier. Vérifier les résultats attendus, limites et erreurs, puis compléter par les essais Home Assistant nécessaires.
 
@@ -375,7 +375,7 @@ Cette liste décrit les tests présents ; elle ne garantit pas une couverture ex
 
 ## État de l'environnement de test
 
-L'exécution locale récente réussie a utilisé:
+L'exécution GitHub Actions récente réussie a utilisé:
 
 <!-- TEST-ENV-START -->
 ```text
