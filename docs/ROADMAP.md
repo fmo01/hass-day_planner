@@ -1,210 +1,350 @@
-# Day Planner — Roadmap
+# Day Planner — Roadmap et suivi d’avancement
 
-**Base : version 0.1.0, ZIP relu le 12 octobre 2026.**
+**Mise à jour : 14 octobre 2026. Version publiée de référence : 0.2.0, confirmée par l'utilisateur ; base de code relue dans le ZIP 0.1.0 et corrections suivies les 13 et 14 octobre.**
 
-Les versions ci-dessous sont des cibles proposées, pas des engagements de publication. Les lots sont ordonnés par dépendance et par impact sur la fiabilité du planning. Aucune date n'est fixée avant validation du périmètre et des résultats de chaque lot.
+La roadmap reprend les **six lots de la première version**. Les sept étapes de finalisation des vues sont rattachées aux lots concernés, avec leurs statuts conservés. Les numéros des lots sont des repères stables ; le travail immédiat reste le dernier contrôle des types de journée, puis les semaines types, en traitant les corrections de fiabilité du lot 1.
 
-## 1. Objectif
+Les statuts des vues proviennent des indications de l'utilisateur. Les constats techniques proviennent de la relecture du ZIP du 13 octobre. Les versions cibles restent indicatives, sans date de publication engagée.
 
-Disposer d'un agenda Home Assistant fiable et simple à gérer : moments réutilisables, horaires dans les types de journée, types de semaine, cycles et exceptions dans le calendrier.
+## 1. Principes
 
-Le projet conserve une seule configuration et un seul profil. La logique métier reste séparée des interfaces Home Assistant. Les nouvelles vérifications sont ajoutées dans les fichiers de tests existants correspondant aux modules concernés.
+- Un seul profil et une seule configuration Day Planner.
+- Horaires définis dans les types de journée ; actions associées aux moments.
+- Exceptions gérées depuis le calendrier.
+- Logique métier séparée des interfaces Home Assistant.
+- Nouveaux tests ajoutés de préférence dans les fichiers existants correspondant aux modules concernés.
+- Moments considérés comme terminés et figés : une modification nécessite un défaut identifié ou une dépendance concrète d'un autre bloc.
+- Couverture mesurée et suivie, avec un objectif de 100 %, sans seuil bloquant dans les commandes ni dans la CI.
 
-## 2. Point de départ
+### Priorité de l'i18n
 
-### Présent dans les sources 0.1.0
+**L'i18n n'est pas prioritaire et ne bloque pas la validation des blocs.** Lorsqu'un fichier ou un dialogue doit être retouché pour une raison fonctionnelle, son i18n peut être traitée à cette occasion. Les traductions existantes sont conservées.
 
-- Gestion des moments, actions, types de journée, moments planifiés, types de semaine, cycles et exceptions.
-- Résolution du type de journée et calcul des événements.
-- Planification Home Assistant et exécution des séquences d'actions.
-- Stockage persistant.
-- Trois capteurs et un calendrier Home Assistant.
+Les mentions d'i18n dans les blocs suivants décrivent donc des ajustements opportunistes, pas une campagne de traduction dédiée. Les libellés encore en français en dur seront recensés lors du passage transversal ; leur traduction n'impose pas de rouvrir les moments figés.
+
+## 2. État du socle
+
+### Présent dans la version relue
+
+- Gestion des moments, actions, types de journée, moments planifiés, semaines types, cycles et exceptions.
+- Résolution du planning, calcul des événements, planification Home Assistant et exécution des actions.
+- Stockage persistant, trois capteurs et un calendrier Home Assistant.
 - Panneau de gestion, carte Lovelace, services et API WebSocket.
 - Horaires fixes.
 
-La documentation mise à jour est préparée ; son intégration au dépôt reste à effectuer.
+### Corrections intégrées depuis la première relecture
 
-### Écarts établis par la relecture
+- Couverture ciblant `custom_components/day_planner`.
+- Suppression des anciennes vérifications de fichiers eedomus dans le workflow de tests.
+- Échec de pytest désormais transmis à la CI.
+- Dépendances de test et de couverture ajoutées.
+- Assertions des capteurs et du calendrier utilisant `INTEGRATION_VERSION`.
+- Tableau de couverture distinguant package et composant.
+- README des tests en français, guides et roadmap intégrés au dépôt.
 
-- Versions incohérentes entre `const.py` et `manifest.json`.
-- Vérifications CI héritées d'eedomus et échec pytest masqué.
-- Dépendance de couverture absente de `requirements-dev.txt`.
-- Contrôle incomplet des références des sept jours d'un type de semaine.
-- Classe `Audit` présente mais non intégrée aux objets persistés.
-- Deux entrées 0.1.0 dans le changelog.
+**Résultat courant communiqué par l'utilisateur le 14 octobre 2026 : 407 tests réussis, 1 908 instructions mesurées, aucune non couverte et 100 % de couverture Python ; 5 avertissements, durée 1,22 s, Python 3.14.3.** Ce résultat valide la suite après correction des moments simultanés, des références des semaines et du calcul des changements d'heure ; le test de passage de minuit est également réussi. Il n'a pas été réexécuté par l'assistant. Aucun seuil bloquant de couverture n'est souhaité.
 
-Le ZIP contient 18 fichiers de tests et 365 fonctions de test, hors expansion des paramétrages. Leur réussite et leur couverture n'ont pas été mesurées pendant la relecture.
+**Résultat historique du 13 octobre :** le README des tests annonce **394 tests réussis, 1 877 lignes mesurées et 100 % de couverture**, au **13 octobre 2026 à 15:28:05 Europe/Paris**. La relecture a vérifié la cohérence de ce tableau et les générateurs de rapports avec des données synthétiques ; elle n'a pas réexécuté la suite complète.
 
-## 3. Vue d'ensemble
+## 3. Vue d’ensemble des lots
 
-| Ordre | Lot | Version cible proposée | Résultat attendu | Dépendance |
-| --- | --- | --- | --- | --- |
-| 1 | Stabiliser le socle | 0.1.1 | CI fiable, configuration cohérente, comportement temporel vérifié. | Base 0.1.0 |
-| 2 | Intégrer les Metadata | 0.2.0 | Auteur et horodatage conservés pour les modifications. | Lot 1 |
-| 3 | Simplifier la gestion quotidienne | 0.3.0 | Création du planning guidée et erreurs compréhensibles. | Lots 1 et 2 |
-| 4 | Ajouter les horaires avancés | 0.4.0 | Horaires fixes et premières règles dynamiques cohérentes. | Lots 1 et 2 ; besoins à préciser |
-| 5 | Ajouter une source de calendrier externe | 0.5.0 | Exceptions issues d'un calendrier, avec règles de priorité explicites. | Lots 1 à 3 ; contrat de synchronisation à définir |
-| 6 | Qualifier la première version stable | 1.0.0 | Installation, mise à jour et usage quotidien validés. | Lots retenus pour la 1.0 |
+| Lot | Intitulé | Version cible indicative | Avancement actuel |
+| --- | --- | --- | --- |
+| 1 | Stabiliser le socle | Corrections livrées en 0.2.0 | Corrections fonctionnelles, workflow et versions/changelog terminés. L1-06 reste en cours pour les essais réels HA. |
+| 2 | Intégrer les Metadata | À définir après 0.2.0 | À planifier après consolidation des vues. |
+| 3 | Simplifier la gestion quotidienne | 0.3.0 | En cours ; moments figés, journées presque terminées, semaines types ensuite. |
+| 4 | Ajouter les horaires avancés | 0.4.0 | À planifier ; périmètre à préciser. |
+| 5 | Ajouter une source de calendrier externe | 0.5.0 | À planifier ; règles de synchronisation à définir. |
+| 6 | Qualifier la première version stable | 1.0.0 | À préparer après consolidation du périmètre retenu. |
 
-Les lots 4 et 5 peuvent être inversés selon le besoin prioritaire. La version 1.0 peut être publiée sans ces deux extensions si le périmètre stable est limité au calendrier interne et aux horaires fixes.
+Les lots 4 et 5 peuvent être inversés selon les besoins. La 1.0 peut être qualifiée avec calendrier interne et horaires fixes, sans attendre ces extensions.
 
-## 4. Lot 1 — Stabiliser le socle
+## 4. Tableau permanent de suivi d’avancement
 
-**Priorité : immédiate.**
+**Ce tableau est conservé et mis à jour au fil du projet, sans suppression de lignes.** Les identifiants sont stables et ne sont jamais réutilisés. Une tâche terminée reste visible. Les nouvelles tâches sont ajoutées avec un nouvel identifiant.
 
-### 1A. Rendre les résultats de validation fiables
+Les colonnes statut, reste à faire, preuve et date peuvent être actualisées. Une tâche abandonnée passe à « Abandonné », une tâche reportée à « Reporté » ; la raison est conservée. Un changement de périmètre est consigné dans le journal en fin de document. Aucun pourcentage n'est déduit des lignes : les tâches n'ont pas toutes la même taille.
 
-- Retirer du workflow les chemins et vérifications eedomus.
-- Faire échouer la CI lorsque pytest échoue ; supprimer le `|| echo` masquant son résultat.
-- Déclarer les dépendances nécessaires à la mesure de couverture et aligner les commandes locales et CI.
-- Harmoniser les versions exposées par l'intégration.
-- Fusionner les entrées 0.1.0 après vérification de la date de publication.
-- Intégrer le README et les deux guides actualisés.
+Statuts : **Terminé**, **Terminé et figé**, **Presque terminé**, **En cours**, **À faire**, **À planifier**, **À confirmer**, **Reporté**, **Abandonné**. « Terminé » décrit une tâche précise ; il ne signifie pas que tout le lot est validé.
 
-### 1B. Compléter l'intégrité de la configuration
+| ID | Lot | Tâche / périmètre | Statut | Reste à faire / prochaine action | Preuve / origine du statut | Mise à jour |
+| --- | --- | --- | --- | --- | --- | --- |
+| L1-01 | 1 | Ciblage Day Planner et transmission des échecs pytest | Terminé | Conserver lors des prochaines adaptations. | Workflow relu. | 13/10/2026 |
+| L1-02 | 1 | Dépendances de tests et couverture | Terminé | Suivre leur compatibilité. | requirements-dev.txt relu. | 13/10/2026 |
+| L1-03 | 1 | Assertions de version et tableau par package | Terminé | Conserver la génération automatique. | Tests relus ; générateurs vérifiés avec XML synthétiques. | 13/10/2026 |
+| L1-04 | 1 | Références des sept jours des semaines types | Terminé | Conserver le contrôle et les tests des sept jours ; l'UX des semaines reste à finaliser dans L3-03. | Validation des sept jours réussie et données des tests existants complétées ; suite complète de 403 tests réussie, selon le résultat utilisateur. | 14/10/2026 |
+| L1-05 | 1 | Moments simultanés | Terminé | Maintenir les tests de non-régression dans les fichiers existants. | Deux nouveaux tests réussis ; 29 tests des planificateurs passés, puis suite complète de 403 tests réussie, selon les résultats utilisateur. | 14/10/2026 |
+| L1-06 | 1 | Transitions temporelles et rechargement | En cours | Confirmer dans HA le rafraîchissement à minuit et le redémarrage/rechargement près d'un déclenchement. Rappel prévu le 15/10 vers 18 h, Europe/Paris. | Test de calcul à minuit et trois tests DST réussis ; suite complète utilisateur : 407 tests, 100 %. Essais réels HA non encore confirmés. | 14/10/2026 |
+| L1-07 | 1 | Filtres et présentation du workflow | Terminé | Conserver les rapports et la mise à jour automatique du README, sans seuil bloquant. | Exécution tests.yml réussie confirmée par l'utilisateur ; README généré le 14/10 à 12:15:34 : 407 tests, 1 908 instructions, 100 %. | 14/10/2026 |
+| L1-08 | 1 | Seuil de couverture imposé en CI | Abandonné | Ne pas ajouter de seuil bloquant ; conserver la mesure et les rapports de couverture. | Décision explicite de l'utilisateur le 14/10 : refus de --cov-fail-under=100. L'objectif de couverture reste suivi. | 14/10/2026 |
+| L1-09 | 1 | Versions et changelog | Terminé | Maintenir le manifeste comme référence ; laisser semantic-release gérer les prochaines versions. | Utilisateur : L1-09 terminé. Manifeste 0.2.0 ; ancienne constante supprimée ; entrée 0.1.0 du 10/10 restaurée d'après le tag et doublons retirés. | 14/10/2026 |
+| L2-01 | 2 | Modèle Metadata et règles auteur/horodatage | À planifier | Définir le contrat et remplacer le concept Audit. | Évolution conservée. | 13/10/2026 |
+| L2-02 | 2 | Persistance, migration et interfaces Metadata | À planifier | Sérialisation, migration, services, WebSocket, Options Flow et affichage. | Évolution conservée. | 13/10/2026 |
+| L3-01 | 3 | Moments | Terminé et figé | Maintenir les tests de non-régression. | Statut utilisateur : CRUD, groupes d'actions, détails, traduction HA, i18n, comptages, erreurs. | 13/10/2026 |
+| L3-02 | 3 | Types de journée | Presque terminé | Dernier contrôle global et formatage éventuel. | Statut utilisateur : CRUD, moments planifiés, dialogues, validations, i18n, responsive, timeline, nettoyage. | 13/10/2026 |
+| L3-03 | 3 | Semaines types | À faire | Prochain gros bloc : CRUD, sept affectations, dépendances, erreurs, responsive et nettoyage. | Ordre de travail utilisateur. | 13/10/2026 |
+| L3-04 | 3 | Cycles | À faire | Après les semaines : gestion, 1 à 4 semaines, date, validations, dépendances et UX. | Ordre de travail utilisateur. | 13/10/2026 |
+| L3-05 | 3 | Calendrier / Exceptions | À faire | Après les cycles : vue, CRUD exceptions et cohérence du planning. | Ordre de travail utilisateur. | 13/10/2026 |
+| L3-06 | 3 | Cohérence transversale des modales et messages | À faire | Vérifier dialogues, erreurs générales et navigation. | Passage transversal prévu. | 13/10/2026 |
+| L3-07 | 3 | Nettoyage CSS/JS, accessibilité et responsive | À faire | Réduire les doublons ; vérifier clavier, focus et petits écrans. | Passage transversal prévu. | 13/10/2026 |
+| L3-08 | 3 | Cache/versioning frontend et permissions | À faire | Vérifier chargement après mise à jour et droits retenus. | Passage transversal prévu. | 13/10/2026 |
+| L3-09 | 3 | i18n restante | Reporté | Traiter opportunément lorsqu'un composant est retouché ; ne bloque pas un lot. | Priorité utilisateur. | 13/10/2026 |
+| L3-10 | 3 | Duplication et moments prédéfinis guidés | À planifier | Sélectionner selon les besoins après consolidation. | Améliorations conservées. | 13/10/2026 |
+| L4-01 | 4 | Horaires avancés | À planifier | Définir règles, indisponibilités, passages de date et compatibilité. | Évolution conservée. | 13/10/2026 |
+| L5-01 | 5 | Source de calendrier externe | À planifier | Définir source, correspondances, priorités et synchronisation. | Évolution conservée. | 13/10/2026 |
+| L6-01 | 6 | Résultat de couverture de référence | Terminé | Actualiser après chaque exécution pertinente ; conserver les résultats précédents dans l'historique. | Résultat utilisateur du 14/10 : 407 tests réussis, 1 908 instructions, 0 non couverte, 100 %, 5 avertissements, 1,22 s ; Python 3.14.3. | 14/10/2026 |
+| L6-02 | 6 | Validation backend et WebSocket/API après corrections | Terminé | Relancer après de nouvelles modifications ; la validation réelle HA de L1-06 reste ouverte. | Suite complète réussie selon le résultat utilisateur : 407 tests après ajout des tests de minuit et des changements d'heure. | 14/10/2026 |
+| L6-03 | 6 | Tests ciblés frontend et essais visuels | À faire | Choisir les tests utiles puis valider panneau et carte. | Validation finale prévue. | 13/10/2026 |
+| L6-04 | 6 | HACS et lint/format | À faire | Exécuter les contrôles du périmètre livré. | Résultats restant à confirmer. | 13/10/2026 |
+| L6-05 | 6 | Documentation actualisée dans le dépôt | Terminé | Corriger ensuite les constats devenus obsolètes et le texte sur les plugins. | Documentation intégrée dans le ZIP relu. | 13/10/2026 |
+| L6-06 | 6 | Cohérence finale de la documentation | Terminé | Intégrer les fichiers actualisés au dépôt ; maintenir les guides au fil des prochaines évolutions. | Documentation alignée sur 0.2.0, résultat GitHub Actions du 14/10 à 12:15:34, L1-07/L1-09 terminés, L1-06 toujours en cours ; fichiers préparés pour intégration. | 14/10/2026 |
+| L6-07 | 6 | Installation, mise à jour et retrait | À faire | Vérifier installation neuve, migrations et retrait avec/sans suppression. | Qualification prévue. | 13/10/2026 |
+| L6-08 | 6 | Préparation d'une version propre | À faire | Fixer périmètre, notes de release et limites connues. | Qualification prévue. | 13/10/2026 |
 
-- Vérifier les sept références de types de journée de chaque `WeekSchedule`.
-- Vérifier les chemins service, WebSocket et Options Flow pour que les mêmes règles métier s'appliquent.
-- Présenter clairement les erreurs de référence, de doublon et de suppression d'un objet utilisé.
-- Vérifier la validation des séquences d'actions avant sauvegarde ; définir les erreurs attendues.
+## 5. Lot 1 — Stabiliser le socle
 
-### 1C. Vérifier les cas temporels sensibles
+**Statut : partiellement réalisé.** Les corrections déjà intégrées restent enregistrées dans le tableau.
 
-Ces points sont à contrôler ; ils ne sont pas tous des défauts confirmés :
+### Intégrité et comportement temporel
 
-- Deux moments différents programmés exactement à la même heure : chacun doit être exécuté une fois. La recherche d'un prochain événement strictement futur nécessite une attention particulière à ce cas.
-- Passage de minuit : mise à jour du type de journée et du moment courant.
-- Redémarrage, rechargement et modification du planning près d'un déclenchement.
-- Échec d'une action : poursuite des actions suivantes et maintien de la planification.
-- Changement d'heure : définir le comportement pour une heure inexistante ou répétée, puis le tester.
-- Rappels annulés et protection contre les exécutions répétées.
-- Conservation de la règle actuelle : aucun rattrapage des événements passés.
+- **Terminé le 14/10/2026 :** contrôle des sept références des semaines types et tests des journées inconnues. La finalisation de la vue reste suivie dans le lot 3.
+
+
+- Exécuter les tests backend existants et les tests WebSocket/API.
+- Compléter les fichiers existants pour les corrections apportées.
+- Ajouter des tests frontend ciblés si les interactions modifiées le justifient, puis effectuer les essais visuels nécessaires.
+- **Terminé le 14/10/2026 :** correction et tests des moments simultanés ; tous les moments d'un même horaire sont traités par le rappel. Conserver les tests de non-régression, sans rouvrir la vue Moments.
+- Vérifier le passage de minuit, les changements de cycles, le redémarrage et le rechargement près d'un déclenchement.
+- Vérifier les erreurs d'actions, les rappels annulés et l'absence de rattrapage des événements passés.
+- **Tests Python terminés le 14/10/2026 :** règle de type cron Debian pour les horaires fixes. Au printemps, les occurrences de l'heure supprimée sont regroupées au premier instant valide (03:00 en Europe/Paris) ; en automne, exécution au premier passage seulement. Les essais réels HA restent à confirmer.
+
+### Ajustements CI et cohérence de version
+
+
+- **Terminé (L1-07) :** filtres du workflow corrigés et exécution GitHub Actions réussie.
+- **Abandonné le 14/10/2026 :** ajout d'un seuil bloquant de couverture. Conserver les mesures et rapports, sans option imposant un seuil.
+- **Terminé (L1-07), selon confirmation utilisateur :** présentation du générateur revue, mise à jour du README validée par une exécution du workflow.
+- Vérifier HACS, lint et formatage.
+- **Terminé (L1-09), selon confirmation utilisateur :** manifeste 0.2.0, ancienne constante de version supprimée ; historique du changelog corrigé, avec une seule entrée 0.1.0 datée du 10/10/2026.
+- Actualiser les guides et la roadmap : retirer les constats devenus faux sur la CI et les dépendances.
+- **Correction prise en compte selon l'utilisateur :** le README décrit le chargement explicite des plugins et identifie les blocs produits par GitHub Actions. Maintenir cette cohérence lors de la validation documentaire finale.
+- Préparer une version propre avec notes de release, limites connues et résultats datés.
 
 ### Critères de sortie
 
-- Tous les tests passent ; une erreur de test rend la CI rouge.
-- La couverture réelle est publiée et l'objectif de 100 % du code Python mesuré est atteint, sans exclusions ajoutées uniquement pour améliorer le chiffre.
-- Les nouveaux tests vérifient les comportements et les cas d'échec dans les fichiers existants concernés.
-- Un essai Home Assistant confirme les événements simultanés, le passage de minuit et le rechargement.
-- Documentation, manifeste et changelog décrivent le même état du projet.
+La configuration invalide est refusée, les événements simultanés sont exécutés correctement et les scénarios temporels retenus sont vérifiés. La CI transmet les échecs et produit les rapports attendus. Les nouvelles vérifications complètent les fichiers de tests existants.
 
-## 5. Lot 2 — Intégrer les Metadata
+## 6. Lot 2 — Intégrer les Metadata
 
-**Objectif : savoir qui a créé ou modifié chaque objet, et quand.**
+**Statut : à planifier après consolidation des vues.**
 
-### Travaux
 
-- Remplacer le concept `Audit` par `Metadata`, conformément à la terminologie du projet.
-- Définir `created_by`, `created_at`, `modified_by`, `modified_at` et une convention d'horodatage cohérente.
-- Couvrir les moments, actions, types de journée, moments planifiés, types de semaine, cycles et exceptions.
-- Préciser qu'une modification d'un élément imbriqué actualise également les Metadata de son parent.
-- Définir l'identité enregistrée pour une modification utilisateur, une automatisation et une opération interne. Ne pas inventer d'auteur lorsque le contexte est absent.
-- Centraliser leur mise à jour pour les services, WebSocket et Options Flow.
-- Ajouter sérialisation, désérialisation et migration des données 0.1.0. Les objets historiques sans auteur connu restent identifiés comme tels.
-- Afficher les informations de modification dans les détails des objets.
+Remplacer le concept `Audit` par `Metadata` et intégrer auteur/date de création et modification aux objets persistés. Centraliser la mise à jour entre services, WebSocket et Options Flow, préserver l'origine de création et migrer les données anciennes sans inventer leur auteur. Les changements d'éléments imbriqués doivent être pris en compte.
 
-### Critères de sortie
+Validation attendue : traçabilité cohérente, migration sans perte et persistance après redémarrage. Cette évolution ne précède plus la finalisation des vues de gestion.
 
-- Chaque interface de modification enregistre des Metadata cohérentes.
-- Les données de création sont préservées lors d'une modification.
-- Une ancienne configuration est migrée sans perdre objets, horaires ni actions.
-- Rechargement et redémarrage conservent les Metadata.
+## 7. Lot 3 — Simplifier la gestion quotidienne
 
-## 6. Lot 3 — Simplifier la gestion quotidienne
+Les étapes ci-dessous conservent l’ordre demandé pour les vues. Les travaux i18n restent opportunistes.
 
-**Objectif : construire et corriger un planning depuis l'interface avec peu de manipulations.**
+### 3A. Moments
 
-### Travaux
+**Statut : terminé et figé, selon l'état communiqué.**
 
-- Améliorer l'état vide avec le parcours moments → journées → semaines → cycle.
-- Proposer l'ajout explicite des moments prédéfinis, sans écraser les moments existants.
-- Ajouter la duplication des types de journée et des types de semaine avec de nouveaux identifiants.
-- Montrer les dépendances empêchant une suppression.
-- Afficher dans le calendrier le planning d'origine et l'exception appliquée.
-- Harmoniser les messages d'erreur et les traductions françaises/anglaises.
+Périmètre terminé : CRUD, groupes d'actions, détails, traduction Home Assistant, i18n, comptages et gestion des erreurs.
+
+Conserver cette vue comme référence pour les comportements communs des autres vues. Les tests de non-régression restent inclus dans la validation finale. Aucun nettoyage ou travail i18n isolé n'est prévu sur ce bloc.
+
+### 3B. Types de journée
+
+**Statut : presque terminé.**
+
+Périmètre déjà traité : CRUD, moments planifiés, dialogues, validations, i18n, adaptation aux petits écrans, timeline et nettoyage de `day-types-view.js`.
+
+#### Reste à faire
+
+- Effectuer un dernier contrôle global du code actuel et de ses interactions avec la carte et l'API.
+- Vérifier l'édition des horaires, les ajouts/suppressions et la cohérence de la timeline après sauvegarde.
+- Effectuer un passage de formatage si nécessaire.
+- Traiter une traduction uniquement si le fichier ou dialogue est déjà retouché.
+
+#### Critère de sortie
+
+Les parcours de gestion des journées et de leurs moments planifiés sont cohérents, sans régression connue. Le code est relu et formaté si nécessaire. Une traduction restante ne bloque pas la clôture.
+
+### 3C. Semaines types
+
+**Statut : prochain gros bloc.**
+
+#### Travaux
+
+- Relire et finaliser création, modification et suppression.
+- Vérifier l'affectation des sept jours à des types de journée existants.
+- **Terminé le 14/10/2026 (L1-04) :** validation métier des références des semaines. Conserver cette règle pendant les retouches de la vue ; vérifier la présentation des erreurs dans l'interface.
+- Vérifier les dépendances avec les cycles et expliquer les suppressions bloquées.
+- Harmoniser les dialogues, les erreurs et le comportement sur petits écrans.
+- Nettoyer le code de la vue et les interactions associées.
+- Compléter l'i18n uniquement au fil des retouches.
+
+#### Critères de sortie
+
+- Les sept affectations sont conservées après sauvegarde et rechargement.
+- Une journée inconnue est refusée par les différents chemins de modification.
+- Une semaine utilisée par un cycle ne peut pas être supprimée et l'interface explique pourquoi.
+- Les parcours principaux restent utilisables sur ordinateur et mobile.
+- Les tests concernés sont complétés dans `test_validator.py`, `test_engine.py`, `test_websocket_api.py` et les tests de services/options selon les changements.
+
+### 3D. Cycles
+
+**Statut : après les semaines types.**
+
+#### Travaux
+
+- Relire et finaliser création, modification et suppression.
+- Vérifier la séquence ordonnée de 1 à 4 semaines types.
+- Vérifier la date de début un lundi et l'unicité des dates de début.
+- Distinguer clairement le nombre de semaines d'un cycle de la limite du nombre de cycles enregistrés.
+- Vérifier références, dépendances, erreurs et cohérence de la résolution du cycle applicable.
+- Finaliser l'UX des formulaires et l'affichage sur petits écrans.
+- Compléter l'i18n lors des retouches nécessaires.
+
+#### Critères de sortie
+
+Un cycle valide est sauvegardé et résolu correctement ; les entrées invalides sont refusées avec une erreur compréhensible. Les limites et dépendances sont cohérentes entre interface, services, WebSocket et moteur.
+
+### 3E. Calendrier / Exceptions
+
+**Statut : après les cycles.**
+
+#### Travaux
+
+- Finaliser la vue calendrier, la navigation et les détails du jour sélectionné.
+- Vérifier création, modification et suppression des exceptions.
+- Vérifier la priorité des exceptions et l'unicité d'une exception par date.
+- Montrer le contexte issu des cycles et le type de journée effectivement appliqué.
+- Vérifier les mises à jour après changement d'un cycle, d'une semaine ou d'une journée.
+- Vérifier la cohérence entre timeline, calendrier Home Assistant et événements exécutés.
+- Finaliser l'adaptation aux petits écrans ; traiter l'i18n lors des retouches.
+
+#### Critères de sortie
+
+L'ajout, l'édition et le retrait d'une exception actualisent correctement le planning. La vue et les entités présentent un contexte cohérent, y compris sans cycle applicable.
+
+### 3F. Passage transversal final
+
+#### Travaux
+
+- Recenser les onglets en français en dur et les messages généraux : « Chargement… », erreurs globales et navigation. Traduire lorsque les composants sont déjà retouchés ; ne pas en faire une condition de sortie.
+- Réduire les doublons CSS/JS identifiés sans rouvrir inutilement les vues figées.
+- Vérifier la cohérence des modales : ouverture, fermeture, confirmation, annulation et erreurs.
+- Vérifier l'accessibilité : focus, navigation clavier, libellés et boutons.
 - Vérifier le panneau et la carte Lovelace sur ordinateur et mobile.
-- Définir puis vérifier les droits de consultation et de modification de la configuration et des actions.
+- Définir et vérifier le cache/versioning frontend pour qu'une mise à jour charge les nouveaux fichiers.
+- Vérifier les droits de consultation et de modification selon le périmètre retenu.
 
-### Critères de sortie
+#### Critère de sortie
 
-- Un utilisateur crée un premier planning complet depuis le panneau sans modifier le stockage.
-- Une exception peut être ajoutée, modifiée et retirée avec un résultat immédiatement visible.
-- Les blocages expliquent quel objet est encore utilisé.
-- Les permissions et les erreurs sont cohérentes entre les interfaces.
+Les vues ont des comportements communs cohérents et restent accessibles. La mise à jour du frontend ne laisse pas un ancien code en cache dans les scénarios vérifiés. Les écarts i18n non traités restent recensés.
 
-## 7. Lot 4 — Ajouter les horaires avancés
+### Améliorations ultérieures conservées
 
-**Périmètre proposé à préciser avant développement : lever/coucher du soleil avec décalage.**
+La duplication des journées/semaines et l'ajout guidé des moments prédéfinis restent des améliorations possibles, à sélectionner selon les besoins après consolidation. Import/export, profils multiples et synchronisation bidirectionnelle ne font pas partie du périmètre immédiat.
 
-### Travaux
 
-- Faire évoluer `TimeDefinition` pour distinguer heure fixe et règle dynamique, en conservant les horaires existants.
-- Définir le résultat lorsqu'un horaire ne peut pas être calculé et lorsqu'un décalage franchit minuit.
-- Maintenir le tri, la gestion des événements simultanés et la cohérence entre affichage et exécution.
-- Recalculer le planning lorsque les données nécessaires changent.
-- Ajouter l'édition des règles dans le panneau et les formulaires concernés.
-- Migrer le stockage si nécessaire et actualiser les schémas des services et WebSocket.
+## 8. Lot 4 — Ajouter les horaires avancés
 
-### Critères de sortie
+**Statut : à planifier ; périmètre à préciser.**
 
-- Une même règle produit le même horaire dans le panneau, les entités et l'ordonnanceur.
-- Les configurations utilisant seulement `fixed_time` restent compatibles.
-- Les cas d'horaire indisponible et de changement de date sont définis, documentés et testés.
 
-## 8. Lot 5 — Ajouter une source de calendrier externe
+Faire évoluer `TimeDefinition` au-delà de `fixed_time`, avec un premier périmètre à préciser, par exemple lever/coucher du soleil et décalages. Définir les horaires indisponibles, les passages de date et la cohérence entre calcul, affichage et exécution.
 
-**Objectif : alimenter les exceptions depuis un calendrier, notamment Google Calendar.**
+Validation attendue : compatibilité des horaires fixes et résultats cohérents dans toutes les interfaces.
 
-### Décisions nécessaires avant développement
+## 9. Lot 5 — Ajouter une source de calendrier externe
 
-- Choisir un calendrier exposé par Home Assistant ou un connecteur direct ; privilégier la réutilisation d'une intégration existante si elle couvre le besoin.
-- Proposer une première version en lecture seule du calendrier externe.
-- Définir comment un événement désigne un type de journée : convention de titre, description ou autre règle explicite.
-- Fixer la priorité proposée : exception locale explicite → exception externe reconnue → cycle.
-- Définir événements sur plusieurs jours, fuseaux horaires, conflits et indisponibilité de la source.
+**Statut : à planifier.**
+
+
+Prévoir une source externe, notamment Google Calendar, après définition des règles de correspondance et de synchronisation. La première version en lecture seule et la priorité locale → externe → cycle restent des propositions à valider.
+
+Définir conflits, événements sur plusieurs jours, fuseaux horaires, origine des exceptions, absence de doublons et comportement en cas d'indisponibilité. Une synchronisation ne doit pas altérer les exceptions locales.
+
+## 10. Lot 6 — Qualifier la première version stable
+
+**Statut : validation finale à réaliser après consolidation des vues et corrections nécessaires du lot 1.**
 
 ### Travaux
 
-- Ajouter le choix de la source et les règles de correspondance.
-- Conserver l'origine et l'identifiant externe des exceptions importées pour éviter les doublons.
-- Répercuter modifications et suppressions externes sans supprimer les exceptions locales.
-- Afficher l'origine des exceptions dans le calendrier.
-- Définir une stratégie de rafraîchissement et de conservation des dernières données connues.
 
-### Critères de sortie
+- Exécuter les tests backend existants et les tests WebSocket/API.
+- Compléter les fichiers existants pour les corrections apportées.
+- Ajouter des tests frontend ciblés si les interactions modifiées le justifient, puis effectuer les essais visuels nécessaires.
+- **Terminé le 14/10/2026 :** correction et tests des moments simultanés ; tous les moments d'un même horaire sont traités par le rappel. Conserver les tests de non-régression, sans rouvrir la vue Moments.
+- Vérifier le passage de minuit, les changements de cycles, le redémarrage et le rechargement près d'un déclenchement.
+- Vérifier les erreurs d'actions, les rappels annulés et l'absence de rattrapage des événements passés.
+- **Tests Python terminés le 14/10/2026 :** règle de type cron Debian pour les horaires fixes. Au printemps, les occurrences de l'heure supprimée sont regroupées au premier instant valide (03:00 en Europe/Paris) ; en automne, exécution au premier passage seulement. Les essais réels HA restent à confirmer.
 
-- Les règles de priorité sont documentées et visibles dans le résultat du planning.
-- Un même événement externe ne crée pas plusieurs exceptions lors des synchronisations.
-- Une panne de la source externe n'altère pas les données locales.
-- La suppression ou la modification d'un événement externe est traitée selon les règles définies.
 
-## 9. Lot 6 — Qualifier la première version stable
+- **Terminé (L1-07) :** filtres du workflow corrigés et exécution GitHub Actions réussie.
+- **Abandonné le 14/10/2026 :** ajout d'un seuil bloquant de couverture. Conserver les mesures et rapports, sans option imposant un seuil.
+- **Terminé (L1-07), selon confirmation utilisateur :** présentation du générateur revue, mise à jour du README validée par une exécution du workflow.
+- Vérifier HACS, lint et formatage.
+- **Terminé (L1-09), selon confirmation utilisateur :** manifeste 0.2.0, ancienne constante de version supprimée ; historique du changelog corrigé, avec une seule entrée 0.1.0 datée du 10/10/2026.
+- Actualiser les guides et la roadmap : retirer les constats devenus faux sur la CI et les dépendances.
+- **Correction prise en compte selon l'utilisateur :** le README décrit le chargement explicite des plugins et identifie les blocs produits par GitHub Actions. Maintenir cette cohérence lors de la validation documentaire finale.
+- Préparer une version propre avec notes de release, limites connues et résultats datés.
 
-### Travaux
-
-- Fixer le périmètre exact de la 1.0 et mettre à jour le statut de chaque lot.
-- Vérifier installation neuve, retrait avec/sans suppression et mise à jour depuis la 0.1.0.
 - Tester les migrations sur des copies de configurations réalistes.
-- Vérifier le rechargement, le fonctionnement sur plusieurs journées et les changements de cycles.
-- Réaliser une période d'observation proposée de deux semaines avec un planning représentatif.
-- Finaliser guides utilisateur, exemples, dépannage, notes de release et compatibilité déclarée.
-- Vérifier les métadonnées et contrôles nécessaires à la distribution HACS retenue.
+- Prévoir une période d’observation de deux semaines avec un planning représentatif si nécessaire à la qualification.
+- Fixer le périmètre exact de la version stable et la compatibilité déclarée.
 
 ### Critères de sortie
 
+
+- Suite complète réussie ; couverture mesurée et rapportée, avec un objectif de 100 % sans exclusions artificielles. Aucun seuil bloquant de couverture n'est imposé.
 - Aucun défaut connu provoquant perte de données ou déclenchement incorrect dans le périmètre retenu.
-- Validation automatisée réussie et résultats datés disponibles.
-- Installation et mise à jour reproductibles avec la documentation livrée.
-- Limites restantes explicitement documentées.
+- Parcours CRUD, modales et affichages validés sur ordinateur et mobile.
+- Installation neuve, mise à jour et retrait avec/sans suppression vérifiés.
+- Vérifications HACS et lint/format réussies ; documentation cohérente avec la version livrée.
+- Les traductions non prioritaires ne bloquent pas la publication ; elles restent suivies.
 
-## 10. Suivi des lots
+## 11. Mise à jour du suivi et journal conservé
 
-Pour chaque lot, suivre : statut, tâches terminées, décisions prises, blocages, résultat des tests et critère de sortie restant. Un lot est validé lorsque ses critères de sortie sont satisfaits, pas uniquement lorsque son code est écrit.
+À chaque mise à jour :
 
-Le point hebdomadaire peut reprendre ces informations en ne signalant que les changements importants.
+1. Lire la version courante et conserver toutes les lignes et tous les identifiants du tableau.
+2. Actualiser les statuts uniquement avec une indication utilisateur ou un résultat vérifié ; préciser leur origine.
+3. Actualiser le reste à faire, la preuve et la date des lignes concernées.
+4. Ajouter les nouveaux points avec un identifiant inédit, sans renuméroter les précédents.
+5. Ajouter une entrée au journal ci-dessous pour les changements significatifs ; les entrées historiques restent conservées.
+6. Conserver les points terminés, reportés ou abandonnés avec leur décision. Si une tâche est scindée, conserver sa ligne et référencer les nouvelles lignes.
 
-## 11. Prochaine étape recommandée
+Les critères des lots peuvent être précisés et de nouvelles tâches ajoutées. Les travaux décidés ne sont pas retirés silencieusement. Le suivi hebdomadaire reprend les changements significatifs du tableau.
 
-Commencer par **le lot 1A : CI, dépendances, versions et documentation**, puis compléter le validateur et vérifier les événements simultanés et les transitions de journée avant d'ajouter les Metadata.
+| Date | Mise à jour / décision |
+| --- | --- |
+| 12/10/2026 | Création de la roadmap initiale en six lots. |
+| 13/10/2026 | Relecture du nouveau ZIP : adaptations CI et tests intégrées ; défauts de références des semaines et de moments simultanés reproduits. |
+| 13/10/2026 | Statuts utilisateur intégrés : moments terminés et figés ; journées presque terminées ; semaines, cycles puis calendrier à finaliser. i18n non prioritaire. |
+| 13/10/2026 | Retour à la structure en six lots ; création du tableau permanent avec identifiants stables et règle de conservation des lignes. |
+| 14/10/2026 | L1-04 et L1-05 passent à Terminé : références des sept jours validées et moments simultanés corrigés. Données des anciens tests adaptées ; 29 tests des planificateurs réussis. |
+| 14/10/2026 | Nouveau résultat utilisateur de référence : 403 tests réussis, 1 896 instructions mesurées, aucune non couverte, 100 % de couverture, 5 avertissements en 1,22 s. L6-01 actualisé et L6-02 terminé pour cet état du code. |
+| 14/10/2026 | L1-08 passe à Abandonné : seuil bloquant de couverture refusé par l'utilisateur. Mesure et rapports conservés, sans seuil bloquant dans les commandes ni dans la CI. |
+| 14/10/2026 | Calcul autour de minuit et trois tests de changement d'heure réussis. Règle retenue : rattrapage au printemps à la première heure valide et exécution unique au premier passage en automne ; pas de rattrapage général après un arrêt. |
+| 14/10/2026 | Résultat utilisateur actualisé : 407 tests réussis, 1 908 instructions mesurées, aucune non couverte, 100 %, 5 avertissements en 1,22 s. L1-06 passe à En cours : essais réels HA encore à confirmer. |
+| 14/10/2026 | Rappel créé pour les essais réels HA le 15 octobre vers 18 h (Europe/Paris). Documentation et suivi actualisés, sans suppression des lignes. |
 
-L'import/export, les profils multiples et la synchronisation bidirectionnelle des calendriers restent hors de cette roadmap initiale ; ils pourront être étudiés si un besoin concret apparaît.
+| 14/10/2026 | L1-07 terminé : workflow tests.yml exécuté avec succès et README généré à 12:15:34 ; 407 tests, 1 908 instructions et 100 % de couverture. |
+| 14/10/2026 | Publication 0.2.0 réussie après rétablissement du lien avec l'historique de la release 0.1.0. La version publiée devient 0.2.0 ; cela ne valide pas le lot Metadata. |
+| 14/10/2026 | L1-09 terminé selon confirmation utilisateur : référence de version dans le manifeste et nettoyage du changelog d'après le tag 0.1.0 du 10 octobre. L1-06 reste En cours pour les essais réels HA. |
+
+| 14/10/2026 | L6-06 : documentation alignée sur la version publiée 0.2.0 et le résultat GitHub Actions à 12:15:34. Les guides distinguent Python local 3.14.3 et CI 3.14.8, clôturent L1-07/L1-09 et conservent les essais HA ouverts. Fichiers préparés pour intégration au dépôt. |
+
+## 12. Prochaine étape
+
+**Intégrer au dépôt les documents préparés pour L6-06**, puis reprendre le dernier contrôle global des types de journée (L3-02), avant les semaines types, les cycles et le calendrier/exceptions.
+
+L1-06 reste En cours : essais réels de rafraîchissement à minuit et de redémarrage/rechargement dans Home Assistant. Le rappel du 15 octobre vers 18 h, Europe/Paris, est conservé. L'i18n demeure non prioritaire.
+
+La publication 0.2.0 ne clôture pas les lots Metadata, horaires avancés ou calendrier externe ; leurs statuts restent inchangés.
+

@@ -6,8 +6,6 @@ INTEGRATION_NAME = NAME
 
 RELEASE_URL = "https://github.com/fmo01/hass-day_planner/releases"
 
-VERSION = "0.0.2"
-
 SIGNAL_PLANNER_UPDATED = "day_planner_updated"
 
 STORAGE_VERSION = 1

@@ -1,6 +1,6 @@
 # Day Planner — Documentation technique
 
-**Version de référence : 0.1.0 (`manifest.json`)**
+**Version publiée de référence : 0.2.0 (`manifest.json`). Documentation actualisée le 14 octobre 2026 avec les corrections confirmées par l'utilisateur.**
 
 ## 1. Architecture
 
@@ -102,6 +102,18 @@ Il sélectionne le type de journée du jour de semaine et applique ensuite l'exc
 
 `current_event()` considère une occurrence active pendant une minute. `current_moment()` retourne le dernier événement atteint dans la journée courante, sans reporter celui de la veille.
 
+### Normalisation temporelle et groupe d'événements
+
+- `events_for_date()` construit les occurrences à partir des horaires locaux du modèle.
+- `_normalize_scheduled_at()` ajoute le fuseau de référence aux occurrences sans fuseau. Une heure inexistante est avancée à la première minute locale valide ; `fold=0` sélectionne le premier passage d'une heure répétée.
+- La validité d'une heure locale est contrôlée par un aller-retour local → UTC → local.
+- `_comparison_time()` convertit les dates avec fuseau en UTC pour comparer les instants réels, notamment pendant l'heure répétée. Les dates sans fuseau restent inchangées.
+- `next_event()`, `current_event()` et `current_moment()` utilisent ces comparaisons. La fenêtre d'une minute de `current_event()` est évaluée sur le temps réellement écoulé.
+- `events_at()` retourne toutes les occurrences dont l'instant d'exécution normalisé correspond à l'instant demandé. Cela inclut les occurrences de l'heure supprimée et celles normalement prévues au premier instant valide.
+- `HomeAssistantScheduler` capture ce groupe lors de la programmation et exécute ses moments dans un seul rappel, avant de replanifier dans le bloc `finally`. La protection contre un double appel du même rappel reste conservée.
+
+Cette règle vise les horaires fixes et les changements d'heure testés avec Europe/Paris, sans implémenter une syntaxe crontab générale. L'exécution et le rendu réel du calendrier Home Assistant autour de ces transitions restent à vérifier sur l'installation cible.
+
 ## 6. Validation
 
 `PlannerValidator` vérifie :
@@ -115,7 +127,7 @@ Il sélectionne le type de journée du jour de semaine et applique ensuite l'exc
 - des identifiants d'actions non vides et uniques dans chaque moment ;
 - des séquences d'actions non vides.
 
-Le contrôle systématique des sept références de types de journée d'un `WeekSchedule` manque actuellement dans le validateur métier. Les séquences d'actions ne font pas l'objet d'une validation complète de script par ce validateur.
+`_validate_week_schedules()` contrôle les sept références de types de journée de chaque `WeekSchedule`. Une référence inconnue lève `ValidationError` et la nouvelle configuration n'est pas acceptée. Les séquences d'actions ne font toujours pas l'objet d'une validation complète de script par ce validateur.
 
 Les erreurs métier utilisent `ValidationError` et `NotFoundError`, dérivées de `PlannerError`.
 
@@ -240,38 +252,78 @@ Le planificateur importe actuellement certaines constantes de l'intégration. La
 
 ## 16. Tests
 
-Le ZIP de référence contient 18 fichiers `test_*.py` et 365 fonctions de test, hors expansion des tests paramétrés. Ce décompte statique ne garantit ni leur réussite ni une couverture donnée.
+Résultat local communiqué par l'utilisateur le **14 octobre 2026** : **407 tests réussis**, **1 908 instructions mesurées**, **0 non couverte**, **100 %**, **5 avertissements**, en **1,22 s**, sous **Python 3.14.3**. La suite complète n'a pas été réexécutée par l'assistant.
 
-Dans un environnement compatible, installer les dépendances de développement et `pytest-cov`, puis lancer :
+Résultat GitHub Actions communiqué par l'utilisateur, **14 octobre 2026 à 12:15:34 Europe/Paris** : **407 tests réussis, 1 908 instructions et 100 % de couverture**. Environnement généré : Python 3.14.8, pytest 9.0.3, pytest-cov 7.1.0, pytest-homeassistant-custom-component 0.13.372. Ces chiffres précèdent le dernier nettoyage de la constante de version et du changelog ; les prochains rapports mesureront l'état des nouveaux commits.
+
+Les ajouts sont intégrés aux fichiers existants :
+
+- `test_validator.py` : références inconnues pour chacun des sept jours.
+- `test_engine.py` et `test_validator.py` : données cohérentes avec les références renforcées.
+- `test_scheduler.py` : moments simultanés, passage de minuit et trois scénarios DST Europe/Paris.
+- `test_ha_scheduler.py` : exécution de tous les moments simultanés, replanification et protection contre les doublons.
+
+Commande de référence, sans seuil bloquant :
 
 ```bash
-PYTHONPATH=. python3 -m pytest scripts/tests/ \
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest \
+  -p pytest_asyncio \
+  -p pytest_cov \
+  scripts/tests/ \
   --cov=custom_components/day_planner \
-  --cov-report=term-missing -q
+  --cov-report=term-missing \
+  -q
 ```
 
-`requirements-dev.txt` du ZIP ne déclare pas `pytest-cov`. Le workflow fourni utilise Python 3.14.
+Le chargement automatique des plugins est désactivé ; les deux plugins nécessaires sont chargés explicitement. Les dépendances de test et de couverture sont déclarées dans `requirements-dev.txt` du ZIP du 13 octobre.
 
-Publier le résultat avec la date, la version du code et les versions Python, Home Assistant, pytest et pytest-cov. L'ancien résultat « 97 tests, 477 instructions, 100 % » ne doit pas être utilisé comme résultat actuel.
+Les rapports sont suivis sans seuil de couverture bloquant, conformément à la décision utilisateur. Les résultats chiffrés restent des instantanés datés et ne constituent pas une couverture du frontend JavaScript.
 
 ## 17. État technique de référence
 
-La version 0.1.0 contient CRUD, stockage, résolution des jours, calcul des événements, exécution des actions, calendrier, capteurs et interface de gestion.
+### Corrections confirmées
 
-La relecture documentaire du 12 octobre 2026 n'inclut pas une exécution des tests. Les points suivants restent à corriger ou vérifier :
+- Contrôle des sept références des semaines types.
+- Exécution de tous les moments simultanés dans un rappel.
+- Calcul autour de minuit : le prochain événement appartient au bon jour et le moment de la veille n'est pas reporté.
+- Calcul des changements d'heure selon la règle retenue : au printemps les moments manqués sont regroupés au premier instant valide ; en automne seule la première occurrence est exécutée.
+- Suite complète Python réussie selon le rapport utilisateur du 14 octobre.
 
-- `const.py` indique `VERSION = "0.0.2"`, contrairement au manifeste 0.1.0.
-- Le contrôle des références des jours des types de semaine est incomplet dans le validateur.
-- La traçabilité `Audit` n'est pas intégrée à la persistance.
-- Le workflow `tests.yml` conserve des vérifications eedomus et masque l'échec de pytest avec `|| echo ...` ; un statut vert ne garantit donc pas la réussite des tests Day Planner.
-- `requirements-dev.txt` conserve un commentaire hass-eedomus et omet pytest-cov.
-- Le changelog contient deux entrées 0.1.0, datées des 11 et 12 octobre 2026 ; la date de publication doit être vérifiée avant fusion.
+### Essais réels restant à confirmer — L1-06
+
+| Essai | Observation attendue | Statut |
+| --- | --- | --- |
+| Passage de minuit | Type de journée, moment courant, prochain événement et calendrier se mettent à jour dans HA. | À confirmer |
+| Rechargement avant un déclenchement | Ancien rappel annulé, nouveau rappel actif ; une seule exécution de chaque moment prévu. | À confirmer |
+| Redémarrage avant un déclenchement | Seuls les événements encore futurs sont programmés ; pas de doublon. | À confirmer |
+| Retour après un événement passé | Absence de rattrapage général des événements survenus pendant l'arrêt. | À confirmer |
+
+Ces essais se feront avec des actions de test sans effet sur les appareils, sans modifier l'horloge système. Un rappel est prévu le **15 octobre 2026 vers 18 h, Europe/Paris**. L1-06 ne sera clôturé qu'après confirmation des essais réels.
+
+### Autres points de suivi
+
+Le workflow du 13 octobre cible bien Day Planner, déclare ses dépendances de test et transmet les échecs pytest. Les constats historiques contraires sont dépassés.
+
+**L1-07 est terminé**, selon confirmation utilisateur : filtres alignés sur `tests.yml`, présentation du générateur corrigée et exécution GitHub Actions réussie avec mise à jour du README. Les rapports sont conservés sans seuil bloquant.
+
+**L1-09 est terminé**, selon confirmation utilisateur : le manifeste indique 0.2.0, l'ancienne constante `VERSION = "0.0.2"` est supprimée et le changelog ne conserve qu'une entrée 0.1.0, datée du 10 octobre 2026 et restaurée d'après le tag existant.
+
+La classe `Audit` n'est pas encore intégrée à la persistance ; le lot Metadata reste à planifier.
+
+### Version et publication
+
+- `manifest.json` fournit la version publiée ; `integration_info.py` lit ce manifeste pour les attributs communs des entités.
+- `STORAGE_VERSION = 1` concerne le format du stockage et la version du Config Flow concerne le format de la Config Entry. Ces valeurs sont distinctes de la version publiée 0.2.0.
+- `semantic-release` utilise les tags Git et l'historique des commits pour déterminer la prochaine release. Une version cible de roadmap ne constitue pas une release réalisée.
+- La publication 0.2.0 a réussi après rétablissement de l'ascendance de la release 0.1.0 dans `main`, en conservant le tag publié.
+- Le workflow de release récupère l'historique complet avec `fetch-depth: 0`. Son lancement manuel utilise `workflow_dispatch:`, au même niveau que `push:`.
+- Le changement de version ne valide pas automatiquement les lots fonctionnels : Metadata n'est pas considéré comme livré en 0.2.0.
 
 ## 18. Évolutions prévues
 
 - Définitions horaires avancées au-delà de `fixed_time`.
 - Synchronisation avec Google Calendar.
 - Traçabilité des modifications : auteur et horodatage.
-- Complément du contrôle des références et fiabilisation des vérifications CI.
+- Poursuite des contrôles de cohérence et fiabilisation des vérifications CI et du frontend.
 
 Ces évolutions doivent conserver la séparation entre domaine, moteur, persistance et adaptateurs Home Assistant.

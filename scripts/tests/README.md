@@ -2,13 +2,13 @@
 
 Ce répertoire contient les tests automatisés de l'intégration personnalisée **Day Planner** pour Home Assistant : domaine métier, configuration, calcul du planning, planification, actions, stockage, services, WebSocket, entités et panneau.
 
-Ce document est destiné à `scripts/tests/README.md`. Il conserve la mise à jour automatique des statistiques par le workflow GitHub Actions **Run Tests**.
+Ce document est destiné à `scripts/tests/README.md`. Version publiée de référence : **0.2.0** ; documentation actualisée le **14 octobre 2026**. Il conserve la mise à jour automatique des statistiques par le workflow GitHub Actions **Run Tests**.
 
 ---
 
 ## État actuel des tests
 
-Ce bloc est remplacé automatiquement après une exécution réussie.
+Ce bloc est remplacé automatiquement après une exécution réussie. Les valeurs ci-dessous reprennent l'exécution GitHub Actions communiquée par l'utilisateur du 14 octobre 2026 à 12:15:34 Europe/Paris.
 
 <!-- TEST-STATS-START -->
 - Tests réussis : **407**
@@ -80,13 +80,16 @@ La dernière exécution réussie mesurant `custom_components/day_planner` et ses
   - Événement actif et dernier moment atteint dans la journée.
   - Normalisation des dates/heures et fuseau horaire.
   - Replanification après modification de la configuration.
+  - Calcul autour de minuit et regroupement des moments simultanés.
+  - Trois tests DST : rattrapage au printemps, première occurrence en automne et regroupement à 03:00.
 
 - `test_ha_scheduler.py`
   - Enregistrement du prochain rappel Home Assistant.
   - Exécution puis replanification.
   - Annulation et remplacement du rappel.
   - Fuseau horaire et replanification après erreur.
-  - Absence de rattrapage et protection contre l'exécution répétée du même rappel.
+  - Absence de rattrapage général et protection contre l'exécution répétée du même rappel.
+  - Exécution des moments simultanés avant replanification.
 
 - `test_action_executor.py`
   - Exécution d'une action et des actions d'un moment.
@@ -107,6 +110,7 @@ La dernière exécution réussie mesurant `custom_components/day_planner` et ses
 - `test_validator.py`
   - Configurations valides et identifiants en doublon.
   - Références aux moments et doublons dans une journée.
+  - Contrôle des références de types de journée pour chacun des sept jours des semaines.
   - Cycles de 1 à 4 semaines et références de semaines inconnues.
   - Début des cycles un lundi, dates uniques et limite du nombre de cycles.
   - Références des exceptions et unicité de leurs dates.
@@ -238,7 +242,7 @@ Télécharger `coverage-summary` et consulter `coverage-summary.md`.
 
 ### Rapport HTML local
 
-Après une exécution GitHub Actions avec couverture, ouvrir :
+Après une exécution locale avec couverture, ouvrir :
 
 ```text
 htmlcov/index.html
@@ -250,12 +254,14 @@ Les résultats Day Planner du workflow et les blocs automatiques ci-dessous font
 
 ---
 
+La couverture est suivie sans seuil bloquant. L'objectif de 100 % ne nécessite pas d'option imposant un seuil dans les commandes ou la CI.
+
 ## Couverture par module
 
- Les valeurs ci-dessous proviennent de l'exécution GitHub Actions réussie et ne sauraurent être considérées comme définitivement à jour.
+Les valeurs ci-dessous proviennent de l'exécution GitHub Actions réussie datée dans le tableau. Elles seront actualisées automatiquement lors d'une prochaine exécution.
 
 <!-- COVERAGE-MODULES-START -->
-Dernière mise à jour : **2026-10-14 12:27:12 Europe/Paris**
+Dernière mise à jour : **2026-10-14 12:15:34 Europe/Paris**
 
 | Package | Composant | Instructions | Non couvertes | Couverture |
 |---|---|---:|---:|---:|
@@ -311,7 +317,7 @@ Le workflow fourni conserve ce fonctionnement :
 6. Commit et push du README modifié après un événement `push` réussi. Aucun commit automatique pour une pull request ou un lancement manuel.
 7. Publication du rapport HTML même après échec, s'il existe, et de la synthèse après succès.
 
-Un échec fait échouer l'étape de tests.
+La commande pytest ne masque plus les erreurs : un échec fait échouer l'étape de tests. L1-07 est terminé selon confirmation utilisateur ; le workflow, la mise à jour du README et la publication des rapports ont été validés par l'exécution communiquée.
 
 ---
 
@@ -321,7 +327,7 @@ La suite utilise pytest, les tests asynchrones et des doublures adaptées aux co
 
 Les tests ne doivent pas agir sur des appareils réels ni dépendre d'un calendrier externe. Les rappels temporels, appels de services, écritures de stockage et ressources Home Assistant sont isolés selon les scénarios.
 
-Les commandes documentées conservent Le chargement automatique des plugins pytest est désactivé. Les commandes chargent explicitement pytest_asyncio et, pour la couverture, pytest_cov.
+Le chargement automatique des plugins pytest est désactivé par `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`. Les commandes chargent explicitement `pytest_asyncio`, ainsi que `pytest_cov` pour les mesures de couverture.
 
 La couverture ne garantit pas à elle seule la correction des règles métier. Vérifier les résultats attendus, limites et erreurs, puis compléter par les essais Home Assistant nécessaires.
 
@@ -375,7 +381,7 @@ Cette liste décrit les tests présents ; elle ne garantit pas une couverture ex
 
 ## État de l'environnement de test
 
-L'exécution GitHub Actions récente réussie a utilisé:
+Environnement de l'exécution GitHub Actions communiqué par l'utilisateur :
 
 <!-- TEST-ENV-START -->
 ```text
@@ -383,11 +389,18 @@ Python 3.14.8
 pytest 9.0.3
 pytest-cov 7.1.0
 pytest-homeassistant-custom-component 0.13.372
-Tests exécutés : 407 
-Tests réussis : 407 
+Tests exécutés : 407
+Tests réussis : 407
 Couverture totale : 100.00%
-Dernière exécution : 2026-10-14 12:27:12 Europe/Paris
+Dernière exécution : 2026-10-14 12:15:34 Europe/Paris
 ```
 <!-- TEST-ENV-END -->
 
-Les versions GitHub Actions peuvent différer de l'environnement local. La dernière exécution réussie ciblant Day Planner et ses rapports font référence.
+Les versions GitHub Actions peuvent différer de l'environnement local : le rapport local fourni utilisait Python 3.14.3. Le résultat GitHub Actions ci-dessus est un instantané antérieur au dernier nettoyage de version/changelog. Les futurs blocs générés font référence pour les nouveaux commits ; ne pas recalculer leurs chiffres manuellement.
+
+
+## Essais Home Assistant restant à confirmer — L1-06
+
+Les tests Python du calcul à minuit et des changements d'heure passent. Le comportement réel doit encore être confirmé : rafraîchissement des capteurs et du calendrier à minuit, rechargement et redémarrage près d'un déclenchement, absence de doublon et de rattrapage général après un arrêt.
+
+Les essais réels ne sont pas couverts par le chiffre de 100 % du code Python. Un rappel est prévu le 15 octobre 2026 vers 18 h (Europe/Paris). Voir [la documentation technique](../../docs/day_planner_technique.md) et [la roadmap](../../docs/ROADMAP.md).

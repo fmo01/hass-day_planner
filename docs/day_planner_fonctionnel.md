@@ -1,6 +1,6 @@
 # Day Planner — Documentation fonctionnelle
 
-**Version de référence : 0.1.0**
+**Version publiée de référence : 0.2.0. Documentation actualisée le 14 octobre 2026 à partir du code relu et des corrections confirmées par l'utilisateur.**
 
 ## 1. Présentation
 
@@ -77,7 +77,22 @@ sequence:
 
 À l'heure prévue, les actions du moment sont exécutées dans leur ordre de définition. Si une action échoue, l'erreur est journalisée et les actions suivantes sont tentées. Le prochain événement est ensuite replanifié.
 
-Les événements déjà passés ne sont pas rattrapés lors du démarrage ou d'une replanification.
+Les événements déjà passés ne sont pas rattrapés lors du démarrage ou d'une replanification, hors traitement spécifique de l'heure supprimée au printemps.
+
+### Moments simultanés et changements d'heure
+
+Tous les moments programmés au même instant sont exécutés une fois, dans l'ordre du planning, par un seul rappel Home Assistant.
+
+Pour les horaires fixes, la règle de changement d'heure retenue est celle du cron de Debian :
+
+| Situation | Règle d'exécution |
+| --- | --- |
+| Printemps : 02:00 devient 03:00 en Europe/Paris | Les moments de l'heure supprimée sont exécutés au premier instant valide, à 03:00, dans leur ordre horaire d'origine. |
+| Moment normalement prévu à 03:00 ce même jour | Il est inclus dans le même groupe que les moments rattrapés. |
+| Automne : l'heure 02:00–03:00 est répétée | Chaque moment est exécuté au premier passage uniquement. |
+| Redémarrage ou rechargement après un événement passé | Aucun rattrapage général. L'exception de rattrapage concerne uniquement l'heure supprimée par le changement d'heure. |
+
+Ces règles sont vérifiées dans les tests Python pour Europe/Paris. Le rafraîchissement réel des entités à minuit et les scénarios de redémarrage/rechargement dans Home Assistant restent à confirmer dans L1-06.
 
 ## 3. Règles de cohérence
 
@@ -93,7 +108,7 @@ Les événements déjà passés ne sont pas rattrapés lors du démarrage ou d'u
 - La suppression d'un type de journée utilisé par une semaine ou une exception est refusée.
 - La suppression d'un type de semaine utilisé par un cycle est refusée.
 
-Les sept associations d'un type de semaine doivent désigner des types de journée existants pour permettre le calcul du planning. Dans cette version, leur contrôle systématique n'est pas encore assuré par le validateur métier.
+Les sept associations d'un type de semaine doivent désigner des types de journée existants. Le validateur métier contrôle désormais chacune de ces références et refuse une journée inconnue avant d'accepter la configuration.
 
 ## 4. Configuration Home Assistant
 
@@ -142,11 +157,24 @@ Par défaut, le retrait de l'intégration conserve ces données. Si `delete_data
 - Aucune synchronisation Google Calendar n'est implémentée.
 - Le calendrier Home Assistant expose les événements. La modification des exceptions passe par Day Planner, ses options ou ses interfaces de programmation.
 - La traçabilité auteur/date des modifications n'est pas intégrée aux objets persistés, malgré la présence d'une classe `Audit` dans `metadata.py`.
-- Les événements passés ne sont pas rattrapés.
-- Les références des sept jours d'un type de semaine ne sont pas systématiquement contrôlées par le validateur métier.
+- Aucun rattrapage général après un arrêt ; le traitement du changement d’heure au printemps constitue le cas particulier décrit plus haut.
 
 ## 7. État de validation
 
-Le ZIP de référence contient 18 fichiers `test_*.py` et 365 fonctions de test, hors expansion des tests paramétrés.
+Résultat local communiqué par l'utilisateur le **14 octobre 2026** :
 
-Ce décompte ne constitue pas un résultat d'exécution. Le nombre de tests réussis et la couverture doivent être indiqués à partir d'un lancement daté sur la version concernée. L'ancien résultat « 97 tests, 100 % » ne décrit plus la base actuelle.
+| Mesure | Résultat |
+| --- | --- |
+| Tests réussis | 407 |
+| Instructions Python mesurées | 1 908 |
+| Instructions non couvertes | 0 |
+| Couverture Python | 100 % |
+| Avertissements | 5 |
+| Durée | 1,22 s |
+| Python | 3.14.3 |
+
+La suite inclut les tests des moments simultanés, des références des sept jours, du passage de minuit et trois tests de changement d'heure. Une exécution GitHub Actions confirmée par l'utilisateur à **12:15:34 Europe/Paris** rapporte également **407 tests réussis, 1 908 instructions et 100 % de couverture**, sous Python 3.14.8. Ces résultats sont des instantanés datés ; ils n'ont pas été réexécutés intégralement par l'assistant et précèdent le dernier nettoyage de version/changelog. Les prochains rapports automatiques font référence pour les nouveaux commits.
+
+La couverture est mesurée sans seuil bloquant. Elle ne garantit pas à elle seule le comportement réel de l'intégration et ne mesure pas la couverture du frontend JavaScript.
+
+**L1-06 reste en cours.** À confirmer dans Home Assistant : rafraîchissement des capteurs et du calendrier à minuit, puis redémarrage/rechargement près d'un déclenchement, sans doublon ni rattrapage général. Les essais utiliseront des actions de test sans effet sur les appareils. Ils ne nécessitent pas de modifier l'horloge système.
