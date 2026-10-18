@@ -4,10 +4,10 @@
 -r requirements.txt
 
 # Home Assistant development (compatible with Python 3.14)
-homeassistant>=2026.10.0
+homeassistant>=2026.10.1
 
 # Development dependencies
-black==26.10.0
+black==26.10.1
 flake8==7.4.1
 isort==9.0.2
 vulture==2.16
