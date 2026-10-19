@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.1](https://github.com/fmo01/hass-day_planner/compare/0.2.0...0.2.1) (2026-10-19)
+
+### Bug Fixes
+
+* plusieurs correction pour améliorer la saisie ([4da54cf](https://github.com/fmo01/hass-day_planner/commit/4da54cf256f3a7565fe0ce9c6dd78d299b9b132d))
+
 ## [0.2.0](https://github.com/fmo01/hass-day_planner/compare/0.1.0...0.2.0) (2026-10-14)
 
 ### Features
