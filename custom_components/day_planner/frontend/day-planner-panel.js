@@ -43,6 +43,20 @@ class DayPlannerPanel extends HTMLElement {
     this._menu = this.shadowRoot.querySelector('ha-menu-button');
   }
 
+  connectedCallback() {
+    this._upgradeProperty('panel');
+    this._upgradeProperty('narrow');
+    this._upgradeProperty('hass');
+  }
+
+  _upgradeProperty(name) {
+    if (Object.hasOwn(this, name)) {
+      const value = this[name];
+      delete this[name];
+      this[name] = value;
+    }
+  }
+
   set hass(hass) {
     this._hass = hass;
     this._menu.hass = hass;
@@ -63,3 +77,8 @@ class DayPlannerPanel extends HTMLElement {
 if (!customElements.get('day-planner-panel')) {
   customElements.define('day-planner-panel', DayPlannerPanel);
 }
+console.info(
+  '%c DAY-PLANNER-PANEL %c v0.0.2',
+  'color: orange; font-weight: bold; background: black',
+  'color: white; font-weight: bold; background: dimgray'
+);

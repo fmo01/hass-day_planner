@@ -101,6 +101,9 @@
     "duplicate_cycle_start_date": "Another cycle already starts on this date.",
     "cycle_start_monday": "A cycle start date must be a Monday.",
     "calendar_exception_day_type_required": "Please select a day type.",
-    "generic": "An error occurred."
+    "generic": "An error occurred.",
+    "cycle_id_required": "The cycle ID is required.",
+    "cycle_name_required": "The cycle name is required.",
+    "cycle_start_date_required": "The cycle start date is required."
   }
 }

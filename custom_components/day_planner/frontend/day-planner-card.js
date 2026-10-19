@@ -188,6 +188,7 @@ class DayPlannerCard extends HTMLElement {
       this._editingWeekScheduleId ||
       this._deletingWeekScheduleId ||
       this._creatingCycle ||
+      this._editingCycleId ||
       this._deletingCycleId ||
       this._creatingCalendarException ||
       this._editingCalendarExceptionId ||
@@ -347,8 +348,10 @@ class DayPlannerCard extends HTMLElement {
     try {
       this._configuration = await this._api.getConfiguration();
 
-      if (this._selectedDayTypeId === null && this._configuration.day_types?.length) {
-        this._selectedDayTypeId = this._configuration.day_types[0].id;
+      const dayTypes = this._configuration.day_types || [];
+
+      if (!dayTypes.some((dayType) => dayType.id === this._selectedDayTypeId)) {
+        this._selectedDayTypeId = dayTypes[0]?.id ?? null;
       }
     } catch (error) {
       console.error('Day Planner configuration error', error);
@@ -528,6 +531,10 @@ class DayPlannerCard extends HTMLElement {
       event.stopPropagation();
 
       this._creatingScheduledMomentDayTypeId = event.currentTarget.dataset.dayTypeId;
+      this._creatingScheduledMomentDraft = {
+        momentId: null,
+        time: '08:00',
+      };
 
       this._error = null;
       this._creatingScheduledMoment = true;
@@ -568,6 +575,8 @@ class DayPlannerCard extends HTMLElement {
       });
 
     this.shadowRoot.querySelector('#add-week-schedule')?.addEventListener('click', () => {
+      this._creatingWeekScheduleDraft = null;
+      this._error = null;
       this._creatingWeekSchedule = true;
       this.render();
     });
@@ -575,6 +584,7 @@ class DayPlannerCard extends HTMLElement {
     this.shadowRoot.querySelector('#cancel-create-week-schedule')?.addEventListener('click', () => {
       this._creatingWeekSchedule = false;
       this._error = null;
+      this._creatingWeekScheduleDraft = null;
       this.render();
     });
 
@@ -601,6 +611,8 @@ class DayPlannerCard extends HTMLElement {
           event.stopPropagation();
 
           this._editingWeekScheduleId = element.dataset.weekScheduleId;
+          this._editingWeekScheduleDraft = null;
+          this._error = null;
 
           this.render();
         });
@@ -609,6 +621,7 @@ class DayPlannerCard extends HTMLElement {
     this.shadowRoot.querySelector('#cancel-edit-week-schedule')?.addEventListener('click', () => {
       this._editingWeekScheduleId = null;
       this._error = null;
+      this._editingWeekScheduleDraft = null;
       this.render();
     });
 
@@ -645,12 +658,14 @@ class DayPlannerCard extends HTMLElement {
     this.shadowRoot.querySelector('#add-cycle')?.addEventListener('click', () => {
       this._creatingCycle = true;
       this._error = null;
+      this._creatingCycleDraft = null;
       this.render();
     });
 
     this.shadowRoot.querySelector('#cancel-create-cycle')?.addEventListener('click', () => {
       this._creatingCycle = false;
       this._error = null;
+      this._creatingCycleDraft = null;
       this.render();
     });
 
@@ -661,11 +676,9 @@ class DayPlannerCard extends HTMLElement {
     this.shadowRoot.querySelectorAll('.edit-cycle[data-cycle-id]').forEach((element) => {
       element.addEventListener('click', (event) => {
         event.stopPropagation();
-
         this._error = null;
-
         this._editingCycleId = element.dataset.cycleId;
-
+        this._editingCycleDraft = null;
         this.render();
       });
     });
@@ -673,9 +686,7 @@ class DayPlannerCard extends HTMLElement {
     this.shadowRoot.querySelectorAll('.delete-cycle[data-cycle-id]').forEach((element) => {
       element.addEventListener('click', (event) => {
         event.stopPropagation();
-
         this._deletingCycleId = element.dataset.cycleId;
-
         this.render();
       });
     });
@@ -683,6 +694,7 @@ class DayPlannerCard extends HTMLElement {
     this.shadowRoot.querySelector('#cancel-edit-cycle')?.addEventListener('click', () => {
       this._editingCycleId = null;
       this._error = null;
+      this._editingCycleDraft = null;
       this.render();
     });
 
@@ -699,16 +711,6 @@ class DayPlannerCard extends HTMLElement {
       await this._deleteCycle();
     });
 
-    this.shadowRoot.querySelectorAll('.delete-cycle[data-cycle-id]').forEach((element) => {
-      element.addEventListener('click', (event) => {
-        event.stopPropagation();
-
-        this._deletingCycleId = element.dataset.cycleId;
-
-        this.render();
-      });
-    });
-
     this.shadowRoot.querySelector('.add-calendar-exception')?.addEventListener('click', (event) => {
       event.stopPropagation();
 
@@ -716,7 +718,7 @@ class DayPlannerCard extends HTMLElement {
 
       this._creatingCalendarException = true;
       this._error = null;
-
+      this._creatingCalendarExceptionDraft = null;
       this.render();
     });
 
@@ -724,11 +726,9 @@ class DayPlannerCard extends HTMLElement {
       .querySelector('.edit-calendar-exception')
       ?.addEventListener('click', (event) => {
         event.stopPropagation();
-
         this._editingCalendarExceptionId = event.currentTarget.dataset.calendarExceptionId;
-
         this._error = null;
-
+        this._editingCalendarExceptionDraft = null;
         this.render();
       });
 
@@ -736,11 +736,8 @@ class DayPlannerCard extends HTMLElement {
       .querySelector('.delete-calendar-exception')
       ?.addEventListener('click', (event) => {
         event.stopPropagation();
-
         this._deletingCalendarExceptionId = event.currentTarget.dataset.calendarExceptionId;
-
         this._error = null;
-
         this.render();
       });
 
@@ -750,7 +747,7 @@ class DayPlannerCard extends HTMLElement {
         this._creatingCalendarException = false;
         this._creatingCalendarExceptionDate = null;
         this._error = null;
-
+        this._creatingCalendarExceptionDraft = null;
         this.render();
       });
 
@@ -765,6 +762,7 @@ class DayPlannerCard extends HTMLElement {
       ?.addEventListener('click', () => {
         this._editingCalendarExceptionId = null;
         this._error = null;
+        this._editingCalendarExceptionDraft = null;
         this.render();
       });
 
@@ -1161,6 +1159,9 @@ class DayPlannerCard extends HTMLElement {
   }
 
   async _saveEditWeekSchedule() {
+    if (this._loading) {
+      return;
+    }
     const weekScheduleId = this._editingWeekScheduleId;
 
     if (!weekScheduleId) {
@@ -1185,6 +1186,17 @@ class DayPlannerCard extends HTMLElement {
 
     const sunday = getValue('edit-week-schedule-sunday');
 
+    this._editingWeekScheduleDraft = {
+      name: name ?? '',
+      monday: monday ?? '',
+      tuesday: tuesday ?? '',
+      wednesday: wednesday ?? '',
+      thursday: thursday ?? '',
+      friday: friday ?? '',
+      saturday: saturday ?? '',
+      sunday: sunday ?? '',
+    };
+
     if (
       !name ||
       !monday ||
@@ -1203,6 +1215,7 @@ class DayPlannerCard extends HTMLElement {
 
     this._loading = true;
     this._error = null;
+    this.render();
 
     try {
       await this._api.updateWeekSchedule(
@@ -1218,6 +1231,7 @@ class DayPlannerCard extends HTMLElement {
       );
 
       this._editingWeekScheduleId = null;
+      this._editingWeekScheduleDraft = null;
 
       this._configuration = await this._api.getConfiguration();
 
@@ -1234,6 +1248,9 @@ class DayPlannerCard extends HTMLElement {
   }
 
   async _deleteWeekSchedule() {
+    if (this._loading) {
+      return;
+    }
     const weekScheduleId = this._deletingWeekScheduleId;
 
     if (!weekScheduleId) {
@@ -1242,6 +1259,7 @@ class DayPlannerCard extends HTMLElement {
 
     this._loading = true;
     this._error = null;
+    this.render();
 
     try {
       await this._api.removeWeekSchedule(weekScheduleId);
@@ -1276,6 +1294,9 @@ class DayPlannerCard extends HTMLElement {
   }
 
   async _deleteScheduledMoment() {
+    if (this._loading) {
+      return;
+    }
     const deleting = this._deletingScheduledMoment;
 
     if (!deleting) {
@@ -1284,6 +1305,7 @@ class DayPlannerCard extends HTMLElement {
 
     this._loading = true;
     this._error = null;
+    this.render();
 
     try {
       await this._api.removeScheduledMoment(deleting.dayTypeId, deleting.momentId);
@@ -1411,6 +1433,7 @@ class DayPlannerCard extends HTMLElement {
                 id="save-scheduled-moment"
                 class="editor-button primary"
                 type="button"
+                ${this._loading ? 'disabled' : ''}
               >
                 ${escapeHtml(
                   this._i18n?.t(
@@ -2129,6 +2152,9 @@ class DayPlannerCard extends HTMLElement {
   }
 
   async _saveScheduledMoment() {
+    if (this._loading) {
+      return;
+    }
     const editing = this._editingScheduledMoment;
 
     if (!editing) {
@@ -2138,6 +2164,7 @@ class DayPlannerCard extends HTMLElement {
     const input = this.shadowRoot.querySelector('#scheduled-moment-time');
 
     const time = input?.value;
+    editing.time = time ?? '';
 
     if (!time) {
       this._error =
@@ -2152,7 +2179,6 @@ class DayPlannerCard extends HTMLElement {
 
     this._loading = true;
     this._error = null;
-
     this.render();
 
     try {
@@ -2181,9 +2207,13 @@ class DayPlannerCard extends HTMLElement {
   }
 
   async _saveDayTypeName() {
+    if (this._loading) {
+      return;
+    }
     const input = this.shadowRoot.querySelector('#day-type-name');
 
     const name = input?.value?.trim();
+    this._editingDayTypeNameDraft = name ?? '';
 
     if (!this._editingDayTypeId) {
       return;
@@ -2202,6 +2232,7 @@ class DayPlannerCard extends HTMLElement {
 
     this._loading = true;
     this._error = null;
+    this.render();
 
     try {
       await this._api.updateDayType(this._editingDayTypeId, name);
@@ -2212,6 +2243,7 @@ class DayPlannerCard extends HTMLElement {
 
       this._editingDayTypeName = false;
       this._editingDayTypeId = null;
+      this._editingDayTypeNameDraft = null;
     } catch (error) {
       console.error('Day Planner day type update error', error);
 
@@ -2283,6 +2315,10 @@ class DayPlannerCard extends HTMLElement {
 
   _openCreateDayTypeDialog() {
     this._error = null;
+    this._creatingDayTypeDraft = {
+      id: '',
+      name: '',
+    };
     this._creatingDayType = true;
     this.render();
   }
@@ -2333,6 +2369,7 @@ class DayPlannerCard extends HTMLElement {
           <input
             id="new-day-type-id"
             type="text"
+            value="${escapeHtml(this._creatingDayTypeDraft?.id ?? '')}"
             placeholder="ex : jour_maison"
           />
         </label>
@@ -2350,6 +2387,7 @@ class DayPlannerCard extends HTMLElement {
           <input
             id="new-day-type-name"
             type="text"
+            value="${escapeHtml(this._creatingDayTypeDraft?.name ?? '')}"
             placeholder="ex : Journée Maison"
           />
         </label>
@@ -2372,6 +2410,7 @@ class DayPlannerCard extends HTMLElement {
             id="save-create-day-type"
             class="editor-button primary"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             ${escapeHtml(
               this._i18n?.t(
@@ -2403,9 +2442,16 @@ class DayPlannerCard extends HTMLElement {
 
     return `
     <div class="modal-backdrop">
-      <div class="modal-dialog">
-
-        <div class="modal-title">
+      <div
+        class="modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-scheduled-moment-dialog-title"
+      >
+        <div
+          id="create-scheduled-moment-dialog-title"
+          class="modal-title"
+        >
           ${escapeHtml(
             this._i18n?.t(
               'day_types.add_scheduled_moment',
@@ -2443,6 +2489,11 @@ class DayPlannerCard extends HTMLElement {
                       (moment) => `
                         <option
                           value="${escapeHtml(moment.id)}"
+                          ${
+                            moment.id === this._creatingScheduledMomentDraft?.momentId
+                              ? 'selected'
+                              : ''
+                          }
                         >
                           ${escapeHtml(moment.name)}
                         </option>
@@ -2465,7 +2516,7 @@ class DayPlannerCard extends HTMLElement {
                 <input
                   id="new-scheduled-moment-time"
                   type="time"
-                  value="08:00"
+                  value="${escapeHtml(this._creatingScheduledMomentDraft?.time ?? '08:00')}"
                   required
                 >
               </label>
@@ -2501,6 +2552,7 @@ class DayPlannerCard extends HTMLElement {
                 <button
                   id="save-create-scheduled-moment"
                   type="button"
+                  ${this._loading ? 'disabled' : ''}
                 >
                   ${escapeHtml(
                     this._i18n?.t(
@@ -2520,13 +2572,20 @@ class DayPlannerCard extends HTMLElement {
   }
 
   async _saveCreateDayType() {
+    if (this._loading) {
+      return;
+    }
     const idInput = this.shadowRoot.querySelector('#new-day-type-id');
 
     const nameInput = this.shadowRoot.querySelector('#new-day-type-name');
 
     const dayTypeId = idInput?.value?.trim();
-
     const name = nameInput?.value?.trim();
+
+    this._creatingDayTypeDraft = {
+      id: dayTypeId ?? '',
+      name: name ?? '',
+    };
 
     if (!dayTypeId || !name) {
       this._error =
@@ -2541,6 +2600,7 @@ class DayPlannerCard extends HTMLElement {
 
     this._loading = true;
     this._error = null;
+    this.render();
 
     try {
       await this._api.addDayType(dayTypeId, name);
@@ -2551,6 +2611,7 @@ class DayPlannerCard extends HTMLElement {
 
       this._loadedMonthKey = null;
       this._creatingDayType = false;
+      this._creatingDayTypeDraft = null;
     } catch (error) {
       console.error('Day Planner add day type error', error);
 
@@ -2578,6 +2639,9 @@ class DayPlannerCard extends HTMLElement {
   }
 
   async _saveCreateWeekSchedule() {
+    if (this._loading) {
+      return;
+    }
     const getValue = (id) => this.shadowRoot.querySelector(`#${id}`)?.value?.trim();
 
     const weekScheduleId = getValue('create-week-schedule-id');
@@ -2598,6 +2662,18 @@ class DayPlannerCard extends HTMLElement {
 
     const sunday = getValue('create-week-schedule-sunday');
 
+    this._creatingWeekScheduleDraft = {
+      id: weekScheduleId ?? '',
+      name: name ?? '',
+      monday: monday ?? '',
+      tuesday: tuesday ?? '',
+      wednesday: wednesday ?? '',
+      thursday: thursday ?? '',
+      friday: friday ?? '',
+      saturday: saturday ?? '',
+      sunday: sunday ?? '',
+    };
+
     if (
       !weekScheduleId ||
       !name ||
@@ -2617,6 +2693,7 @@ class DayPlannerCard extends HTMLElement {
 
     this._loading = true;
     this._error = null;
+    this.render();
 
     try {
       await this._api.addWeekSchedule(
@@ -2632,6 +2709,7 @@ class DayPlannerCard extends HTMLElement {
       );
 
       this._creatingWeekSchedule = false;
+      this._creatingWeekScheduleDraft = null;
 
       this._configuration = await this._api.getConfiguration();
 
@@ -2648,6 +2726,9 @@ class DayPlannerCard extends HTMLElement {
   }
 
   async _saveCreateScheduledMoment() {
+    if (this._loading) {
+      return;
+    }
     const dayTypeId = this._creatingScheduledMomentDayTypeId;
 
     const momentId =
@@ -2655,6 +2736,11 @@ class DayPlannerCard extends HTMLElement {
 
     const time =
       this.shadowRoot.querySelector('#new-scheduled-moment-time')?.value;
+
+    this._creatingScheduledMomentDraft = {
+      momentId: momentId ?? '',
+      time: time ?? '',
+    };
 
     if (!dayTypeId || !momentId || !time) {
       this._error =
@@ -2669,7 +2755,6 @@ class DayPlannerCard extends HTMLElement {
 
     this._loading = true;
     this._error = null;
-
     this.render();
 
     try {
@@ -2681,6 +2766,7 @@ class DayPlannerCard extends HTMLElement {
 
       this._creatingScheduledMoment = false;
       this._creatingScheduledMomentDayTypeId = null;
+      this._creatingScheduledMomentDraft = null;
 
       await this._loadConfiguration();
 
@@ -2705,6 +2791,10 @@ class DayPlannerCard extends HTMLElement {
   }
 
   async _saveCreateCycle() {
+    if (this._loading) {
+      return;
+    }
+
     const getValue = (id) => this.shadowRoot.querySelector(`#${id}`)?.value?.trim();
 
     const cycleId = getValue('create-cycle-id');
@@ -2712,6 +2802,20 @@ class DayPlannerCard extends HTMLElement {
     const name = getValue('create-cycle-name');
 
     const startDate = getValue('create-cycle-start-date');
+
+    const weekSelections = [
+      getValue('create-cycle-week-1') ?? '',
+      getValue('create-cycle-week-2') ?? '',
+      getValue('create-cycle-week-3') ?? '',
+      getValue('create-cycle-week-4') ?? '',
+    ];
+
+    this._creatingCycleDraft = {
+      id: cycleId ?? '',
+      name: name ?? '',
+      start_date: startDate ?? '',
+      weekSelections,
+    };
 
     const validationError = validateCycleStartDate(
       startDate,
@@ -2725,37 +2829,59 @@ class DayPlannerCard extends HTMLElement {
       this.render();
       return;
     }
-    const weekScheduleIds = [
-      getValue('create-cycle-week-1'),
-      getValue('create-cycle-week-2'),
-      getValue('create-cycle-week-3'),
-      getValue('create-cycle-week-4'),
-    ].filter(Boolean);
 
-    if (
-      !cycleId ||
-      !name ||
-      !startDate ||
-      weekScheduleIds.length < 1 ||
-      weekScheduleIds.length > 4
-    ) {
-      this._error =
+    const weekScheduleIds = weekSelections.filter(Boolean);
+
+    if (!cycleId) {
+      this._error = 
+        this._i18n?.t(
+          'errors.cycle_id_required',
+          "L'identifiant du cycle est obligatoire."
+        ) ?? "L'identifiant du cycle est obligatoire.";
+
+      this.render();
+      return;
+    }
+
+    if (!name) {
+      this._error = 
+        this._i18n?.t(
+          'errors.cycle_name_required',
+          'Le libellé du cycle est obligatoire.'
+        ) ?? 'Le libellé du cycle est obligatoire.';
+      this.render();
+      return;
+    }
+
+    if (!startDate) {
+      this._error = 
+        this._i18n?.t(
+          'errors.cycle_start_date_required',
+          'La date de début du cycle est obligatoire.'
+        ) ?? 'La date de début du cycle est obligatoire.';
+      this.render();
+      return;
+    }
+
+    if (weekScheduleIds.length < 1 || weekScheduleIds.length > 4) {
+      this._error = 
         this._i18n?.t(
           'errors.invalid_week_count',
           'Un cycle doit contenir entre 1 et 4 semaines types.'
         ) ?? 'Un cycle doit contenir entre 1 et 4 semaines types.';
-
       this.render();
       return;
     }
 
     this._loading = true;
     this._error = null;
+    this.render();
 
     try {
       await this._api.addCycle(cycleId, name, startDate, weekScheduleIds);
 
       this._creatingCycle = false;
+      this._creatingCycleDraft = null;
 
       this._configuration = await this._api.getConfiguration();
 
@@ -2793,6 +2919,10 @@ class DayPlannerCard extends HTMLElement {
   }
 
   async _saveEditCycle() {
+    if (this._loading) {
+      return;
+    }
+
     const cycleId = this._editingCycleId;
 
     if (!cycleId) {
@@ -2804,6 +2934,51 @@ class DayPlannerCard extends HTMLElement {
     const name = getValue('edit-cycle-name');
 
     const startDate = getValue('edit-cycle-start-date');
+
+    const weekSelections = [
+      getValue('edit-cycle-week-1') ?? '',
+      getValue('edit-cycle-week-2') ?? '',
+      getValue('edit-cycle-week-3') ?? '',
+      getValue('edit-cycle-week-4') ?? '',
+    ];
+
+    this._editingCycleDraft = {
+      name: name ?? '',
+      start_date: startDate ?? '',
+      weekSelections,
+    };
+
+    const weekScheduleIds = weekSelections.filter(Boolean);
+
+    if (!name) {
+      this._error = 
+        this._i18n?.t(
+          'errors.cycle_name_required',
+          'Le libellé du cycle est obligatoire.'
+        ) ?? 'Le libellé du cycle est obligatoire.';
+      this.render();
+      return;
+    }
+
+    if (!startDate) {
+      this._error = 
+        this._i18n?.t(
+          'errors.cycle_start_date_required',
+          'La date de début du cycle est obligatoire.'
+        ) ?? 'La date de début du cycle est obligatoire.';
+      this.render();
+      return;
+    }
+
+    if (weekScheduleIds.length < 1 || weekScheduleIds.length > 4) {
+      this._error = 
+        this._i18n?.t(
+          'errors.invalid_week_count',
+          'Un cycle doit contenir entre 1 et 4 semaines types.'
+        ) ?? 'Un cycle doit contenir entre 1 et 4 semaines types.';
+      this.render();
+      return;
+    }
 
     const validationError = validateCycleStartDate(
       startDate,
@@ -2818,31 +2993,16 @@ class DayPlannerCard extends HTMLElement {
       return;
     }
 
-    const weekScheduleIds = [
-      getValue('edit-cycle-week-1'),
-      getValue('edit-cycle-week-2'),
-      getValue('edit-cycle-week-3'),
-      getValue('edit-cycle-week-4'),
-    ].filter(Boolean);
-
-    if (!name || !startDate || weekScheduleIds.length < 1 || weekScheduleIds.length > 4) {
-      this._error =
-        this._i18n?.t(
-          'errors.invalid_week_count',
-          'Un cycle doit contenir entre 1 et 4 semaines types.'
-        ) ?? 'Un cycle doit contenir entre 1 et 4 semaines types.';
-
-      this.render();
-      return;
-    }
-
     this._loading = true;
     this._error = null;
+    this.render();
 
     try {
       await this._api.updateCycle(cycleId, name, startDate, weekScheduleIds);
 
       this._editingCycleId = null;
+
+      this._editingCycleDraft = null;
 
       this._configuration = await this._api.getConfiguration();
 
@@ -3033,6 +3193,7 @@ ${
   _editDayTypeName(dayTypeId) {
     this._error = null;
     this._editingDayTypeId = dayTypeId;
+    this._editingDayTypeNameDraft = null;
     this._editingDayTypeName = true;
 
     this.render();
@@ -3117,6 +3278,7 @@ ${
             id="confirm-delete-day-type"
             class="editor-button danger"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             ${escapeHtml(
               this._i18n?.t(
@@ -3132,6 +3294,9 @@ ${
   }
 
   async _deleteDayType() {
+    if (this._loading) {
+      return;
+    }
     const dayTypeId = this._deletingDayTypeId;
 
     if (!dayTypeId) {
@@ -3140,6 +3305,7 @@ ${
 
     this._loading = true;
     this._error = null;
+    this.render();
 
     try {
       await this._api.removeDayType(dayTypeId);
@@ -3225,6 +3391,7 @@ ${
             id="day-type-name"
             type="text"
             value="${escapeHtml(dayType.name)}"
+            value="${escapeHtml(this._editingDayTypeNameDraft ?? dayType.name)}"
           />
         </label>
 
@@ -3246,6 +3413,7 @@ ${
             id="save-day-type-name"
             class="editor-button primary"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             ${escapeHtml(
               this._i18n?.t(
@@ -3288,9 +3456,16 @@ ${
 
     return `
     <div class="modal-backdrop">
-      <div class="modal-dialog">
-
-        <div class="modal-title">
+      <div
+        class="modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-scheduled-moment-dialog-title"
+      >
+        <div
+          id="delete-scheduled-moment-dialog-title"
+          class="modal-title"
+        >
           ${escapeHtml(
             this._i18n?.t(
               'day_types.delete_scheduled_moment',
@@ -3351,6 +3526,7 @@ ${
             id="confirm-delete-scheduled-moment"
             class="danger-button"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             ${escapeHtml(
               this._i18n?.t(
@@ -3372,35 +3548,54 @@ ${
     }
 
     const dayTypes = this._configuration?.day_types || [];
+    const draft = this._creatingWeekScheduleDraft;
 
-    const renderDayTypeOptions = () =>
+    const renderDayTypeOptions = (selectedId) =>
       dayTypes
         .map(
           (dayType) => `
-          <option value="${escapeHtml(dayType.id)}">
-            ${escapeHtml(dayType.name)}
-          </option>
-        `
+            <option
+              value="${escapeHtml(dayType.id)}"
+              ${dayType.id === selectedId ? 'selected' : ''}
+            >
+              ${escapeHtml(dayType.name)}
+            </option>
+          `
         )
         .join('');
 
-    const renderDaySelect = (id, label) => `
-    <label class="modal-field">
-      <span>${label}</span>
+    const renderDaySelect = (id, label, selectedId) => `
+      <label class="modal-field">
+        <span>${label}</span>
 
-      <select id="${id}">
-        ${renderDayTypeOptions()}
-      </select>
-    </label>
-  `;
-
+        <select id="${id}">
+          ${renderDayTypeOptions(selectedId)}
+        </select>
+      </label>
+    `;
     return `
     <div class="modal-backdrop">
-      <div class="modal-dialog">
-
-        <div class="modal-title">
+      <div
+        class="modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-week-schedule-dialog-title"
+      >
+        <div
+          id="create-week-schedule-dialog-title"
+          class="modal-title"
+        >
           Créer une semaine type
         </div>
+        ${
+          this._error
+            ? `
+              <div class="error" role="alert">
+                ${escapeHtml(this._error)}
+              </div>
+            `
+            : ''
+        }
 
         <label class="modal-field">
           <span>Identifiant</span>
@@ -3409,6 +3604,7 @@ ${
             id="create-week-schedule-id"
             type="text"
             autocomplete="off"
+            value="${escapeHtml(draft?.id ?? '')}"
           />
         </label>
 
@@ -3419,22 +3615,23 @@ ${
             id="create-week-schedule-name"
             type="text"
             autocomplete="off"
+            value="${escapeHtml(draft?.name ?? '')}"
           />
         </label>
 
-        ${renderDaySelect('create-week-schedule-monday', 'Lundi')}
+        ${renderDaySelect('create-week-schedule-monday', 'Lundi', draft?.monday)}
 
-        ${renderDaySelect('create-week-schedule-tuesday', 'Mardi')}
+        ${renderDaySelect('create-week-schedule-tuesday', 'Mardi', draft?.tuesday)}
 
-        ${renderDaySelect('create-week-schedule-wednesday', 'Mercredi')}
+        ${renderDaySelect('create-week-schedule-wednesday', 'Mercredi', draft?.wednesday)}
 
-        ${renderDaySelect('create-week-schedule-thursday', 'Jeudi')}
+        ${renderDaySelect('create-week-schedule-thursday', 'Jeudi', draft?.thursday)}
 
-        ${renderDaySelect('create-week-schedule-friday', 'Vendredi')}
+        ${renderDaySelect('create-week-schedule-friday', 'Vendredi', draft?.friday)}
 
-        ${renderDaySelect('create-week-schedule-saturday', 'Samedi')}
+        ${renderDaySelect('create-week-schedule-saturday', 'Samedi', draft?.saturday)}
 
-        ${renderDaySelect('create-week-schedule-sunday', 'Dimanche')}
+        ${renderDaySelect('create-week-schedule-sunday', 'Dimanche', draft?.sunday)}
 
         <div class="modal-actions">
           <button
@@ -3449,6 +3646,7 @@ ${
             id="save-create-week-schedule"
             class="editor-button primary"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             Créer
           </button>
@@ -3471,6 +3669,8 @@ ${
     if (!weekSchedule) {
       return '';
     }
+
+    const draft = this._editingWeekScheduleDraft ?? weekSchedule;
 
     const dayTypes = this._configuration?.day_types || [];
 
@@ -3500,11 +3700,28 @@ ${
 
     return `
     <div class="modal-backdrop">
-      <div class="modal-dialog">
-
-        <div class="modal-title">
+      <div
+        class="modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-week-schedule-dialog-title"
+      >
+        <div
+          id="edit-week-schedule-dialog-title"
+          class="modal-title"
+        >
           Modifier la semaine type
         </div>
+        
+        ${
+          this._error
+            ? `
+              <div class="error" role="alert">
+                ${escapeHtml(this._error)}
+              </div>
+            `
+            : ''
+        }
 
         <label class="modal-field">
           <span>Identifiant</span>
@@ -3522,23 +3739,23 @@ ${
           <input
             id="edit-week-schedule-name"
             type="text"
-            value="${escapeHtml(weekSchedule.name)}"
+            value="${escapeHtml(draft.name)}"
           />
         </label>
 
-        ${renderDaySelect('edit-week-schedule-monday', 'Lundi', weekSchedule.monday)}
+        ${renderDaySelect('edit-week-schedule-monday', 'Lundi', draft.monday)}
 
-        ${renderDaySelect('edit-week-schedule-tuesday', 'Mardi', weekSchedule.tuesday)}
+        ${renderDaySelect('edit-week-schedule-tuesday', 'Mardi', draft.tuesday)}
 
-        ${renderDaySelect('edit-week-schedule-wednesday', 'Mercredi', weekSchedule.wednesday)}
+        ${renderDaySelect('edit-week-schedule-wednesday', 'Mercredi', draft.wednesday)}
 
-        ${renderDaySelect('edit-week-schedule-thursday', 'Jeudi', weekSchedule.thursday)}
+        ${renderDaySelect('edit-week-schedule-thursday', 'Jeudi', draft.thursday)}
 
-        ${renderDaySelect('edit-week-schedule-friday', 'Vendredi', weekSchedule.friday)}
+        ${renderDaySelect('edit-week-schedule-friday', 'Vendredi', draft.friday)}
 
-        ${renderDaySelect('edit-week-schedule-saturday', 'Samedi', weekSchedule.saturday)}
+        ${renderDaySelect('edit-week-schedule-saturday', 'Samedi', draft.saturday)}
 
-        ${renderDaySelect('edit-week-schedule-sunday', 'Dimanche', weekSchedule.sunday)}
+        ${renderDaySelect('edit-week-schedule-sunday', 'Dimanche', draft.sunday)}
 
         <div class="modal-actions">
           <button
@@ -3553,6 +3770,7 @@ ${
             id="save-edit-week-schedule"
             class="editor-button primary"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             Enregistrer
           </button>
@@ -3576,9 +3794,11 @@ ${
       return '';
     }
 
-    const weekSchedules = this._configuration?.week_schedules || [];
+    const draft = this._editingCycleDraft ?? cycle;
 
-    const weekIds = cycle.week_schedule_ids || [];
+    const weekIds =
+      this._editingCycleDraft?.weekSelections ?? cycle.week_schedule_ids ?? [];
+    const weekSchedules = this._configuration?.week_schedules ?? [];
 
     const t = (key, fallback) => this._i18n?.t(key, fallback) ?? fallback;
 
@@ -3660,7 +3880,7 @@ ${
           <input
             id="edit-cycle-name"
             type="text"
-            value="${escapeHtml(cycle.name)}"
+            value="${escapeHtml(draft.name)}"
           />
         </label>
 
@@ -3672,7 +3892,7 @@ ${
           <input
             id="edit-cycle-start-date"
             type="date"
-            value="${escapeHtml(cycle.start_date)}"
+            value="${escapeHtml(draft.start_date)}"
           />
         </label>
 
@@ -3702,6 +3922,7 @@ ${
             id="save-edit-cycle"
             class="editor-button primary"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             ${escapeHtml(t('common.save', 'Enregistrer'))}
           </button>
@@ -3757,6 +3978,7 @@ ${
             id="confirm-delete-cycle"
             class="editor-button danger"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             ${escapeHtml(t('common.delete', 'Supprimer'))}
           </button>
@@ -3768,6 +3990,10 @@ ${
   }
 
   async _deleteCycle() {
+    if (this._loading) {
+      return;
+    }
+
     const cycleId = this._deletingCycleId;
 
     if (!cycleId) {
@@ -3776,6 +4002,7 @@ ${
 
     this._loading = true;
     this._error = null;
+    this.render();
 
     try {
       await this._api.removeCycle(cycleId);
@@ -3822,9 +4049,16 @@ ${
 
     return `
     <div class="modal-backdrop">
-      <div class="modal-dialog">
-
-        <div class="modal-title">
+      <div
+        class="modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-week-schedule-dialog-title"
+      >
+        <div
+          id="delete-week-schedule-dialog-title"
+          class="modal-title"
+        >
           Supprimer la semaine type
         </div>
 
@@ -3849,6 +4083,7 @@ ${
             id="confirm-delete-week-schedule"
             class="editor-button danger"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             Supprimer
           </button>
@@ -3864,45 +4099,49 @@ ${
       return '';
     }
 
+    const draft = this._creatingCycleDraft;
+    const weekIds = draft?.weekSelections ?? [];
+
     const weekSchedules = this._configuration?.week_schedules || [];
 
     const t = (key, fallback) => this._i18n?.t(key, fallback) ?? fallback;
 
-    const renderWeekOptions = () =>
+    const renderWeekOptions = (selectedId) =>
       weekSchedules
         .map(
           (weekSchedule) => `
-          <option
-            value="${escapeHtml(weekSchedule.id)}"
-          >
-            ${escapeHtml(weekSchedule.name)}
-          </option>
-        `
+            <option
+              value="${escapeHtml(weekSchedule.id)}"
+              ${weekSchedule.id === selectedId ? 'selected' : ''}
+            >
+              ${escapeHtml(weekSchedule.name)}
+            </option>
+          `
         )
         .join('');
 
-    const renderWeekSelect = (id, label, required = false) => `
-    <label class="modal-field">
-      <span>${escapeHtml(label)}</span>
+    const renderWeekSelect = (id, label, selectedId, required = false) => `
+      <label class="modal-field">
+        <span>${escapeHtml(label)}</span>
 
-      <select
-        id="${id}"
-        ${required ? 'required' : ''}
-      >
-        ${
-          required
-            ? ''
-            : `
-              <option value="">
-                —
-              </option>
-            `
-        }
+        <select
+          id="${id}"
+          ${required ? 'required' : ''}
+        >
+          ${
+            required
+              ? ''
+              : `
+                <option value="" ${!selectedId ? 'selected' : ''}>
+                  —
+                </option>
+              `
+          }
 
-        ${renderWeekOptions()}
-      </select>
-    </label>
-  `;
+          ${renderWeekOptions(selectedId)}
+        </select>
+      </label>
+    `;
 
     return `
     <div class="modal-backdrop">
@@ -3929,6 +4168,7 @@ ${
             id="create-cycle-id"
             type="text"
             autocomplete="off"
+            value="${escapeHtml(draft?.id ?? '')}"
           />
         </label>
 
@@ -3941,6 +4181,7 @@ ${
             id="create-cycle-name"
             type="text"
             autocomplete="off"
+            value="${escapeHtml(draft?.name ?? '')}"
           />
         </label>
 
@@ -3952,16 +4193,34 @@ ${
           <input
             id="create-cycle-start-date"
             type="date"
+            value="${escapeHtml(draft?.start_date ?? '')}"
           />
         </label>
 
-        ${renderWeekSelect('create-cycle-week-1', `${t('cycles.week', 'Semaine')} 1`, true)}
+        ${renderWeekSelect(
+          'create-cycle-week-1',
+          `${t('cycles.week', 'Semaine')} 1`,
+          weekIds[0],
+          true
+        )}
 
-        ${renderWeekSelect('create-cycle-week-2', `${t('cycles.week', 'Semaine')} 2`)}
+        ${renderWeekSelect(
+          'create-cycle-week-2',
+          `${t('cycles.week', 'Semaine')} 2`,
+          weekIds[1]
+        )}
 
-        ${renderWeekSelect('create-cycle-week-3', `${t('cycles.week', 'Semaine')} 3`)}
+        ${renderWeekSelect(
+          'create-cycle-week-3',
+          `${t('cycles.week', 'Semaine')} 3`,
+          weekIds[2]
+        )}
 
-        ${renderWeekSelect('create-cycle-week-4', `${t('cycles.week', 'Semaine')} 4`)}
+        ${renderWeekSelect(
+          'create-cycle-week-4',
+          `${t('cycles.week', 'Semaine')} 4`,
+          weekIds[3]
+        )}
 
         <div class="modal-actions">
           <button
@@ -3976,6 +4235,7 @@ ${
             id="save-create-cycle"
             class="editor-button primary"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             ${escapeHtml(t('common.create', 'Créer'))}
           </button>
@@ -3994,6 +4254,7 @@ ${
     const date = this._creatingCalendarExceptionDate;
 
     const dayTypes = this._configuration?.day_types || [];
+    const draft = this._creatingCalendarExceptionDraft;
 
     const dateLabel = formatLongDate(this._creatingCalendarExceptionDate, this._hass);
 
@@ -4064,6 +4325,7 @@ ${
             id="create-calendar-exception-description"
             type="text"
             placeholder="${escapeHtml(t('calendar_exceptions.description_optional', 'Facultatif'))}"
+            value="${escapeHtml(draft?.description ?? '')}"
           />
         </div>
 
@@ -4080,6 +4342,7 @@ ${
             id="save-create-calendar-exception"
             class="editor-button primary"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             ${escapeHtml(t('common.create', 'Créer'))}
           </button>
@@ -4104,6 +4367,8 @@ ${
     if (!calendarException) {
       return '';
     }
+
+    const draft = this._editingCalendarExceptionDraft ?? calendarException;
 
     const dayTypes = this._configuration?.day_types || [];
 
@@ -4154,7 +4419,7 @@ ${
                 (dayType) => `
                   <option
                     value="${escapeHtml(dayType.id)}"
-                    ${dayType.id === calendarException.day_type_id ? 'selected' : ''}
+                    ${dayType.id === draft.day_type_id ? 'selected' : ''}
                   >
                     ${escapeHtml(dayType.name)}
                   </option>
@@ -4174,7 +4439,7 @@ ${
           <input
             id="edit-calendar-exception-description"
             type="text"
-            value="${escapeHtml(calendarException.description || '')}"
+            value="${escapeHtml(draft.description ?? '')}"
           />
         </div>
 
@@ -4189,6 +4454,7 @@ ${
           <button
             id="save-edit-calendar-exception"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             ${escapeHtml(t('common.save', 'Enregistrer'))}
           </button>
@@ -4214,6 +4480,10 @@ ${
   }
 
   async _saveCreateCalendarException() {
+    if (this._loading) {
+      return;
+    }
+
     const date = this._creatingCalendarExceptionDate;
 
     if (!date) {
@@ -4225,8 +4495,14 @@ ${
       ?.value?.trim();
 
     const description =
-      this.shadowRoot.querySelector('#create-calendar-exception-description')?.value?.trim() ||
-      null;
+      this.shadowRoot
+        .querySelector('#create-calendar-exception-description')
+        ?.value?.trim() ?? '';
+
+    this._creatingCalendarExceptionDraft = {
+      day_type_id: dayTypeId ?? '',
+      description: description ?? '',
+    };
 
     if (!dayTypeId) {
       this._error =
@@ -4243,12 +4519,14 @@ ${
 
     this._loading = true;
     this._error = null;
+    this.render();
 
     try {
       await this._api.addCalendarException(calendarExceptionId, date, dayTypeId, description);
 
       this._creatingCalendarException = false;
       this._creatingCalendarExceptionDate = null;
+      this._creatingCalendarExceptionDraft = null;
 
       await this._refreshCalendarConfiguration();
 
@@ -4259,9 +4537,8 @@ ${
       this._error = error?.message || this._getGenericErrorMessage();
     } finally {
       this._loading = false;
+      this.render();
     }
-
-    this.render();
   }
 
   async _saveCreateMoment() {
@@ -4368,6 +4645,10 @@ ${
   }
 
   async _saveEditCalendarException() {
+    if (this._loading) {
+      return;
+    }
+
     const calendarExceptionId = this._editingCalendarExceptionId;
 
     if (!calendarExceptionId) {
@@ -4387,7 +4668,14 @@ ${
       ?.value?.trim();
 
     const description =
-      this.shadowRoot.querySelector('#edit-calendar-exception-description')?.value?.trim() || null;
+      this.shadowRoot
+        .querySelector('#edit-calendar-exception-description')
+        ?.value?.trim() ?? '';
+
+    this._editingCalendarExceptionDraft = {
+      day_type_id: dayTypeId ?? '',
+      description: description ?? '',
+    };
 
     if (!dayTypeId) {
       this._error =
@@ -4402,6 +4690,7 @@ ${
 
     this._loading = true;
     this._error = null;
+    this.render();
 
     try {
       await this._api.updateCalendarException(
@@ -4412,6 +4701,7 @@ ${
       );
 
       this._editingCalendarExceptionId = null;
+      this._editingCalendarExceptionDraft = null;
 
       await this._refreshCalendarConfiguration();
 
@@ -4422,9 +4712,8 @@ ${
       this._error = error?.message || this._getGenericErrorMessage();
     } finally {
       this._loading = false;
+      this.render();
     }
-
-    this.render();
   }
 
   _renderDeleteCalendarExceptionDialog() {
@@ -4491,6 +4780,7 @@ ${
           <button
             id="confirm-delete-calendar-exception"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             ${escapeHtml(t('common.delete', 'Supprimer'))}
           </button>
@@ -4502,6 +4792,10 @@ ${
   }
 
   async _deleteCalendarException() {
+    if (this._loading) {
+      return;
+    }
+
     const calendarExceptionId = this._deletingCalendarExceptionId;
 
     if (!calendarExceptionId) {
@@ -4510,6 +4804,7 @@ ${
 
     this._loading = true;
     this._error = null;
+    this.render();
 
     try {
       await this._api.removeCalendarException(calendarExceptionId);
@@ -4525,10 +4820,10 @@ ${
       this._error = error?.message || this._getGenericErrorMessage();
     } finally {
       this._loading = false;
+      this.render();
     }
-
-    this.render();
   }
+ 
 }
 
 if (!customElements.get('day-planner-card')) {
@@ -4536,7 +4831,7 @@ if (!customElements.get('day-planner-card')) {
 }
 
 console.info(
-  '%c DAY-PLANNER-CARD %c v0.0.3',
+  '%c DAY-PLANNER-CARD %c v0.0.4',
   'color: orange; font-weight: bold; background: black',
   'color: white; font-weight: bold; background: dimgray'
 );

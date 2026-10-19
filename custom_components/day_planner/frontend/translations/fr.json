@@ -101,6 +101,9 @@
     "duplicate_cycle_start_date": "Un autre cycle commence déjà à cette date.",
     "cycle_start_monday": "La date de début d’un cycle doit être un lundi.",
     "calendar_exception_day_type_required": "Veuillez sélectionner un type de journée.",
-    "generic": "Une erreur est survenue."
+    "generic": "Une erreur est survenue.",
+    "cycle_id_required": "L’identifiant du cycle est obligatoire.",
+    "cycle_name_required": "Le libellé du cycle est obligatoire.",
+    "cycle_start_date_required": "La date de début du cycle est obligatoire."
   }
 }
