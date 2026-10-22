@@ -235,6 +235,7 @@ async def websocket_update_scheduled_moment(
         runtime.engine.update_scheduled_moment(
             msg["day_type_id"],
             scheduled_moment,
+            modified_by=connection.user.name or connection.user.id,
         )
 
         await runtime.async_configuration_updated()
@@ -390,7 +391,10 @@ async def websocket_update_day_type(
             scheduled_moments=(current.scheduled_moments),
         )
 
-        runtime.engine.update_day_type(updated)
+        runtime.engine.update_day_type(
+            updated,
+            modified_by=connection.user.name or connection.user.id,
+        )
 
         await runtime.async_configuration_updated()
 
@@ -443,7 +447,10 @@ async def websocket_add_day_type(
     )
 
     try:
-        runtime.engine.add_day_type(day_type)
+        runtime.engine.add_day_type(
+            day_type,
+            modified_by=connection.user.name or connection.user.id,
+        )
 
         await runtime.async_configuration_updated()
 
@@ -553,6 +560,7 @@ async def websocket_add_scheduled_moment(
         runtime.engine.add_scheduled_moment(
             msg["day_type_id"],
             scheduled_moment,
+            modified_by=connection.user.name or connection.user.id,
         )
 
         await runtime.async_configuration_updated()
@@ -604,6 +612,7 @@ async def websocket_remove_scheduled_moment(
         runtime.engine.remove_scheduled_moment(
             msg["day_type_id"],
             msg["moment_id"],
+            modified_by=connection.user.name or connection.user.id,
         )
 
         await runtime.async_configuration_updated()
@@ -670,7 +679,10 @@ async def websocket_add_week_schedule(
     )
 
     try:
-        runtime.engine.add_week_schedule(week_schedule)
+        runtime.engine.add_week_schedule(
+            week_schedule,
+            modified_by=connection.user.name or connection.user.id,
+        )
 
         await runtime.async_configuration_updated()
 
@@ -743,7 +755,10 @@ async def websocket_update_week_schedule(
     )
 
     try:
-        runtime.engine.update_week_schedule(week_schedule)
+        runtime.engine.update_week_schedule(
+            week_schedule,
+            modified_by=connection.user.name or connection.user.id,
+        )
 
         await runtime.async_configuration_updated()
 
@@ -871,7 +886,10 @@ async def websocket_add_cycle(
     )
 
     try:
-        runtime.engine.add_cycle(cycle)
+        runtime.engine.add_cycle(
+            cycle,
+            modified_by=connection.user.name or connection.user.id,
+        )
 
         await runtime.async_configuration_updated()
 
@@ -944,7 +962,10 @@ async def websocket_update_cycle(
     )
 
     try:
-        runtime.engine.update_cycle(cycle)
+        runtime.engine.update_cycle(
+            cycle,
+            modified_by=connection.user.name or connection.user.id,
+        )
 
         await runtime.async_configuration_updated()
 
@@ -1052,7 +1073,10 @@ async def websocket_add_calendar_exception(
     )
 
     try:
-        runtime.engine.add_calendar_exception(calendar_exception)
+        runtime.engine.add_calendar_exception(
+            calendar_exception,
+            modified_by=connection.user.name or connection.user.id,
+        )
 
         await runtime.async_configuration_updated()
 
@@ -1115,7 +1139,10 @@ async def websocket_update_calendar_exception(
     )
 
     try:
-        runtime.engine.update_calendar_exception(calendar_exception)
+        runtime.engine.update_calendar_exception(
+            calendar_exception,
+            modified_by=connection.user.name or connection.user.id,
+        )
 
         await runtime.async_configuration_updated()
 
@@ -1235,7 +1262,10 @@ async def websocket_add_moment_action(
             ),
         )
 
-        runtime.engine.update_moment(updated_moment)
+        runtime.engine.update_moment(
+            updated_moment,
+            modified_by=connection.user.name or connection.user.id,
+        )
 
         await runtime.async_configuration_updated()
 
@@ -1315,7 +1345,10 @@ async def websocket_update_moment_action(
             actions=actions,
         )
 
-        runtime.engine.update_moment(updated_moment)
+        runtime.engine.update_moment(
+            updated_moment,
+            modified_by=connection.user.name or connection.user.id,
+        )
 
         await runtime.async_configuration_updated()
 
@@ -1383,7 +1416,10 @@ async def websocket_remove_moment_action(
             actions=actions,
         )
 
-        runtime.engine.update_moment(updated_moment)
+        runtime.engine.update_moment(
+            updated_moment,
+            modified_by=connection.user.name or connection.user.id,
+        )
 
         await runtime.async_configuration_updated()
 
@@ -1438,7 +1474,10 @@ async def websocket_add_moment(
             actions=(),
         )
 
-        runtime.engine.add_moment(moment)
+        runtime.engine.add_moment(
+            moment,
+            modified_by=connection.user.name or connection.user.id,
+        )
 
         await runtime.async_configuration_updated()
 
@@ -1492,7 +1531,10 @@ async def websocket_update_moment(
             actions=current.actions,
         )
 
-        runtime.engine.update_moment(updated_moment)
+        runtime.engine.update_moment(
+            updated_moment,
+            modified_by=connection.user.name or connection.user.id,
+        )
 
         await runtime.async_configuration_updated()
 

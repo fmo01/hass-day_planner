@@ -2902,6 +2902,20 @@ class DayPlannerCard extends HTMLElement {
             'errors.invalid_week_count',
             'Un cycle doit contenir entre 1 et 4 semaines types.'
           ) ?? 'Un cycle doit contenir entre 1 et 4 semaines types.';
+      } else if (message.startsWith('Maximum number of cycles exceeded:')) {
+        const maxCycles = Number(
+          message.split(':').pop().trim()
+        );
+
+        this._error = Number.isFinite(maxCycles)
+          ? `${this._i18n?.t(
+              'errors.max_cycles_reached',
+              'Nombre maximal de cycles atteint'
+            ) ?? 'Nombre maximal de cycles atteint'} : ${maxCycles}.`
+          : this._i18n?.t(
+              'errors.max_cycles_reached',
+              'Nombre maximal de cycles atteint'
+            ) ?? 'Nombre maximal de cycles atteint';
       } else if (message.startsWith('Duplicate cycle start date:')) {
         this._error =
           this._i18n?.t(

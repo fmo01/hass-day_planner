@@ -84,3 +84,10 @@ DEFAULT_SHOW_SIDEBAR_PANEL = True
 PANEL_URL_PATH = "day-planner"
 PANEL_ICON = "mdi:calendar-clock"
 PANEL_COMPONENT_NAME = "day-planner-panel"
+
+# Recorded before a script service call, with the SAME Context as the script.
+# Logbook uses this event to attribute entity state changes to Day Planner.
+EVENT_DAY_PLANNER_ACTION = "day_planner_action"
+
+# Emitted only when the action reports an anomaly (no success entry duplication).
+EVENT_DAY_PLANNER_ACTION_RESULT = "day_planner_action_result"

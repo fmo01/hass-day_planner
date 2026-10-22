@@ -204,7 +204,10 @@ class DayPlannerOptionsFlow(
                 actions=(),
             )
 
-            runtime.engine.add_moment(moment)
+            runtime.engine.add_moment(
+                moment,
+                modified_by="system",
+            )
 
             await runtime.async_configuration_updated()
 
@@ -283,7 +286,10 @@ class DayPlannerOptionsFlow(
                 actions=moment.actions,
             )
 
-            runtime.engine.update_moment(updated_moment)
+            runtime.engine.update_moment(
+                updated_moment,
+                modified_by="system",
+            )
 
             await runtime.async_configuration_updated()
 
@@ -476,7 +482,10 @@ class DayPlannerOptionsFlow(
                 scheduled_moments=(),
             )
 
-            runtime.engine.add_day_type(day_type)
+            runtime.engine.add_day_type(
+                day_type,
+                modified_by="system",
+            )
 
             await runtime.async_configuration_updated()
 
@@ -553,7 +562,10 @@ class DayPlannerOptionsFlow(
                 scheduled_moments=day_type.scheduled_moments,
             )
 
-            runtime.engine.update_day_type(updated_day_type)
+            runtime.engine.update_day_type(
+                updated_day_type,
+                modified_by="system",
+            )
 
             await runtime.async_configuration_updated()
 
@@ -746,6 +758,7 @@ class DayPlannerOptionsFlow(
             runtime.engine.add_scheduled_moment(
                 self._selected_scheduled_day_type_id,
                 scheduled_moment,
+                modified_by="system",
             )
 
             await runtime.async_configuration_updated()
@@ -857,6 +870,7 @@ class DayPlannerOptionsFlow(
             runtime.engine.update_scheduled_moment(
                 self._selected_scheduled_day_type_id,
                 updated,
+                modified_by="system",
             )
 
             await runtime.async_configuration_updated()
@@ -961,6 +975,7 @@ class DayPlannerOptionsFlow(
             runtime.engine.remove_scheduled_moment(
                 self._selected_scheduled_day_type_id,
                 self._selected_remove_scheduled_moment_id,
+                modified_by="system",
             )
 
             await runtime.async_configuration_updated()
@@ -999,7 +1014,10 @@ class DayPlannerOptionsFlow(
                 sunday=user_input["sunday"],
             )
 
-            runtime.engine.add_week_schedule(week_schedule)
+            runtime.engine.add_week_schedule(
+                week_schedule,
+                modified_by="system",
+            )
 
             await runtime.async_configuration_updated()
 
@@ -1104,7 +1122,10 @@ class DayPlannerOptionsFlow(
                 sunday=user_input["sunday"],
             )
 
-            runtime.engine.update_week_schedule(updated)
+            runtime.engine.update_week_schedule(
+                updated,
+                modified_by="system",
+            )
 
             await runtime.async_configuration_updated()
 
@@ -1285,7 +1306,10 @@ class DayPlannerOptionsFlow(
             )
 
             try:
-                runtime.engine.add_cycle(cycle)
+                runtime.engine.add_cycle(
+                    cycle,
+                    modified_by="system",
+                )
             except ValidationError:
                 return self.async_show_form(
                     step_id="add_cycle",
@@ -1404,7 +1428,10 @@ class DayPlannerOptionsFlow(
                 week_schedule_ids=tuple(user_input["week_schedule_ids"]),
             )
 
-            runtime.engine.update_cycle(updated)
+            runtime.engine.update_cycle(
+                updated,
+                modified_by="system",
+            )
 
             await runtime.async_configuration_updated()
 
@@ -1548,7 +1575,10 @@ class DayPlannerOptionsFlow(
                 description=user_input.get("description") or None,
             )
 
-            runtime.engine.add_calendar_exception(calendar_exception)
+            runtime.engine.add_calendar_exception(
+                calendar_exception,
+                modified_by="system",
+            )
 
             await runtime.async_configuration_updated()
 
@@ -1647,7 +1677,10 @@ class DayPlannerOptionsFlow(
                 description=user_input.get("description") or None,
             )
 
-            runtime.engine.update_calendar_exception(updated)
+            runtime.engine.update_calendar_exception(
+                updated,
+                modified_by="system",
+            )
 
             await runtime.async_configuration_updated()
 
@@ -1883,7 +1916,10 @@ class DayPlannerOptionsFlow(
                 ),
             )
 
-            runtime.engine.update_moment(updated_moment)
+            runtime.engine.update_moment(
+                updated_moment,
+                modified_by="system",
+            )
 
             await runtime.async_configuration_updated()
 
@@ -1991,7 +2027,10 @@ class DayPlannerOptionsFlow(
                 actions=actions,
             )
 
-            runtime.engine.update_moment(updated_moment)
+            runtime.engine.update_moment(
+                updated_moment,
+                modified_by="system",
+            )
 
             await runtime.async_configuration_updated()
 
@@ -2090,7 +2129,10 @@ class DayPlannerOptionsFlow(
                 actions=actions,
             )
 
-            runtime.engine.update_moment(updated_moment)
+            runtime.engine.update_moment(
+                updated_moment,
+                modified_by="system",
+            )
 
             await runtime.async_configuration_updated()
 

@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from .metadata import Audit
+
 
 @dataclass(frozen=True, slots=True)
 class WeekSchedule:
@@ -15,11 +17,12 @@ class WeekSchedule:
     friday: str
     saturday: str
     sunday: str
+    audit: Audit | None = None
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> dict:
         """Serialize object."""
 
-        return {
+        data = {
             "id": self.id,
             "name": self.name,
             "monday": self.monday,
@@ -31,12 +34,19 @@ class WeekSchedule:
             "sunday": self.sunday,
         }
 
+        if self.audit is not None:
+            data["audit"] = self.audit.to_dict()
+
+        return data
+
     @classmethod
     def from_dict(
         cls,
-        data: dict[str, str],
+        data: dict,
     ) -> "WeekSchedule":
         """Deserialize object."""
+
+        audit_data = data.get("audit")
 
         return cls(
             id=data["id"],
@@ -48,4 +58,5 @@ class WeekSchedule:
             friday=data["friday"],
             saturday=data["saturday"],
             sunday=data["sunday"],
+            audit=(Audit.from_dict(audit_data) if audit_data is not None else None),
         )

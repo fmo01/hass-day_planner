@@ -351,6 +351,9 @@ def test_options_flow_add_moment_create():
         )
 
         assert result == {"type": "create_entry"}
+        assert runtime.engine.add_moment.call_args.kwargs == {
+            "modified_by": "system",
+        }
 
     asyncio.run(run())
 
@@ -526,6 +529,10 @@ def test_options_flow_edit_moment_details_create():
 
         assert result == {
             "type": "create_entry",
+        }
+
+        assert runtime.engine.update_moment.call_args.kwargs == {
+            "modified_by": "system",
         }
 
     asyncio.run(run())
@@ -828,6 +835,10 @@ def test_options_flow_add_day_type_create():
 
         assert result == {"type": "create_entry"}
 
+        assert runtime.engine.add_day_type.call_args.kwargs == {
+            "modified_by": "system",
+        }
+
     asyncio.run(run())
 
 
@@ -961,6 +972,9 @@ def test_options_flow_edit_day_type_details_create():
         runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
+        assert runtime.engine.update_day_type.call_args.kwargs == {
+            "modified_by": "system",
+        }
 
     asyncio.run(run())
 
@@ -1278,6 +1292,10 @@ def test_options_flow_add_scheduled_moment_create():
 
         assert result == {"type": "create_entry"}
 
+        assert runtime.engine.add_scheduled_moment.call_args.kwargs == {
+            "modified_by": "system",
+        }
+
     asyncio.run(run())
 
 
@@ -1452,6 +1470,9 @@ def test_options_flow_edit_scheduled_moment_details_create():
         runtime.async_configuration_updated.assert_awaited_once_with()
 
         assert result == {"type": "create_entry"}
+        assert runtime.engine.update_scheduled_moment.call_args.kwargs == {
+            "modified_by": "system",
+        }
 
     asyncio.run(run())
 
@@ -1636,6 +1657,7 @@ def test_options_flow_remove_scheduled_moment_confirmed():
         runtime.engine.remove_scheduled_moment.assert_called_once_with(
             "work",
             "wake_up",
+            modified_by="system",
         )
 
         runtime.async_configuration_updated.assert_awaited_once_with()
@@ -1796,6 +1818,10 @@ def test_options_flow_add_week_schedule_create():
         )
 
         week_schedule = runtime.engine.add_week_schedule.call_args.args[0]
+
+        assert runtime.engine.add_week_schedule.call_args.kwargs == {
+            "modified_by": "system",
+        }
 
         assert week_schedule.id == "week1"
         assert week_schedule.name == "Semaine 1"
@@ -1970,6 +1996,10 @@ def test_options_flow_edit_week_schedule_details_create():
         )
 
         updated = runtime.engine.update_week_schedule.call_args.args[0]
+
+        assert runtime.engine.update_week_schedule.call_args.kwargs == {
+            "modified_by": "system",
+        }
 
         assert updated.id == "week1"
         assert updated.name == "Semaine modifiée"
@@ -2305,6 +2335,10 @@ def test_options_flow_add_cycle_create():
 
         cycle = runtime.engine.add_cycle.call_args.args[0]
 
+        assert runtime.engine.add_cycle.call_args.kwargs == {
+            "modified_by": "system",
+        }
+
         assert cycle.id == "alternating"
         assert cycle.name == "Alternance"
         assert cycle.start_date == date(2026, 8, 31)
@@ -2485,6 +2519,10 @@ def test_options_flow_edit_cycle_details_create():
         )
 
         cycle = runtime.engine.update_cycle.call_args.args[0]
+
+        assert runtime.engine.update_cycle.call_args.kwargs == {
+            "modified_by": "system",
+        }
 
         assert cycle.id == "alternating"
         assert cycle.name == "Nouvelle alternance"
@@ -2847,6 +2885,10 @@ def test_options_flow_add_calendar_exception_create():
 
         calendar_exception = runtime.engine.add_calendar_exception.call_args.args[0]
 
+        assert runtime.engine.add_calendar_exception.call_args.kwargs == {
+            "modified_by": "system",
+        }
+
         assert calendar_exception.id == "holiday"
         assert calendar_exception.date == date(2026, 12, 25)
         assert calendar_exception.day_type_id == "work"
@@ -2993,6 +3035,10 @@ def test_options_flow_edit_calendar_exception_details_create():
         )
 
         updated = runtime.engine.update_calendar_exception.call_args.args[0]
+
+        assert runtime.engine.update_calendar_exception.call_args.kwargs == {
+            "modified_by": "system",
+        }
 
         assert updated.id == "holiday"
         assert updated.date == date(2026, 12, 26)
@@ -3389,6 +3435,10 @@ def test_options_flow_add_moment_action_create():
             "type": "create_entry",
         }
 
+        assert runtime.engine.update_moment.call_args.kwargs == {
+            "modified_by": "system",
+        }
+
     asyncio.run(run())
 
 
@@ -3638,6 +3688,10 @@ def test_options_flow_edit_moment_action_details_create():
             "type": "create_entry",
         }
 
+        assert runtime.engine.update_moment.call_args.kwargs == {
+            "modified_by": "system",
+        }
+
     asyncio.run(run())
 
 
@@ -3862,6 +3916,9 @@ def test_options_flow_remove_moment_action_confirmed():
 
         assert result == {
             "type": "create_entry",
+        }
+        assert runtime.engine.update_moment.call_args.kwargs == {
+            "modified_by": "system",
         }
 
     asyncio.run(run())

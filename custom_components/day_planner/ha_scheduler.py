@@ -1,5 +1,6 @@
 """Home Assistant scheduler for Day Planner."""
 
+import logging
 from collections.abc import Callable
 from datetime import datetime
 
@@ -9,6 +10,8 @@ from homeassistant.util import dt as dt_util
 
 from .action_executor import ActionExecutor
 from .planner.scheduler import PlannerScheduler
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class HomeAssistantScheduler:
@@ -35,10 +38,12 @@ class HomeAssistantScheduler:
         self.cancel()
 
         now = dt_util.now()
+        _LOGGER.debug("Recherche du prochain événement Day Planner à partir de %s", now)
 
         event = self._scheduler.next_event(now)
 
         if event is None:
+            _LOGGER.info("Aucun prochain événement Day Planner à programmer")
             return
         scheduled_at = event.scheduled_at
 
@@ -46,6 +51,11 @@ class HomeAssistantScheduler:
             scheduled_at = scheduled_at.replace(tzinfo=now.tzinfo)
 
         events = self._scheduler.events_at(scheduled_at)
+        _LOGGER.info(
+            "Programmation Day Planner : %s, %d moment(s)",
+            scheduled_at.isoformat(),
+            len(events),
+        )
 
         executed = False
 
@@ -57,6 +67,7 @@ class HomeAssistantScheduler:
             nonlocal executed
 
             if executed:
+                _LOGGER.debug("Événement Day Planner déjà exécuté à %s", scheduled_at)
                 return
 
             executed = True
@@ -64,9 +75,20 @@ class HomeAssistantScheduler:
 
             try:
                 for scheduled_event in events:
+                    _LOGGER.debug(
+                        "Déclenchement planifié : moment='%s', date=%s",
+                        scheduled_event.moment.id,
+                        scheduled_at.isoformat(),
+                    )
                     await self._action_executor.async_execute_moment(
                         scheduled_event.moment
                     )
+            except Exception:
+                _LOGGER.exception(
+                    "Échec inattendu du déclenchement Day Planner à %s",
+                    scheduled_at.isoformat(),
+                )
+                raise
             finally:
                 await self.async_schedule_next()
 
@@ -82,5 +104,6 @@ class HomeAssistantScheduler:
         if self._cancel is None:
             return
 
+        _LOGGER.debug("Annulation de la programmation précédente Day Planner")
         self._cancel()
         self._cancel = None

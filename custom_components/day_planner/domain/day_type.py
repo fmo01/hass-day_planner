@@ -1,5 +1,8 @@
+"""Day type model."""
+
 from dataclasses import dataclass
 
+from .metadata import Audit
 from .scheduled_moment import ScheduledMoment
 
 
@@ -10,15 +13,21 @@ class DayType:
     id: str
     name: str
     scheduled_moments: tuple[ScheduledMoment, ...]
+    audit: Audit | None = None
 
     def to_dict(self) -> dict:
         """Serialize object."""
 
-        return {
+        data = {
             "id": self.id,
             "name": self.name,
             "scheduled_moments": [item.to_dict() for item in self.scheduled_moments],
         }
+
+        if self.audit is not None:
+            data["audit"] = self.audit.to_dict()
+
+        return data
 
     @classmethod
     def from_dict(
@@ -26,6 +35,8 @@ class DayType:
         data: dict,
     ) -> "DayType":
         """Deserialize object."""
+
+        audit_data = data.get("audit")
 
         return cls(
             id=str(data["id"]),
@@ -37,4 +48,5 @@ class DayType:
                     [],
                 )
             ),
+            audit=(Audit.from_dict(audit_data) if audit_data is not None else None),
         )

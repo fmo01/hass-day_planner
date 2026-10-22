@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import Callable
+from dataclasses import replace
 from datetime import date, datetime, time
 from typing import Any
 
@@ -60,6 +61,24 @@ def _get_runtime(
     return entry.runtime_data
 
 
+async def _async_get_actor_name(
+    call: ServiceCall,
+) -> str:
+    """Return the Home Assistant user display name."""
+
+    user_id = call.context.user_id
+
+    if user_id is None:
+        return "system"
+
+    user = await call.hass.auth.async_get_user(user_id)
+
+    if user is not None and user.name:
+        return user.name
+
+    return user_id
+
+
 async def _execute(
     operation: Callable[[], Any],
     runtime: DayPlannerRuntimeData,
@@ -99,6 +118,8 @@ async def async_setup_services(
 
         runtime = _get_runtime(call.hass)
 
+        modified_by = await _async_get_actor_name(call)
+
         moment = Moment(
             id=call.data["id"],
             name=call.data["name"],
@@ -117,7 +138,10 @@ async def async_setup_services(
         )
 
         await _execute(
-            lambda: runtime.engine.add_moment(moment),
+            lambda: runtime.engine.add_moment(
+                moment,
+                modified_by=modified_by,
+            ),
             runtime=runtime,
             description=f"Unable to add moment '{moment.id}'",
         )
@@ -128,6 +152,8 @@ async def async_setup_services(
         """Update a moment."""
 
         runtime = _get_runtime(hass)
+
+        modified_by = await _async_get_actor_name(call)
 
         current_moment = runtime.engine.get_moment(call.data["id"])
 
@@ -154,7 +180,10 @@ async def async_setup_services(
         )
 
         await _execute(
-            lambda: runtime.engine.update_moment(moment),
+            lambda: runtime.engine.update_moment(
+                moment,
+                modified_by=modified_by,
+            ),
             runtime=runtime,
             description=f"Unable to update moment '{moment.id}'",
         )
@@ -185,6 +214,8 @@ async def async_setup_services(
             call.hass,
         )
 
+        modified_by = await _async_get_actor_name(call)
+
         day_type = DayType(
             id=call.data["id"],
             name=call.data["name"],
@@ -194,6 +225,7 @@ async def async_setup_services(
         await _execute(
             operation=lambda: runtime.engine.add_day_type(
                 day_type,
+                modified_by=modified_by,
             ),
             runtime=runtime,
             description=f"Unable to add day type '{day_type.id}'",
@@ -202,24 +234,34 @@ async def async_setup_services(
     async def update_day_type(
         call: ServiceCall,
     ) -> None:
-        """Update a day type."""
+        """Update a day type without losing scheduled moments."""
 
         runtime = _get_runtime(
             call.hass,
         )
 
-        day_type = DayType(
-            id=call.data["id"],
-            name=call.data["name"],
-            scheduled_moments=(),
-        )
+        day_type_id = call.data["id"]
+        modified_by = await _async_get_actor_name(call)
+
+        def operation() -> None:
+            current = runtime.engine.get_day_type(
+                day_type_id,
+            )
+
+            updated_day_type = replace(
+                current,
+                name=call.data["name"],
+            )
+
+            runtime.engine.update_day_type(
+                updated_day_type,
+                modified_by=modified_by,
+            )
 
         await _execute(
-            operation=lambda: runtime.engine.update_day_type(
-                day_type,
-            ),
+            operation=operation,
             runtime=runtime,
-            description=f"Unable to update day type '{day_type.id}'",
+            description=f"Unable to update day type '{day_type_id}'",
         )
 
     async def remove_day_type(
@@ -254,6 +296,8 @@ async def async_setup_services(
             call.hass,
         )
 
+        modified_by = await _async_get_actor_name(call)
+
         scheduled_moment = ScheduledMoment(
             moment_id=call.data["moment_id"],
             time_definition=TimeDefinition(
@@ -265,6 +309,7 @@ async def async_setup_services(
             operation=lambda: runtime.engine.add_scheduled_moment(
                 call.data["day_type_id"],
                 scheduled_moment,
+                modified_by=modified_by,
             ),
             runtime=runtime,
             description=(
@@ -283,6 +328,8 @@ async def async_setup_services(
             call.hass,
         )
 
+        modified_by = await _async_get_actor_name(call)
+
         scheduled_moment = ScheduledMoment(
             moment_id=call.data["moment_id"],
             time_definition=TimeDefinition(
@@ -294,6 +341,7 @@ async def async_setup_services(
             operation=lambda: runtime.engine.update_scheduled_moment(
                 call.data["day_type_id"],
                 scheduled_moment,
+                modified_by=modified_by,
             ),
             runtime=runtime,
             description=(
@@ -312,10 +360,13 @@ async def async_setup_services(
             call.hass,
         )
 
+        modified_by = await _async_get_actor_name(call)
+
         await _execute(
             operation=lambda: runtime.engine.remove_scheduled_moment(
                 call.data["day_type_id"],
                 call.data["moment_id"],
+                modified_by=modified_by,
             ),
             runtime=runtime,
             description=(
@@ -338,6 +389,8 @@ async def async_setup_services(
             call.hass,
         )
 
+        modified_by = await _async_get_actor_name(call)
+
         week_schedule = WeekSchedule(
             id=call.data["id"],
             name=call.data["name"],
@@ -353,6 +406,7 @@ async def async_setup_services(
         await _execute(
             operation=lambda: runtime.engine.add_week_schedule(
                 week_schedule,
+                modified_by=modified_by,
             ),
             runtime=runtime,
             description=f"Unable to add week schedule '{week_schedule.id}'",
@@ -366,6 +420,8 @@ async def async_setup_services(
         runtime = _get_runtime(
             call.hass,
         )
+
+        modified_by = await _async_get_actor_name(call)
 
         week_schedule = WeekSchedule(
             id=call.data["id"],
@@ -382,6 +438,7 @@ async def async_setup_services(
         await _execute(
             operation=lambda: runtime.engine.update_week_schedule(
                 week_schedule,
+                modified_by=modified_by,
             ),
             runtime=runtime,
             description=f"Unable to update week schedule '{week_schedule.id}'",
@@ -417,6 +474,8 @@ async def async_setup_services(
             call.hass,
         )
 
+        modified_by = await _async_get_actor_name(call)
+
         cycle = Cycle(
             id=call.data["id"],
             name=call.data["name"],
@@ -427,6 +486,7 @@ async def async_setup_services(
         await _execute(
             operation=lambda: runtime.engine.add_cycle(
                 cycle,
+                modified_by=modified_by,
             ),
             runtime=runtime,
             description=f"Unable to add cycle '{cycle.id}'",
@@ -441,6 +501,8 @@ async def async_setup_services(
             call.hass,
         )
 
+        modified_by = await _async_get_actor_name(call)
+
         cycle = Cycle(
             id=call.data["id"],
             name=call.data["name"],
@@ -451,6 +513,7 @@ async def async_setup_services(
         await _execute(
             operation=lambda: runtime.engine.update_cycle(
                 cycle,
+                modified_by=modified_by,
             ),
             runtime=runtime,
             description=f"Unable to update cycle '{cycle.id}'",
@@ -488,6 +551,8 @@ async def async_setup_services(
             call.hass,
         )
 
+        modified_by = await _async_get_actor_name(call)
+
         calendar_exception = CalendarException(
             id=call.data["id"],
             date=date.fromisoformat(
@@ -505,6 +570,7 @@ async def async_setup_services(
         await _execute(
             operation=lambda: runtime.engine.add_calendar_exception(
                 calendar_exception,
+                modified_by=modified_by,
             ),
             runtime=runtime,
             description=f"Unable to add calendar exception '{calendar_exception.id}'",
@@ -518,6 +584,8 @@ async def async_setup_services(
         runtime = _get_runtime(
             call.hass,
         )
+
+        modified_by = await _async_get_actor_name(call)
 
         calendar_exception = CalendarException(
             id=call.data["id"],
@@ -536,6 +604,7 @@ async def async_setup_services(
         await _execute(
             operation=lambda: runtime.engine.update_calendar_exception(
                 calendar_exception,
+                modified_by=modified_by,
             ),
             runtime=runtime,
             description=f"Unable to update calendar exception '{calendar_exception.id}'",

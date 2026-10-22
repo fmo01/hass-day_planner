@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import date, time
 
 import pytest
@@ -49,7 +50,17 @@ def test_engine_add_moment(moment):
 
     engine.add_moment(moment)
 
-    assert engine.configuration.moments == (moment,)
+    result = engine.get_moment(moment.id)
+
+    assert result.id == moment.id
+    assert result.name == moment.name
+    assert result.icon == moment.icon
+    assert result.actions == moment.actions
+
+    assert result.audit is not None
+    assert result.audit.created_by == "system"
+    assert result.audit.modified_by == "system"
+    assert result.audit.created_at == result.audit.modified_at
 
 
 def test_engine_update_moment(
@@ -72,7 +83,15 @@ def test_engine_update_moment(
     )
     engine.update_moment(updated_moment)
 
-    assert engine.configuration.moments == (updated_moment,)
+    result = engine.get_moment(updated_moment.id)
+
+    assert result.id == updated_moment.id
+    assert result.name == updated_moment.name
+    assert result.icon == updated_moment.icon
+
+    assert result.audit is not None
+    assert result.audit.created_by == "system"
+    assert result.audit.modified_by == "system"
 
 
 def test_engine_add_moment_with_action():
@@ -99,7 +118,12 @@ def test_engine_add_moment_with_action():
 
     engine.add_moment(moment)
 
-    assert engine.get_moment("m1") == moment
+    result = engine.get_moment("m1")
+
+    assert result.id == moment.id
+    assert result.name == moment.name
+    assert result.actions == moment.actions
+    assert result.audit is not None
     assert engine.get_moment("m1").actions == (action,)
 
 
@@ -212,7 +236,17 @@ def test_engine_add_day_type(day_type):
 
     engine.add_day_type(day_type)
 
-    assert engine.configuration.day_types == (day_type,)
+    result = engine.get_day_type(day_type.id)
+
+    assert result.id == day_type.id
+    assert result.name == day_type.name
+    assert result.scheduled_moments == day_type.scheduled_moments
+
+    assert result.audit is not None
+    assert result.audit.created_by == "system"
+    assert result.audit.modified_by == "system"
+    assert result.audit.created_at == result.audit.modified_at
+    assert result.audit.created_at.tzinfo is not None
 
 
 def test_engine_update_day_type(day_type):
@@ -234,7 +268,17 @@ def test_engine_update_day_type(day_type):
 
     engine.update_day_type(updated_day_type)
 
-    assert engine.configuration.day_types == (updated_day_type,)
+    result = engine.get_day_type(day_type.id)
+
+    assert result.id == updated_day_type.id
+    assert result.name == updated_day_type.name
+    assert result.scheduled_moments == updated_day_type.scheduled_moments
+
+    assert result.audit is not None
+    assert result.audit.created_by == "system"
+    assert result.audit.modified_by == "system"
+    assert result.audit.created_at == result.audit.modified_at
+    assert result.audit.created_at.tzinfo is not None
 
 
 def test_engine_remove_day_type(day_type):
@@ -386,7 +430,23 @@ def test_engine_add_week_schedule(
 
     engine.add_week_schedule(week_schedule)
 
-    assert engine.configuration.week_schedules == (week_schedule,)
+    result = engine.get_week_schedule(week_schedule.id)
+
+    assert result.id == week_schedule.id
+    assert result.name == week_schedule.name
+
+    assert result.monday == week_schedule.monday
+    assert result.tuesday == week_schedule.tuesday
+    assert result.wednesday == week_schedule.wednesday
+    assert result.thursday == week_schedule.thursday
+    assert result.friday == week_schedule.friday
+    assert result.saturday == week_schedule.saturday
+    assert result.sunday == week_schedule.sunday
+
+    assert result.audit is not None
+    assert result.audit.created_by == "system"
+    assert result.audit.modified_by == "system"
+    assert result.audit.created_at == result.audit.modified_at
 
 
 def test_engine_update_week_schedule(
@@ -417,7 +477,18 @@ def test_engine_update_week_schedule(
 
     engine.update_week_schedule(updated)
 
-    assert engine.configuration.week_schedules == (updated,)
+    result = engine.get_week_schedule(updated.id)
+
+    assert result.id == updated.id
+    assert result.name == "Semaine modifiée"
+
+    assert result.monday == updated.monday
+    assert result.sunday == updated.sunday
+
+    assert result.audit is not None
+    assert result.audit.created_by == "system"
+    assert result.audit.modified_by == "system"
+    assert result.audit.created_at == result.audit.modified_at
 
 
 def test_engine_remove_week_schedule(
@@ -488,10 +559,13 @@ def test_engine_custom_max_cycles(
     engine.add_cycle(cycle_2)
 
     assert engine.max_cycles == 2
-    assert engine.configuration.cycles == (
-        cycle_1,
-        cycle_2,
-    )
+    stored_cycles = engine.configuration.cycles
+
+    assert len(stored_cycles) == 2
+
+    assert tuple(cycle.id for cycle in stored_cycles) == ("c1", "c2")
+
+    assert all(cycle.audit is not None for cycle in stored_cycles)
 
 
 def test_engine_max_cycles_exceeded(
@@ -539,10 +613,13 @@ def test_engine_max_cycles_exceeded(
     ):
         engine.add_cycle(cycle_3)
 
-    assert engine.configuration.cycles == (
-        cycle_1,
-        cycle_2,
-    )
+    stored_cycles = engine.configuration.cycles
+
+    assert len(stored_cycles) == 2
+
+    assert tuple(cycle.id for cycle in stored_cycles) == ("c1", "c2")
+
+    assert all(cycle.audit is not None for cycle in stored_cycles)
 
 
 def test_engine_get_cycle(cycle, week_schedule, day_type):
@@ -586,7 +663,17 @@ def test_engine_add_cycle(
 
     engine.add_cycle(cycle)
 
-    assert engine.get_cycle(cycle.id) == cycle
+    result = engine.get_cycle(cycle.id)
+
+    assert result.id == cycle.id
+    assert result.name == cycle.name
+    assert result.start_date == cycle.start_date
+    assert result.week_schedule_ids == cycle.week_schedule_ids
+
+    assert result.audit is not None
+    assert result.audit.created_by == "system"
+    assert result.audit.modified_by == "system"
+    assert result.audit.created_at == result.audit.modified_at
 
 
 def test_engine_update_cycle(
@@ -613,7 +700,17 @@ def test_engine_update_cycle(
 
     engine.update_cycle(updated)
 
-    assert engine.get_cycle(cycle.id) == updated
+    result = engine.get_cycle(cycle.id)
+
+    assert result.id == updated.id
+    assert result.name == updated.name
+    assert result.start_date == updated.start_date
+    assert result.week_schedule_ids == updated.week_schedule_ids
+
+    assert result.audit is not None
+    assert result.audit.created_by == "system"
+    assert result.audit.modified_by == "system"
+    assert result.audit.created_at == result.audit.modified_at
 
 
 def test_engine_remove_cycle(
@@ -674,7 +771,11 @@ def test_engine_add_cycle_with_week_schedule(
 
     engine.add_cycle(cycle)
 
-    assert engine.get_cycle(cycle.id) == cycle
+    result = engine.get_cycle(cycle.id)
+
+    assert result.id == cycle.id
+    assert result.week_schedule_ids == cycle.week_schedule_ids
+    assert result.audit is not None
 
 
 def test_engine_add_cycle_unknown_week_schedule():
@@ -739,7 +840,19 @@ def test_engine_add_calendar_exception(
 
     engine.add_calendar_exception(calendar_exception)
 
-    assert engine.get_calendar_exception(calendar_exception.id) == calendar_exception
+    result = engine.get_calendar_exception(
+        calendar_exception.id,
+    )
+
+    assert result.id == calendar_exception.id
+    assert result.date == calendar_exception.date
+    assert result.day_type_id == calendar_exception.day_type_id
+    assert result.description == calendar_exception.description
+
+    assert result.audit is not None
+    assert result.audit.created_by == "system"
+    assert result.audit.modified_by == "system"
+    assert result.audit.created_at == result.audit.modified_at
 
 
 def test_engine_update_calendar_exception(
@@ -765,7 +878,19 @@ def test_engine_update_calendar_exception(
 
     engine.update_calendar_exception(updated)
 
-    assert engine.get_calendar_exception(calendar_exception.id) == updated
+    result = engine.get_calendar_exception(
+        calendar_exception.id,
+    )
+
+    assert result.id == updated.id
+    assert result.date == updated.date
+    assert result.day_type_id == updated.day_type_id
+    assert result.description == updated.description
+
+    assert result.audit is not None
+    assert result.audit.created_by == "system"
+    assert result.audit.modified_by == "system"
+    assert result.audit.created_at == result.audit.modified_at
 
 
 def test_engine_remove_calendar_exception(
@@ -1072,3 +1197,415 @@ def test_engine_remove_scheduled_moment_not_found(
             day_type.id,
             moment.id,
         )
+
+
+def test_day_type_audit_creation():
+    """Creating a day type initializes audit metadata."""
+
+    from custom_components.day_planner.domain.day_type import DayType
+    from custom_components.day_planner.domain.planner_configuration import \
+        PlannerConfiguration
+    from custom_components.day_planner.planner.engine import PlannerEngine
+
+    engine = PlannerEngine(PlannerConfiguration.empty())
+
+    engine.add_day_type(
+        DayType(
+            id="work",
+            name="Work",
+            scheduled_moments=(),
+        ),
+        modified_by="user_1",
+    )
+
+    audit = engine.get_day_type("work").audit
+
+    assert audit is not None
+    assert audit.created_by == "user_1"
+    assert audit.modified_by == "user_1"
+    assert audit.created_at == audit.modified_at
+    assert audit.created_at.tzinfo is not None
+
+
+def test_day_type_audit_update():
+    """Updating a day type preserves creation metadata."""
+
+    from custom_components.day_planner.domain.day_type import DayType
+    from custom_components.day_planner.domain.planner_configuration import \
+        PlannerConfiguration
+    from custom_components.day_planner.planner.engine import PlannerEngine
+
+    engine = PlannerEngine(PlannerConfiguration.empty())
+
+    engine.add_day_type(
+        DayType(
+            id="work",
+            name="Work",
+            scheduled_moments=(),
+        ),
+        modified_by="user_1",
+    )
+
+    original = engine.get_day_type("work")
+    original_audit = original.audit
+
+    assert original_audit is not None
+
+    engine.update_day_type(
+        DayType(
+            id="work",
+            name="Working day",
+            scheduled_moments=(),
+        ),
+        modified_by="user_2",
+    )
+
+    updated = engine.get_day_type("work")
+    audit = updated.audit
+
+    assert audit is not None
+    assert audit.created_by == "user_1"
+    assert audit.created_at == original_audit.created_at
+    assert audit.modified_by == "user_2"
+    assert audit.modified_at >= original_audit.modified_at
+
+
+def test_moment_audit_creation():
+    """A new moment receives creation audit metadata."""
+
+    engine = PlannerEngine(PlannerConfiguration.empty())
+
+    engine.add_moment(
+        Moment(
+            id="m_audit",
+            name="Réveil",
+        ),
+        modified_by="Utilisateur Test",
+    )
+
+    audit = engine.get_moment("m_audit").audit
+
+    assert audit is not None
+    assert audit.created_by == "Utilisateur Test"
+    assert audit.modified_by == "Utilisateur Test"
+    assert audit.created_at == audit.modified_at
+    assert audit.created_at.tzinfo is not None
+
+
+def test_moment_audit_update_preserves_creation():
+    """Updating a moment preserves its original creation audit."""
+
+    engine = PlannerEngine(PlannerConfiguration.empty())
+
+    engine.add_moment(
+        Moment(
+            id="m_audit",
+            name="Réveil",
+        ),
+        modified_by="Utilisateur Initial",
+    )
+
+    original_audit = engine.get_moment("m_audit").audit
+
+    assert original_audit is not None
+
+    engine.update_moment(
+        Moment(
+            id="m_audit",
+            name="Réveil modifié",
+        ),
+        modified_by="Utilisateur Secondaire",
+    )
+
+    updated = engine.get_moment("m_audit")
+    audit = updated.audit
+
+    assert updated.name == "Réveil modifié"
+    assert audit is not None
+
+    assert audit.created_by == "Utilisateur Initial"
+    assert audit.created_at == original_audit.created_at
+
+    assert audit.modified_by == "Utilisateur Secondaire"
+    assert audit.modified_at >= original_audit.modified_at
+
+
+def test_week_schedule_audit_creation(
+    day_type,
+    week_schedule,
+):
+    """New week schedule receives audit metadata."""
+
+    engine = PlannerEngine(
+        PlannerConfiguration(
+            moments=(),
+            day_types=(day_type,),
+            week_schedules=(),
+            cycles=(),
+            calendar_exceptions=(),
+        )
+    )
+
+    engine.add_week_schedule(
+        week_schedule,
+        modified_by="Utilisateur Initial",
+    )
+
+    result = engine.get_week_schedule(
+        week_schedule.id,
+    )
+
+    audit = result.audit
+
+    assert audit is not None
+    assert audit.created_by == "Utilisateur Initial"
+    assert audit.modified_by == "Utilisateur Initial"
+    assert audit.created_at == audit.modified_at
+    assert audit.created_at.tzinfo is not None
+
+
+def test_week_schedule_audit_update_preserves_creation(
+    day_type,
+    week_schedule,
+):
+    """Updating a week schedule preserves creation metadata."""
+
+    engine = PlannerEngine(
+        PlannerConfiguration(
+            moments=(),
+            day_types=(day_type,),
+            week_schedules=(),
+            cycles=(),
+            calendar_exceptions=(),
+        )
+    )
+
+    engine.add_week_schedule(
+        week_schedule,
+        modified_by="Utilisateur Initial",
+    )
+
+    original = engine.get_week_schedule(
+        week_schedule.id,
+    )
+
+    original_audit = original.audit
+
+    assert original_audit is not None
+
+    updated = replace(
+        original,
+        name="Semaine modifiée",
+    )
+
+    engine.update_week_schedule(
+        updated,
+        modified_by="Utilisateur Secondaire",
+    )
+
+    result = engine.get_week_schedule(
+        week_schedule.id,
+    )
+
+    audit = result.audit
+
+    assert result.name == "Semaine modifiée"
+    assert audit is not None
+
+    assert audit.created_by == "Utilisateur Initial"
+    assert audit.created_at == original_audit.created_at
+
+    assert audit.modified_by == "Utilisateur Secondaire"
+    assert audit.modified_at >= original_audit.modified_at
+
+    # The seven day references remain unchanged.
+    assert result.monday == original.monday
+    assert result.tuesday == original.tuesday
+    assert result.wednesday == original.wednesday
+    assert result.thursday == original.thursday
+    assert result.friday == original.friday
+    assert result.saturday == original.saturday
+    assert result.sunday == original.sunday
+
+
+def test_cycle_audit_creation(
+    cycle,
+    week_schedule,
+    day_type,
+):
+    """Creating a cycle initializes audit metadata."""
+
+    engine = PlannerEngine(
+        PlannerConfiguration(
+            moments=(),
+            day_types=(day_type,),
+            week_schedules=(week_schedule,),
+            cycles=(),
+            calendar_exceptions=(),
+        )
+    )
+
+    engine.add_cycle(
+        cycle,
+        modified_by="Utilisateur Initial",
+    )
+
+    result = engine.get_cycle(cycle.id)
+    audit = result.audit
+
+    assert audit is not None
+    assert audit.created_by == "Utilisateur Initial"
+    assert audit.modified_by == "Utilisateur Initial"
+    assert audit.created_at == audit.modified_at
+    assert audit.created_at.tzinfo is not None
+
+    assert result.start_date == cycle.start_date
+    assert result.week_schedule_ids == cycle.week_schedule_ids
+
+
+def test_cycle_audit_update_preserves_creation(
+    cycle,
+    week_schedule,
+    day_type,
+):
+    """Updating a cycle preserves creation metadata."""
+
+    engine = PlannerEngine(
+        PlannerConfiguration(
+            moments=(),
+            day_types=(day_type,),
+            week_schedules=(week_schedule,),
+            cycles=(),
+            calendar_exceptions=(),
+        )
+    )
+
+    engine.add_cycle(
+        cycle,
+        modified_by="Utilisateur Initial",
+    )
+
+    original = engine.get_cycle(cycle.id)
+    original_audit = original.audit
+
+    assert original_audit is not None
+
+    updated = replace(
+        original,
+        name="Cycle modifié",
+    )
+
+    engine.update_cycle(
+        updated,
+        modified_by="Utilisateur Secondaire",
+    )
+
+    result = engine.get_cycle(cycle.id)
+    audit = result.audit
+
+    assert result.name == "Cycle modifié"
+    assert audit is not None
+
+    assert audit.created_by == "Utilisateur Initial"
+    assert audit.created_at == original_audit.created_at
+
+    assert audit.modified_by == "Utilisateur Secondaire"
+    assert audit.modified_at >= original_audit.modified_at
+
+    assert result.start_date == original.start_date
+    assert result.week_schedule_ids == original.week_schedule_ids
+
+
+def test_calendar_exception_audit_creation(
+    calendar_exception,
+    day_type,
+):
+    """Creating an exception initializes audit metadata."""
+
+    engine = PlannerEngine(
+        PlannerConfiguration(
+            moments=(),
+            day_types=(day_type,),
+            week_schedules=(),
+            cycles=(),
+            calendar_exceptions=(),
+        )
+    )
+
+    engine.add_calendar_exception(
+        calendar_exception,
+        modified_by="Utilisateur Initial",
+    )
+
+    result = engine.get_calendar_exception(
+        calendar_exception.id,
+    )
+
+    audit = result.audit
+
+    assert audit is not None
+    assert audit.created_by == "Utilisateur Initial"
+    assert audit.modified_by == "Utilisateur Initial"
+    assert audit.created_at == audit.modified_at
+    assert audit.created_at.tzinfo is not None
+
+    assert result.date == calendar_exception.date
+    assert result.day_type_id == calendar_exception.day_type_id
+    assert result.description == calendar_exception.description
+
+
+def test_calendar_exception_audit_update_preserves_creation(
+    calendar_exception,
+    day_type,
+):
+    """Updating an exception preserves creation metadata."""
+
+    engine = PlannerEngine(
+        PlannerConfiguration(
+            moments=(),
+            day_types=(day_type,),
+            week_schedules=(),
+            cycles=(),
+            calendar_exceptions=(),
+        )
+    )
+
+    engine.add_calendar_exception(
+        calendar_exception,
+        modified_by="Utilisateur Initial",
+    )
+
+    original = engine.get_calendar_exception(
+        calendar_exception.id,
+    )
+
+    original_audit = original.audit
+
+    assert original_audit is not None
+
+    updated = replace(
+        original,
+        description="Exception modifiée",
+    )
+
+    engine.update_calendar_exception(
+        updated,
+        modified_by="Utilisateur Secondaire",
+    )
+
+    result = engine.get_calendar_exception(
+        calendar_exception.id,
+    )
+
+    audit = result.audit
+
+    assert result.description == "Exception modifiée"
+    assert result.date == original.date
+    assert result.day_type_id == original.day_type_id
+
+    assert audit is not None
+    assert audit.created_by == "Utilisateur Initial"
+    assert audit.created_at == original_audit.created_at
+
+    assert audit.modified_by == "Utilisateur Secondaire"
+    assert audit.modified_at >= original_audit.modified_at

@@ -1,12 +1,14 @@
 """Core engine for Day Planner."""
 
 from dataclasses import replace
+from datetime import datetime, timezone
 from typing import TypeVar
 
 from ..const import DEFAULT_MAX_CYCLES
 from ..domain.calendar_exception import CalendarException
 from ..domain.cycle import Cycle
 from ..domain.day_type import DayType
+from ..domain.metadata import Audit
 from ..domain.moment import Moment
 from ..domain.planner_configuration import PlannerConfiguration
 from ..domain.scheduled_moment import ScheduledMoment
@@ -118,6 +120,74 @@ class PlannerEngine:
 
         self._configuration = configuration
 
+    @staticmethod
+    def _create_audit(
+        modified_by: str,
+    ) -> Audit:
+        """Create initial audit metadata."""
+
+        now = datetime.now(timezone.utc)
+
+        return Audit(
+            created_by=modified_by,
+            created_at=now,
+            modified_by=modified_by,
+            modified_at=now,
+        )
+
+    @staticmethod
+    def _update_audit(
+        audit: Audit | None,
+        modified_by: str,
+    ) -> Audit:
+        """Update audit while preserving creation metadata."""
+
+        now = datetime.now(timezone.utc)
+
+        if audit is None:
+            return Audit(
+                created_by=modified_by,
+                created_at=now,
+                modified_by=modified_by,
+                modified_at=now,
+            )
+
+        return replace(
+            audit,
+            modified_by=modified_by,
+            modified_at=now,
+        )
+
+    def _with_created_audit(
+        self,
+        item: T,
+        modified_by: str,
+    ) -> T:
+        """Initialize audit for a new object."""
+
+        return replace(
+            item,
+            audit=self._create_audit(
+                modified_by,
+            ),
+        )
+
+    def _with_updated_audit(
+        self,
+        current: T,
+        updated: T,
+        modified_by: str,
+    ) -> T:
+        """Update audit, preserving original creation data."""
+
+        return replace(
+            updated,
+            audit=self._update_audit(
+                current.audit,
+                modified_by,
+            ),
+        )
+
     #
     # Moments
     #
@@ -137,8 +207,14 @@ class PlannerEngine:
     def add_moment(
         self,
         moment: Moment,
+        modified_by: str = "system",
     ) -> None:
-        """Add a moment."""
+        """Add a moment with audit metadata."""
+
+        moment = self._with_created_audit(
+            moment,
+            modified_by,
+        )
 
         self._replace_configuration(
             moments=self._append(
@@ -150,11 +226,18 @@ class PlannerEngine:
     def update_moment(
         self,
         moment: Moment,
+        modified_by: str = "system",
     ) -> None:
-        """Replace an existing moment."""
+        """Update a moment while preserving creation metadata."""
 
-        self.get_moment(
+        current = self.get_moment(
             moment.id,
+        )
+
+        moment = self._with_updated_audit(
+            current,
+            moment,
+            modified_by,
         )
 
         self._replace_configuration(
@@ -206,8 +289,14 @@ class PlannerEngine:
     def add_day_type(
         self,
         day_type: DayType,
+        modified_by: str = "system",
     ) -> None:
-        """Add a day type."""
+        """Add a day type with audit metadata."""
+
+        day_type = self._with_created_audit(
+            day_type,
+            modified_by,
+        )
 
         self._replace_configuration(
             day_types=self._append(
@@ -219,11 +308,18 @@ class PlannerEngine:
     def update_day_type(
         self,
         day_type: DayType,
+        modified_by: str = "system",
     ) -> None:
-        """Replace an existing day type."""
+        """Update a day type while preserving creation metadata."""
 
-        self.get_day_type(
+        current = self.get_day_type(
             day_type.id,
+        )
+
+        day_type = self._with_updated_audit(
+            current,
+            day_type,
+            modified_by,
         )
 
         self._replace_configuration(
@@ -289,8 +385,14 @@ class PlannerEngine:
     def add_week_schedule(
         self,
         week_schedule: WeekSchedule,
+        modified_by: str = "system",
     ) -> None:
-        """Add a week schedule."""
+        """Add a week schedule with audit metadata."""
+
+        week_schedule = self._with_created_audit(
+            week_schedule,
+            modified_by,
+        )
 
         self._replace_configuration(
             week_schedules=self._append(
@@ -302,11 +404,18 @@ class PlannerEngine:
     def update_week_schedule(
         self,
         week_schedule: WeekSchedule,
+        modified_by: str = "system",
     ) -> None:
-        """Update a week schedule."""
+        """Update a week schedule preserving creation metadata."""
 
-        self.get_week_schedule(
+        current = self.get_week_schedule(
             week_schedule.id,
+        )
+
+        week_schedule = self._with_updated_audit(
+            current,
+            week_schedule,
+            modified_by,
         )
 
         self._replace_configuration(
@@ -356,8 +465,14 @@ class PlannerEngine:
     def add_cycle(
         self,
         cycle: Cycle,
+        modified_by: str = "system",
     ) -> None:
-        """Add a cycle."""
+        """Add a cycle with audit metadata."""
+
+        cycle = self._with_created_audit(
+            cycle,
+            modified_by,
+        )
 
         self._replace_configuration(
             cycles=self._append(
@@ -369,11 +484,18 @@ class PlannerEngine:
     def update_cycle(
         self,
         cycle: Cycle,
+        modified_by: str = "system",
     ) -> None:
-        """Update a cycle."""
+        """Update a cycle preserving creation metadata."""
 
-        self.get_cycle(
+        current = self.get_cycle(
             cycle.id,
+        )
+
+        cycle = self._with_updated_audit(
+            current,
+            cycle,
+            modified_by,
         )
 
         self._replace_configuration(
@@ -419,8 +541,14 @@ class PlannerEngine:
     def add_calendar_exception(
         self,
         calendar_exception: CalendarException,
+        modified_by: str = "system",
     ) -> None:
-        """Add a calendar_exception."""
+        """Add a calendar exception with audit metadata."""
+
+        calendar_exception = self._with_created_audit(
+            calendar_exception,
+            modified_by,
+        )
 
         self._replace_configuration(
             calendar_exceptions=self._append(
@@ -432,11 +560,18 @@ class PlannerEngine:
     def update_calendar_exception(
         self,
         calendar_exception: CalendarException,
+        modified_by: str = "system",
     ) -> None:
-        """Update a calendar_exception."""
+        """Update an exception preserving creation metadata."""
 
-        self.get_calendar_exception(
+        current = self.get_calendar_exception(
             calendar_exception.id,
+        )
+
+        calendar_exception = self._with_updated_audit(
+            current,
+            calendar_exception,
+            modified_by,
         )
 
         self._replace_configuration(
@@ -469,38 +604,32 @@ class PlannerEngine:
         self,
         day_type_id: str,
         scheduled_moment: ScheduledMoment,
+        modified_by: str = "system",
     ) -> None:
-        """Add scheduled moment to day type."""
+        """Add a scheduled moment to a day type."""
 
-        day_types = list(self._configuration.day_types)
+        day_type = self.get_day_type(
+            day_type_id,
+        )
 
-        for index, day_type in enumerate(day_types):
-            if day_type.id == day_type_id:
-                day_types[index] = replace(
-                    day_type,
-                    scheduled_moments=(
-                        *day_type.scheduled_moments,
-                        scheduled_moment,
-                    ),
-                )
+        updated_day_type = replace(
+            day_type,
+            scheduled_moments=(
+                *day_type.scheduled_moments,
+                scheduled_moment,
+            ),
+        )
 
-                configuration = replace(
-                    self._configuration,
-                    day_types=tuple(day_types),
-                )
-
-                PlannerValidator.validate_configuration(configuration)
-
-                self._configuration = configuration
-
-                return
-
-        raise NotFoundError(f"Day type not found: {day_type_id}")
+        self.update_day_type(
+            updated_day_type,
+            modified_by=modified_by,
+        )
 
     def update_scheduled_moment(
         self,
         day_type_id: str,
         scheduled_moment: ScheduledMoment,
+        modified_by: str = "system",
     ) -> None:
         """Update a scheduled moment in a day type."""
 
@@ -521,18 +650,21 @@ class PlannerEngine:
                 "Scheduled moment not found: " f"{scheduled_moment.moment_id}"
             )
 
-        updated_day_type = DayType(
-            id=day_type.id,
-            name=day_type.name,
+        updated_day_type = replace(
+            day_type,
             scheduled_moments=tuple(scheduled_moments),
         )
 
-        self.update_day_type(updated_day_type)
+        self.update_day_type(
+            updated_day_type,
+            modified_by=modified_by,
+        )
 
     def remove_scheduled_moment(
         self,
         day_type_id: str,
         moment_id: str,
+        modified_by: str = "system",
     ) -> None:
         """Remove a scheduled moment from a day type."""
 
@@ -545,10 +677,12 @@ class PlannerEngine:
         if len(scheduled_moments) == len(day_type.scheduled_moments):
             raise NotFoundError("Scheduled moment not found: " f"{moment_id}")
 
-        updated_day_type = DayType(
-            id=day_type.id,
-            name=day_type.name,
+        updated_day_type = replace(
+            day_type,
             scheduled_moments=scheduled_moments,
         )
 
-        self.update_day_type(updated_day_type)
+        self.update_day_type(
+            updated_day_type,
+            modified_by=modified_by,
+        )

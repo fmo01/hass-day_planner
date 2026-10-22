@@ -104,6 +104,7 @@
     "generic": "Une erreur est survenue.",
     "cycle_id_required": "L’identifiant du cycle est obligatoire.",
     "cycle_name_required": "Le libellé du cycle est obligatoire.",
-    "cycle_start_date_required": "La date de début du cycle est obligatoire."
+    "cycle_start_date_required": "La date de début du cycle est obligatoire.",
+    "max_cycles_reached": "Impossible de créer un nouveau cycle, nombre maximal de cycles atteint"
   }
 }

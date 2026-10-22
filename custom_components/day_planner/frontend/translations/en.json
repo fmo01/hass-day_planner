@@ -104,6 +104,7 @@
     "generic": "An error occurred.",
     "cycle_id_required": "The cycle ID is required.",
     "cycle_name_required": "The cycle name is required.",
-    "cycle_start_date_required": "The cycle start date is required."
+    "cycle_start_date_required": "The cycle start date is required.",
+    "max_cycles_reached": "Cannot create another cycle, maximum number of cycles reached"
   }
 }

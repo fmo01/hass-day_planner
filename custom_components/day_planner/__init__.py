@@ -1,3 +1,5 @@
+import logging
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
@@ -16,6 +18,8 @@ from .runtime import DayPlannerRuntimeData
 from .services import async_setup_services
 from .storage import DayPlannerStorage
 from .websocket_api import async_setup_websocket_api
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def _async_migrate_entity_ids(
@@ -48,6 +52,9 @@ async def _async_migrate_entity_ids(
             entity.entity_id,
             new_entity_id=new_entity_id,
         )
+        _LOGGER.debug(
+            "Migration entité Day Planner : %s -> %s", entity.entity_id, new_entity_id
+        )
 
 
 async def _async_options_updated(
@@ -56,6 +63,7 @@ async def _async_options_updated(
 ) -> None:
     """Reload Day Planner when options change."""
 
+    _LOGGER.info("Rechargement Day Planner après modification des options")
     await hass.config_entries.async_reload(entry.entry_id)
 
 
@@ -65,6 +73,7 @@ async def async_setup(
 ) -> bool:
     """Set up Day Planner integration."""
 
+    _LOGGER.debug("Initialisation de l’API WebSocket Day Planner")
     async_setup_websocket_api(hass)
 
     await async_setup_frontend(hass)
@@ -78,6 +87,7 @@ async def async_setup_entry(
 ) -> bool:
     """Set up Day Planner."""
 
+    _LOGGER.info("Chargement de l’intégration Day Planner")
     storage = DayPlannerStorage(hass)
 
     configuration = await storage.async_load()
@@ -129,6 +139,7 @@ async def async_setup_entry(
     await ha_scheduler.async_schedule_next()
 
     await async_setup_panel(hass, entry)
+    _LOGGER.info("Day Planner prêt, planification initialisée")
 
     return True
 
@@ -145,6 +156,7 @@ async def async_unload_entry(
     )
 
     if unload_ok:
+        _LOGGER.info("Déchargement de Day Planner et annulation de la planification")
         entry.runtime_data.ha_scheduler.cancel()
         async_unload_panel(hass)
 
@@ -163,3 +175,4 @@ async def async_remove_entry(
     ):
         storage = DayPlannerStorage(hass)
         await storage.async_delete()
+        _LOGGER.info("Données Day Planner supprimées à la demande")

@@ -1,6 +1,6 @@
 # Day Planner — Roadmap et suivi d’avancement
 
-**Mise à jour : 19 octobre 2026. Version publiée de référence : 0.2.0, dernière version confirmée par l’utilisateur. Relecture frontend actualisée avec les fichiers des 19 octobre et corrections validées à 11 h 57.**
+**Mise à jour : 22 octobre 2026. Version publiée de référence : 0.2.0, dernière version confirmée par l’utilisateur. Traçabilité `Audit` intégrée au modèle et aux trois interfaces de mutation ; contrôles HA confirmés pour les cinq familles d’objets. Les modifications ne constituent pas une nouvelle release 0.2.0.**
 
 La roadmap reprend les **six lots de la première version**. Les sept étapes de finalisation des vues sont rattachées aux lots concernés, avec leurs statuts conservés. Les numéros des lots sont des repères stables ; les vues Moments, Types de journée, Semaines types, Cycles et Calendrier / Exceptions sont validées. Le travail immédiat porte sur les contrôles transversaux restants ; L1-06 reste en cours.
 
@@ -42,7 +42,7 @@ Les mentions d'i18n dans les blocs suivants décrivent donc des ajustements oppo
 - Tableau de couverture distinguant package et composant.
 - README des tests en français, guides et roadmap intégrés au dépôt.
 
-**Résultat courant communiqué par l'utilisateur le 14 octobre 2026 : 407 tests réussis, 1 908 instructions mesurées, aucune non couverte et 100 % de couverture Python ; 5 avertissements, durée 1,22 s, Python 3.14.3.** Ce résultat valide la suite après correction des moments simultanés, des références des semaines et du calcul des changements d'heure ; le test de passage de minuit est également réussi. Il n'a pas été réexécuté par l'assistant. Aucun seuil bloquant de couverture n'est souhaité.
+**Dernier rapport complet chiffré communiqué par l’utilisateur le 21 octobre 2026 : 449 tests, 2 146 instructions mesurées, 0 non couverte, 100 % de couverture Python, 5 avertissements, 1,67 s, Python 3.14.3.** Les tests et validations fonctionnelles ultérieurs ont été confirmés sans nouveau comptage complet publié. Le 20 octobre, le retour à 100 % après compléments `action_executor.py` et `logbook.py` avait déjà été confirmé. **Résultat historique du 14 octobre :** 407 tests réussis, 1 908 instructions mesurées, aucune non couverte, 100 % de couverture Python, 5 avertissements, 1,22 s, Python 3.14.3. Ces résultats ne sont pas des exécutions de la suite complète par l'assistant. Aucun seuil bloquant de couverture n'est souhaité.
 
 **Résultat historique du 13 octobre :** le README des tests annonce **394 tests réussis, 1 877 lignes mesurées et 100 % de couverture**, au **13 octobre 2026 à 15:28:05 Europe/Paris**. La relecture a vérifié la cohérence de ce tableau et les générateurs de rapports avec des données synthétiques ; elle n'a pas réexécuté la suite complète.
 
@@ -51,7 +51,7 @@ Les mentions d'i18n dans les blocs suivants décrivent donc des ajustements oppo
 | Lot | Intitulé | Version cible indicative | Avancement actuel |
 | --- | --- | --- | --- |
 | 1 | Stabiliser le socle | Corrections livrées en 0.2.0 | Corrections fonctionnelles, workflow et versions/changelog terminés. L1-06 reste en cours pour les essais réels HA. |
-| 2 | Intégrer les Metadata | À définir après 0.2.0 | À planifier après consolidation des vues. |
+| 2 | Intégrer les Metadata / `Audit` | À définir après 0.2.0 | Modèles, moteur, persistance et trois interfaces validés ; présentation détaillée des métadonnées dans l’interface restant à qualifier. |
 | 3 | Simplifier la gestion quotidienne | 0.3.0 | En cours ; les cinq vues sont validées. Corrections transversales de robustesse vérifiées ; accessibilité, responsive, cache et permissions restent à qualifier. |
 | 4 | Ajouter les horaires avancés | 0.4.0 | À planifier ; périmètre à préciser. |
 | 5 | Ajouter une source de calendrier externe | 0.5.0 | À planifier ; règles de synchronisation à définir. |
@@ -78,8 +78,10 @@ Statuts : **Terminé**, **Terminé et figé**, **Presque terminé**, **En cours*
 | L1-07 | 1 | Filtres et présentation du workflow | Terminé | Conserver les rapports et la mise à jour automatique du README, sans seuil bloquant. | Exécution tests.yml réussie confirmée par l'utilisateur ; README généré le 14/10 à 12:15:34 : 407 tests, 1 908 instructions, 100 %. | 14/10/2026 |
 | L1-08 | 1 | Seuil de couverture imposé en CI | Abandonné | Ne pas ajouter de seuil bloquant ; conserver la mesure et les rapports de couverture. | Décision explicite de l'utilisateur le 14/10 : refus de --cov-fail-under=100. L'objectif de couverture reste suivi. | 14/10/2026 |
 | L1-09 | 1 | Versions et changelog | Terminé | Maintenir le manifeste comme référence ; laisser semantic-release gérer les prochaines versions. | Utilisateur : L1-09 terminé. Manifeste 0.2.0 ; ancienne constante supprimée ; entrée 0.1.0 du 10/10 restaurée d'après le tag et doublons retirés. | 14/10/2026 |
-| L2-01 | 2 | Modèle Metadata et règles auteur/horodatage | À planifier | Définir le contrat et remplacer le concept Audit. | Évolution conservée. | 13/10/2026 |
-| L2-02 | 2 | Persistance, migration et interfaces Metadata | À planifier | Sérialisation, migration, services, WebSocket, Options Flow et affichage. | Évolution conservée. | 13/10/2026 |
+| L1-10 | 1 | Journalisation et attribution des actions Day Planner | Terminé (fonctionnement validé) | Conserver les tests de non-régression et contrôler les cas d’intégrations tierces à exécution différée. | 20/10 : deux activités Logbook observées ; `input_boolean.day_planner_test` désactivé avec cause « Day Planner — action XX1 test (id : XX1) ». Journaux DEBUG/INFO/WARNING/ERROR, cibles manquantes et contexte commun couverts par les tests. | 20/10/2026 |
+| L2-01 | 2 | Modèle Metadata et règles auteur/horodatage | Terminé | Conserver le modèle `Audit` et ses règles ; aucune substitution de classe requise. | 21–22/10 : `Audit` intégré aux cinq objets, dates UTC/ISO, création et modification centralisées dans `PlannerEngine`, anciens objets acceptés sans migration ; tests utilisateur confirmés. | 22/10/2026 |
+| L2-02 | 2 | Persistance, migration et interfaces Metadata | En cours | Persistance et trois interfaces validées ; qualifier l’affichage explicite de l’audit dans le panneau / les options. **Aucune migration des anciennes données n’est prévue** dans ce chantier. | 21–22/10 : sérialisation conditionnelle et mutations WebSocket, Services et Options Flow adaptées ; tests Python et essais HA validés. | 22/10/2026 |
+| L2-03 | 2 | Validation fonctionnelle de la traçabilité des cinq objets | Terminé | Maintenir les tests et contrôles après modification du moteur ou du frontend. | 22/10 : utilisateur confirme successivement Moments/Actions, Types de journée/Moments planifiés, Semaines types, Cycles et Exceptions ; champs d’audit vérifiés après création et modification. | 22/10/2026 |
 | L3-01 | 3 | Moments | Terminé et figé | Maintenir les tests de non-régression. | Statut utilisateur : CRUD, groupes d'actions, détails, traduction HA, i18n, comptages, erreurs. | 13/10/2026 |
 | L3-02 | 3 | Types de journée | Terminé | Maintenir les comportements validés ; aucun nouveau travail fonctionnel prévu sur cette vue. | Essais utilisateur HA : CRUD, dépendances et conservation des saisies de création, renommage et moments planifiés. Boutons et gardes relus. | 19/10/2026 |
 | L3-03 | 3 | Semaines types | Terminé | Maintenir les sept affectations, la conservation des saisies et les messages dans les dialogues. | Quatre essais HA confirmés : création invalide, modification invalide, CRUD et suppression refusée si utilisée par un cycle ; visibilité des erreurs validée. | 19/10/2026 |
@@ -92,7 +94,7 @@ Statuts : **Terminé**, **Terminé et figé**, **Presque terminé**, **En cours*
 | L3-10 | 3 | Duplication et moments prédéfinis guidés | À planifier | Sélectionner selon les besoins après consolidation. | Améliorations conservées. | 13/10/2026 |
 | L4-01 | 4 | Horaires avancés | À planifier | Définir règles, indisponibilités, passages de date et compatibilité. | Évolution conservée. | 13/10/2026 |
 | L5-01 | 5 | Source de calendrier externe | À planifier | Définir source, correspondances, priorités et synchronisation. | Évolution conservée. | 13/10/2026 |
-| L6-01 | 6 | Résultat de couverture de référence | Terminé | Actualiser après chaque exécution pertinente ; conserver les résultats précédents dans l'historique. | Résultat utilisateur du 14/10 : 407 tests réussis, 1 908 instructions, 0 non couverte, 100 %, 5 avertissements, 1,22 s ; Python 3.14.3. | 14/10/2026 |
+| L6-01 | 6 | Résultat de couverture de référence | Terminé | Actualiser après chaque exécution pertinente ; conserver les résultats précédents dans l’historique. | 21/10 : 449 tests, 2 146 instructions, 0 non couverte, 100 %, 5 avertissements, 1,67 s, Python 3.14.3. Historique 14/10 conservé dans le journal et les guides. | 22/10/2026 |
 | L6-02 | 6 | Validation backend et WebSocket/API après corrections | Terminé | Relancer après de nouvelles modifications ; la validation réelle HA de L1-06 reste ouverte. | Suite complète réussie selon le résultat utilisateur : 407 tests après ajout des tests de minuit et des changements d'heure. | 14/10/2026 |
 | L6-03 | 6 | Tests ciblés frontend et essais visuels | En cours | Compléter les contrôles visuels et interactions utiles sur panneau/carte et ordinateur/mobile ; confirmer les conditions d’erreur et d’attente si nécessaire. | Essais fonctionnels HA des cinq vues confirmés ; simulations API sur version précédente et contrôle syntaxique/relecture des six corrections du dernier fichier. | 19/10/2026 |
 | L6-04 | 6 | HACS et lint/format | À faire | Exécuter les contrôles du périmètre livré. | Résultats restant à confirmer. | 13/10/2026 |
@@ -100,6 +102,7 @@ Statuts : **Terminé**, **Terminé et figé**, **Presque terminé**, **En cours*
 | L6-06 | 6 | Cohérence finale de la documentation | Terminé | Intégrer les fichiers actualisés au dépôt ; maintenir les guides au fil des prochaines évolutions. | Documentation alignée sur 0.2.0, résultat GitHub Actions du 14/10 à 12:15:34, L1-07/L1-09 terminés, L1-06 toujours en cours ; fichiers préparés pour intégration. | 14/10/2026 |
 | L6-07 | 6 | Installation, mise à jour et retrait | À faire | Vérifier installation neuve, migrations et retrait avec/sans suppression. | Qualification prévue. | 13/10/2026 |
 | L6-08 | 6 | Préparation d'une version propre | À faire | Fixer périmètre, notes de release et limites connues. | Qualification prévue. | 13/10/2026 |
+| L6-09 | 6 | Tests de régression de l’exécution et du Journal de bord | Terminé | Maintenir les nouveaux cas lors des évolutions de scripts et des mises à jour HA. | 20/10 : 19 tests ciblés réussis en simulation, modules `action_executor.py` et `logbook.py` à 100 % ciblés ; couverture globale 100 % confirmée ensuite par l’utilisateur. | 20/10/2026 |
 
 ## 5. Lot 1 — Stabiliser le socle
 
@@ -136,12 +139,11 @@ La configuration invalide est refusée, les événements simultanés sont exécu
 
 ## 6. Lot 2 — Intégrer les Metadata
 
-**Statut : à planifier après consolidation des vues.**
+**Statut : en cours — cœur de la traçabilité validé, qualification d’affichage restant à préciser.**
 
+Le modèle existant `Audit` est conservé (sans renommage imposé vers `Metadata`). Les cinq objets racine persistés portent un audit facultatif avec auteur/date de création et de modification, et les fonctions d’actualisation sont centralisées dans `PlannerEngine`. Les changements d’`Action` et de `ScheduledMoment` actualisent leur parent ; les objets référencés ne changent pas. WebSocket et services privilégient le nom affiché de l’utilisateur, sinon son identifiant ; les Options Flow utilisent `"system"`.
 
-Remplacer le concept `Audit` par `Metadata` et intégrer auteur/date de création et modification aux objets persistés. Centraliser la mise à jour entre services, WebSocket et Options Flow, préserver l'origine de création et migrer les données anciennes sans inventer leur auteur. Les changements d'éléments imbriqués doivent être pris en compte.
-
-Validation attendue : traçabilité cohérente, migration sans perte et persistance après redémarrage. Cette évolution ne précède plus la finalisation des vues de gestion.
+Les données historiques sans audit restent compatibles ; **aucune migration ni invention d’auteur ou de date historique**. En cas de première édition d’un ancien objet, l’audit commence à cette édition. La persistance et les mutations ont été validées par tests et essais Home Assistant du 22 octobre ; il reste à décider ou qualifier l’affichage direct de ces champs dans le panneau et les formulaires. Les contrôles de reprise/redémarrage temporel du planificateur restent suivis séparément en L1-06.
 
 ## 7. Lot 3 — Simplifier la gestion quotidienne
 
@@ -355,10 +357,16 @@ Les critères des lots peuvent être précisés et de nouvelles tâches ajoutée
 | 19/10/2026 | L3-05 clôturé après confirmation de tous les essais HA : description dans le champ, description vide acceptée, édition et suppression, exception appliquée puis retour au cycle. |
 | 19/10/2026 | Relecture de 14 fichiers frontend : 12 JS et 2 JSON syntaxiquement valides. Six corrections transversales relues dans le dernier day-planner-card.js ; L3-06, L3-07 et L6-03 restent en cours pour leurs contrôles restants. |
 | 19/10/2026 | L1-06 explicitement maintenu en cours. Les 407 tests Python et 100 % de couverture restent le résultat communiqué du 14/10, sans nouvelle exécution. Aucun rappel créé ou reprogrammé dans cette mise à jour. |
+| 20/10/2026 | L1-10 : journalisation renforcée des actions et cibles indisponibles ; avertissements `homeassistant.helpers.service` recopiés en ERROR Day Planner sans supprimer le WARNING HA. Événement `day_planner_action` avant le service et contexte partagé pour l’attribution Logbook. |
+| 20/10/2026 | Validation fonctionnelle Logbook : événement source « Day Planner — action XX1 test (id : XX1) », puis transition de `input_boolean.day_planner_test` de Activé à Désactivé avec cette action comme cause. Le message « Aucune cause... » sur l’événement racine est normal. |
+| 20/10/2026 | L6-09 et L6-01 : ajout de tests des branches défensives (9 lignes manquantes sur 2 093 instructions au rapport intermédiaire) ; 19 tests ciblés réussis en simulation et 100 % de couverture globale confirmé par l’utilisateur. Nombre exact de tests du dernier rapport non communiqué. L1-06 conserve son statut En cours. |
+| 21/10/2026 | Audit étendu aux modèles `Moment`, `WeekSchedule`, `Cycle` et `CalendarException`, après `DayType` ; fonctions centralisées dans `PlannerEngine`. Validation progressive des tests dans les fichiers existants, sans patch et sans migration. Dernier rapport complet chiffré : 449 tests, 2 146 instructions, 0 non couverte, 100 % de couverture. |
+| 21–22/10/2026 | WebSocket et services HA transmettent l’auteur réel lorsqu’il est disponible ; Options Flow utilise explicitement `"system"`. Création/modification d’Actions et Moments planifiés attribuées à leur parent. Tests validés successivement. |
+| 22/10/2026 | Contrôles fonctionnels Home Assistant confirmés par l’utilisateur pour Moments, Actions, Types de journée, Moments planifiés, Semaines types, Cycles et Exceptions. L2-01 et L2-03 terminés ; L2-02 reste ouvert uniquement pour l’affichage détaillé des métadonnées et qualification associée. Aucune migration d’audit. |
 
 ## 12. Prochaine étape
 
-**Terminer le passage transversal final**, en conservant les validations fonctionnelles acquises :
+**Terminer le passage transversal final**, en conservant les validations fonctionnelles acquises. Le cœur de la traçabilité est validé ; l’affichage éventuel des métadonnées dans les écrans est à qualifier dans L2-02 :
 
 1. L3-06 : contrôler les annulations et les erreurs API dans les dialogues ; confirmer les protections en situation réelle si nécessaire.
 2. L3-07 et L6-03 : qualifier clavier, focus et petits écrans, puis panneau et carte Lovelace.
@@ -369,5 +377,5 @@ Les critères des lots peuvent être précisés et de nouvelles tâches ajoutée
 
 Les vues Moments, Types de journée, Semaines types, Cycles et Calendrier / Exceptions sont validées. Cela ne clôture ni tout le lot 3, ni la qualification finale du lot 6.
 
-La version publiée de référence reste 0.2.0, dernière version confirmée. Metadata, horaires avancés et calendrier externe conservent leurs statuts. L’i18n reste non prioritaire ; les traductions existantes sont conservées.
+La version publiée de référence reste 0.2.0, dernière version confirmée. L’audit métier est implémenté et validé **après cette publication**, sans être déclaré livré dans 0.2.0. Le lot Metadata reste ouvert pour l’éventuel affichage détaillé ; horaires avancés et calendrier externe conservent leurs statuts. L’i18n reste non prioritaire ; les traductions existantes sont conservées.
 

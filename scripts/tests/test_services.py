@@ -1,9 +1,10 @@
 import asyncio
 from datetime import date, time
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.core import Context, HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.day_planner.const import (
@@ -17,10 +18,15 @@ from custom_components.day_planner.const import (
     SERVICE_UPDATE_SCHEDULED_MOMENT, SERVICE_UPDATE_WEEK_SCHEDULE,
     SIGNAL_PLANNER_UPDATED)
 from custom_components.day_planner.domain.action import Action
+from custom_components.day_planner.domain.day_type import DayType
 from custom_components.day_planner.domain.moment import Moment
+from custom_components.day_planner.domain.scheduled_moment import \
+    ScheduledMoment
+from custom_components.day_planner.domain.time_definition import TimeDefinition
 from custom_components.day_planner.planner.errors import PlannerError
 from custom_components.day_planner.runtime import DayPlannerRuntimeData
-from custom_components.day_planner.services import (_execute, _get_runtime,
+from custom_components.day_planner.services import (_async_get_actor_name,
+                                                    _execute, _get_runtime,
                                                     async_setup_services)
 
 
@@ -166,6 +172,14 @@ def test_service_add_moment():
 
     hass.config_entries.async_entries.return_value = [entry]
 
+    hass.auth = MagicMock()
+    hass.auth.async_get_user = AsyncMock(
+        return_value=SimpleNamespace(
+            id="user_001",
+            name="Utilisateur Test",
+        )
+    )
+
     async def run():
         await async_setup_services(hass)
 
@@ -199,14 +213,26 @@ def test_service_add_moment():
                     },
                 ],
             },
+            context=Context(user_id="user_001"),
         )
 
         await service(call)
 
     asyncio.run(run())
 
+    assert runtime.engine.add_moment.call_args.kwargs == {
+        "modified_by": "Utilisateur Test",
+    }
+
+    hass.auth.async_get_user.assert_awaited_once_with(
+        "user_001",
+    )
+
     moment = runtime.engine.add_moment.call_args.args[0]
 
+    assert runtime.engine.add_moment.call_args.kwargs == {
+        "modified_by": "Utilisateur Test",
+    }
     assert moment.id == "m2"
     assert moment.name == "Moment 2"
     assert moment.icon == "mdi:home"
@@ -265,6 +291,13 @@ def test_service_update_moment():
     entry.runtime_data = runtime
 
     hass.config_entries.async_entries.return_value = [entry]
+    hass.auth = MagicMock()
+    hass.auth.async_get_user = AsyncMock(
+        return_value=SimpleNamespace(
+            id="user_002",
+            name=None,
+        )
+    )
 
     async def run():
         await async_setup_services(hass)
@@ -283,6 +316,7 @@ def test_service_update_moment():
                 "name": "Moment modifié",
                 "icon": "mdi:home",
             },
+            context=Context(user_id="user_002"),
         )
 
         await service(call)
@@ -290,6 +324,10 @@ def test_service_update_moment():
     asyncio.run(run())
 
     moment = runtime.engine.update_moment.call_args.args[0]
+
+    assert runtime.engine.update_moment.call_args.kwargs == {
+        "modified_by": "user_002",
+    }
 
     assert moment.id == "m1"
     assert moment.name == "Moment modifié"
@@ -531,8 +569,82 @@ def test_service_add_day_type():
     assert day_type.id == "dt2"
     assert day_type.name == "Weekend"
     assert day_type.scheduled_moments == ()
+    assert runtime.engine.add_day_type.call_args.kwargs == {
+        "modified_by": "system",
+    }
 
     runtime.async_configuration_updated.assert_awaited_once()
+
+
+def test_service_add_day_type_with_user_context():
+    """Service passes authenticated user ID to the engine."""
+
+    hass = MagicMock(spec=HomeAssistant)
+
+    hass.auth = MagicMock()
+    hass.auth.async_get_user = AsyncMock(
+        return_value=SimpleNamespace(
+            name="Utilisateur Test",
+        ),
+    )
+
+    hass.services = MagicMock()
+    hass.services.async_register = MagicMock()
+
+    runtime = MagicMock()
+    runtime.engine.add_day_type = MagicMock()
+    runtime.async_configuration_updated = AsyncMock()
+
+    entry = MagicMock()
+    entry.runtime_data = runtime
+
+    hass.config_entries.async_entries.return_value = [entry]
+
+    async def run():
+        await async_setup_services(hass)
+
+        service = get_registered_service(
+            hass,
+            SERVICE_ADD_DAY_TYPE,
+        )
+
+        call = ServiceCall(
+            hass=hass,
+            domain=DOMAIN,
+            service=SERVICE_ADD_DAY_TYPE,
+            data={
+                "id": "dt_user",
+                "name": "Journée utilisateur",
+            },
+            context=Context(
+                user_id="test_user_123",
+            ),
+        )
+
+        await service(call)
+
+    asyncio.run(run())
+
+    runtime.engine.add_day_type.assert_called_once()
+
+    day_type = runtime.engine.add_day_type.call_args.args[0]
+
+    assert day_type.id == "dt_user"
+    assert day_type.name == "Journée utilisateur"
+
+    assert runtime.engine.add_day_type.call_args.kwargs == {
+        "modified_by": "Utilisateur Test",
+    }
+
+    runtime.async_configuration_updated.assert_awaited_once()
+
+    hass.auth.async_get_user.assert_awaited_once_with(
+        "test_user_123",
+    )
+
+    assert runtime.engine.add_day_type.call_args.kwargs == {
+        "modified_by": "Utilisateur Test",
+    }
 
 
 def test_service_update_day_type():
@@ -542,7 +654,22 @@ def test_service_update_day_type():
     hass.services.async_register = MagicMock()
 
     runtime = MagicMock()
+
     runtime.engine.update_day_type = MagicMock()
+    scheduled_moment = ScheduledMoment(
+        moment_id="reveil",
+        time_definition=TimeDefinition(
+            fixed_time=time(7, 30),
+        ),
+    )
+
+    original = DayType(
+        id="dt1",
+        name="Télétravail",
+        scheduled_moments=(scheduled_moment,),
+    )
+
+    runtime.engine.get_day_type.return_value = original
 
     runtime.async_configuration_updated = AsyncMock()
 
@@ -575,9 +702,24 @@ def test_service_update_day_type():
 
     day_type = runtime.engine.update_day_type.call_args.args[0]
 
+    runtime.engine.get_day_type.assert_called_once_with(
+        "dt1",
+    )
+
+    runtime.engine.update_day_type.assert_called_once()
+
+    day_type = runtime.engine.update_day_type.call_args.args[0]
+
     assert day_type.id == "dt1"
     assert day_type.name == "Télétravail modifié"
-    assert day_type.scheduled_moments == ()
+
+    # Les moments existants sont conservés.
+    assert day_type.scheduled_moments == original.scheduled_moments
+
+    # Le service transmet l'auteur.
+    assert runtime.engine.update_day_type.call_args.kwargs == {
+        "modified_by": "system",
+    }
 
     runtime.async_configuration_updated.assert_awaited_once()
 
@@ -640,6 +782,14 @@ def test_service_add_week_schedule():
 
     hass.config_entries.async_entries.return_value = [entry]
 
+    hass.auth = MagicMock()
+    hass.auth.async_get_user = AsyncMock(
+        return_value=SimpleNamespace(
+            id="user_001",
+            name="Utilisateur Test",
+        )
+    )
+
     async def run():
         await async_setup_services(hass)
 
@@ -662,6 +812,7 @@ def test_service_add_week_schedule():
                 "saturday": "dt1",
                 "sunday": "dt1",
             },
+            context=Context(user_id="user_001"),
         )
 
         await service(call)
@@ -679,6 +830,13 @@ def test_service_add_week_schedule():
     assert week_schedule.friday == "dt1"
     assert week_schedule.saturday == "dt1"
     assert week_schedule.sunday == "dt1"
+    assert runtime.engine.add_week_schedule.call_args.kwargs == {
+        "modified_by": "Utilisateur Test",
+    }
+
+    hass.auth.async_get_user.assert_awaited_once_with(
+        "user_001",
+    )
 
     runtime.async_configuration_updated.assert_awaited_once()
 
@@ -698,6 +856,14 @@ def test_service_update_week_schedule():
     entry.runtime_data = runtime
 
     hass.config_entries.async_entries.return_value = [entry]
+
+    hass.auth = MagicMock()
+    hass.auth.async_get_user = AsyncMock(
+        return_value=SimpleNamespace(
+            id="user_002",
+            name=None,
+        )
+    )
 
     async def run():
         await async_setup_services(hass)
@@ -722,6 +888,7 @@ def test_service_update_week_schedule():
                 "saturday": "dt2",
                 "sunday": "dt2",
             },
+            context=Context(user_id="user_002"),
         )
 
         await service(call)
@@ -739,6 +906,13 @@ def test_service_update_week_schedule():
     assert week_schedule.friday == "dt2"
     assert week_schedule.saturday == "dt2"
     assert week_schedule.sunday == "dt2"
+    assert runtime.engine.update_week_schedule.call_args.kwargs == {
+        "modified_by": "user_002",
+    }
+
+    hass.auth.async_get_user.assert_awaited_once_with(
+        "user_002",
+    )
 
     runtime.async_configuration_updated.assert_awaited_once()
 
@@ -801,6 +975,14 @@ def test_service_add_cycle():
 
     hass.config_entries.async_entries.return_value = [entry]
 
+    hass.auth = MagicMock()
+    hass.auth.async_get_user = AsyncMock(
+        return_value=SimpleNamespace(
+            id="user_001",
+            name="Utilisateur Test",
+        )
+    )
+
     async def run():
         await async_setup_services(hass)
 
@@ -819,6 +1001,7 @@ def test_service_add_cycle():
                 "start_date": "2026-08-31",
                 "week_schedule_ids": ["ws1", "ws2"],
             },
+            context=Context(user_id="user_001"),
         )
 
         await service(call)
@@ -831,6 +1014,13 @@ def test_service_add_cycle():
     assert cycle.name == "Cycle 2"
     assert cycle.start_date == date(2026, 8, 31)
     assert cycle.week_schedule_ids == ("ws1", "ws2")
+    assert runtime.engine.add_cycle.call_args.kwargs == {
+        "modified_by": "Utilisateur Test",
+    }
+
+    hass.auth.async_get_user.assert_awaited_once_with(
+        "user_001",
+    )
 
     runtime.async_configuration_updated.assert_awaited_once()
 
@@ -851,6 +1041,14 @@ def test_service_update_cycle():
 
     hass.config_entries.async_entries.return_value = [entry]
 
+    hass.auth = MagicMock()
+    hass.auth.async_get_user = AsyncMock(
+        return_value=SimpleNamespace(
+            id="user_002",
+            name=None,
+        )
+    )
+
     async def run():
         await async_setup_services(hass)
 
@@ -869,6 +1067,7 @@ def test_service_update_cycle():
                 "start_date": "2026-08-31",
                 "week_schedule_ids": ["ws1", "ws2"],
             },
+            context=Context(user_id="user_002"),
         )
 
         await service(call)
@@ -881,6 +1080,14 @@ def test_service_update_cycle():
     assert cycle.name == "Cycle modifié"
     assert cycle.start_date == date(2026, 8, 31)
     assert cycle.week_schedule_ids == ("ws1", "ws2")
+
+    assert runtime.engine.update_cycle.call_args.kwargs == {
+        "modified_by": "user_002",
+    }
+
+    hass.auth.async_get_user.assert_awaited_once_with(
+        "user_002",
+    )
 
     runtime.async_configuration_updated.assert_awaited_once()
 
@@ -943,6 +1150,14 @@ def test_service_add_calendar_exception():
 
     hass.config_entries.async_entries.return_value = [entry]
 
+    hass.auth = MagicMock()
+    hass.auth.async_get_user = AsyncMock(
+        return_value=SimpleNamespace(
+            id="user_001",
+            name="Utilisateur Test",
+        )
+    )
+
     async def run():
         await async_setup_services(hass)
 
@@ -961,6 +1176,7 @@ def test_service_add_calendar_exception():
                 "day_type_id": "dt1",
                 "description": "Férié",
             },
+            context=Context(user_id="user_001"),
         )
 
         await service(call)
@@ -973,6 +1189,13 @@ def test_service_add_calendar_exception():
     assert exception.date == date(2026, 8, 15)
     assert exception.day_type_id == "dt1"
     assert exception.description == "Férié"
+    assert runtime.engine.add_calendar_exception.call_args.kwargs == {
+        "modified_by": "Utilisateur Test",
+    }
+
+    hass.auth.async_get_user.assert_awaited_once_with(
+        "user_001",
+    )
 
     runtime.async_configuration_updated.assert_awaited_once()
 
@@ -993,6 +1216,14 @@ def test_service_update_calendar_exception():
 
     hass.config_entries.async_entries.return_value = [entry]
 
+    hass.auth = MagicMock()
+    hass.auth.async_get_user = AsyncMock(
+        return_value=SimpleNamespace(
+            id="user_002",
+            name=None,
+        )
+    )
+
     async def run():
         await async_setup_services(hass)
 
@@ -1011,6 +1242,7 @@ def test_service_update_calendar_exception():
                 "day_type_id": "dt2",
                 "description": "Congé modifié",
             },
+            context=Context(user_id="user_002"),
         )
 
         await service(call)
@@ -1023,6 +1255,14 @@ def test_service_update_calendar_exception():
     assert exception.date == date(2026, 8, 20)
     assert exception.day_type_id == "dt2"
     assert exception.description == "Congé modifié"
+
+    assert runtime.engine.update_calendar_exception.call_args.kwargs == {
+        "modified_by": "user_002",
+    }
+
+    hass.auth.async_get_user.assert_awaited_once_with(
+        "user_002",
+    )
 
     runtime.async_configuration_updated.assert_awaited_once()
 
@@ -1158,6 +1398,9 @@ def test_service_add_scheduled_moment():
         17,
         0,
     )
+    assert runtime.engine.add_scheduled_moment.call_args.kwargs == {
+        "modified_by": "system",
+    }
 
     runtime.async_configuration_updated.assert_awaited_once()
 
@@ -1209,6 +1452,9 @@ def test_service_update_scheduled_moment():
 
     assert scheduled_moment.moment_id == "test"
     assert scheduled_moment.time_definition.fixed_time == time(18, 30)
+    assert runtime.engine.update_scheduled_moment.call_args.kwargs == {
+        "modified_by": "system",
+    }
 
     runtime.async_configuration_updated.assert_awaited_once()
 
@@ -1254,6 +1500,7 @@ def test_service_remove_scheduled_moment():
     runtime.engine.remove_scheduled_moment.assert_called_once_with(
         "test_day",
         "test",
+        modified_by="system",
     )
 
     runtime.async_configuration_updated.assert_awaited_once()
@@ -1304,3 +1551,50 @@ def test_async_configuration_updated():
             )
 
     asyncio.run(run())
+
+
+def test_actor_name_without_user():
+    """Return system when no user is associated."""
+
+    call = MagicMock()
+    call.context.user_id = None
+
+    result = asyncio.run(_async_get_actor_name(call))
+
+    assert result == "system"
+
+
+def test_actor_name_user_not_found():
+    """Fall back to user ID when user is unknown."""
+
+    call = MagicMock()
+    call.context.user_id = "unknown_user"
+
+    call.hass.auth.async_get_user = AsyncMock(
+        return_value=None,
+    )
+
+    result = asyncio.run(_async_get_actor_name(call))
+
+    assert result == "unknown_user"
+
+    call.hass.auth.async_get_user.assert_awaited_once_with(
+        "unknown_user",
+    )
+
+
+def test_actor_name_without_display_name():
+    """Fall back to ID when user has no name."""
+
+    call = MagicMock()
+    call.context.user_id = "test_user_123"
+
+    call.hass.auth.async_get_user = AsyncMock(
+        return_value=SimpleNamespace(
+            name=None,
+        ),
+    )
+
+    result = asyncio.run(_async_get_actor_name(call))
+
+    assert result == "test_user_123"

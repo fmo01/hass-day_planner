@@ -1,5 +1,6 @@
 import asyncio
 from datetime import date, time
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -411,6 +412,10 @@ def test_websocket_update_scheduled_moment():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user = SimpleNamespace(
+        id="test_user_123",
+        name="Utilisateur Test",
+    )
 
     asyncio.run(
         run_websocket_handler(
@@ -434,6 +439,7 @@ def test_websocket_update_scheduled_moment():
     runtime.engine.update_scheduled_moment.assert_called_once_with(
         "work",
         scheduled,
+        modified_by="Utilisateur Test",
     )
 
     runtime.async_configuration_updated.assert_awaited_once_with()
@@ -523,6 +529,8 @@ def test_websocket_update_day_type():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.id = "test_user_123"
+    connection.user.name = "Utilisateur Test"
 
     asyncio.run(
         run_websocket_handler(
@@ -558,6 +566,10 @@ def test_websocket_update_day_type():
             "name": "Journée bureau",
         },
     )
+
+    assert runtime.engine.update_day_type.call_args.kwargs == {
+        "modified_by": "Utilisateur Test",
+    }
 
 
 def test_websocket_update_day_type_not_found():
@@ -606,6 +618,8 @@ def test_websocket_add_day_type():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.id = "test_user_123"
+    connection.user.name = "Utilisateur Test"
 
     asyncio.run(
         run_websocket_handler(
@@ -622,7 +636,9 @@ def test_websocket_add_day_type():
     )
 
     created = runtime.engine.add_day_type.call_args.args[0]
-
+    assert runtime.engine.add_day_type.call_args.kwargs == {
+        "modified_by": "Utilisateur Test",
+    }
     assert created.id == "home"
     assert created.name == "Journée Maison"
     assert created.scheduled_moments == ()
@@ -751,6 +767,8 @@ def test_websocket_add_scheduled_moment():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.id = "test_user_123"
+    connection.user.name = "Utilisateur Test"
 
     asyncio.run(
         run_websocket_handler(
@@ -774,6 +792,9 @@ def test_websocket_add_scheduled_moment():
     assert day_type_id == "travail"
     assert scheduled_moment.moment_id == "reveil"
     assert scheduled_moment.time_definition.fixed_time == time(7, 30)
+    assert runtime.engine.add_scheduled_moment.call_args.kwargs == {
+        "modified_by": "Utilisateur Test",
+    }
 
     runtime.async_configuration_updated.assert_awaited_once_with()
 
@@ -877,6 +898,8 @@ def test_websocket_remove_scheduled_moment():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.id = "test_user_123"
+    connection.user.name = "Utilisateur Test"
 
     asyncio.run(
         run_websocket_handler(
@@ -895,6 +918,7 @@ def test_websocket_remove_scheduled_moment():
     runtime.engine.remove_scheduled_moment.assert_called_once_with(
         "travail",
         "reveil",
+        modified_by="Utilisateur Test",
     )
 
     runtime.async_configuration_updated.assert_awaited_once_with()
@@ -923,6 +947,9 @@ def test_websocket_remove_scheduled_moment_planner_error():
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
 
+    connection.user.id = "test_user_123"
+    connection.user.name = "Utilisateur Test"
+
     asyncio.run(
         run_websocket_handler(
             hass,
@@ -940,6 +967,7 @@ def test_websocket_remove_scheduled_moment_planner_error():
     runtime.engine.remove_scheduled_moment.assert_called_once_with(
         "travail",
         "reveil",
+        modified_by="Utilisateur Test",
     )
 
     runtime.storage.async_save.assert_not_awaited()
@@ -961,6 +989,8 @@ def test_websocket_add_week_schedule():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.id = "user_001"
+    connection.user.name = "Utilisateur Test"
 
     asyncio.run(
         run_websocket_handler(
@@ -984,6 +1014,9 @@ def test_websocket_add_week_schedule():
     )
 
     runtime.engine.add_week_schedule.assert_called_once()
+    assert runtime.engine.add_week_schedule.call_args.kwargs == {
+        "modified_by": "Utilisateur Test",
+    }
 
     week_schedule = runtime.engine.add_week_schedule.call_args.args[0]
 
@@ -1072,6 +1105,8 @@ def test_websocket_update_week_schedule():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.id = "user_002"
+    connection.user.name = None
 
     asyncio.run(
         run_websocket_handler(
@@ -1095,6 +1130,9 @@ def test_websocket_update_week_schedule():
     )
 
     runtime.engine.update_week_schedule.assert_called_once()
+    assert runtime.engine.update_week_schedule.call_args.kwargs == {
+        "modified_by": "user_002",
+    }
 
     week_schedule = runtime.engine.update_week_schedule.call_args.args[0]
 
@@ -1255,6 +1293,8 @@ def test_websocket_add_cycle():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.id = "user_001"
+    connection.user.name = "Utilisateur Test"
 
     asyncio.run(
         run_websocket_handler(
@@ -1276,6 +1316,9 @@ def test_websocket_add_cycle():
     )
 
     runtime.engine.add_cycle.assert_called_once()
+    assert runtime.engine.add_cycle.call_args.kwargs == {
+        "modified_by": "Utilisateur Test",
+    }
 
     cycle = runtime.engine.add_cycle.call_args.args[0]
 
@@ -1390,6 +1433,8 @@ def test_websocket_update_cycle():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.id = "user_002"
+    connection.user.name = None
 
     asyncio.run(
         run_websocket_handler(
@@ -1411,6 +1456,9 @@ def test_websocket_update_cycle():
     )
 
     runtime.engine.update_cycle.assert_called_once()
+    assert runtime.engine.update_cycle.call_args.kwargs == {
+        "modified_by": "user_002",
+    }
 
     cycle = runtime.engine.update_cycle.call_args.args[0]
 
@@ -1650,6 +1698,8 @@ def test_websocket_add_calendar_exception():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.id = "user_001"
+    connection.user.name = "Utilisateur Test"
 
     asyncio.run(
         run_websocket_handler(
@@ -1668,6 +1718,10 @@ def test_websocket_add_calendar_exception():
     )
 
     runtime.engine.add_calendar_exception.assert_called_once()
+
+    assert runtime.engine.add_calendar_exception.call_args.kwargs == {
+        "modified_by": "Utilisateur Test",
+    }
 
     calendar_exception = runtime.engine.add_calendar_exception.call_args.args[0]
 
@@ -1736,6 +1790,8 @@ def test_websocket_update_calendar_exception():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.id = "user_002"
+    connection.user.name = None
 
     asyncio.run(
         run_websocket_handler(
@@ -1754,6 +1810,9 @@ def test_websocket_update_calendar_exception():
     )
 
     runtime.engine.update_calendar_exception.assert_called_once()
+    assert runtime.engine.update_calendar_exception.call_args.kwargs == {
+        "modified_by": "user_002",
+    }
 
     calendar_exception = runtime.engine.update_calendar_exception.call_args.args[0]
 
@@ -1969,6 +2028,8 @@ def test_websocket_add_moment_action():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.name = "Utilisateur C"
+    connection.user.id = "user_003"
 
     asyncio.run(
         run_websocket_handler(
@@ -1996,6 +2057,10 @@ def test_websocket_add_moment_action():
     runtime.engine.get_moment.assert_called_once_with("wake_up")
 
     updated = runtime.engine.update_moment.call_args.args[0]
+
+    assert (
+        runtime.engine.update_moment.call_args.kwargs["modified_by"] == "Utilisateur C"
+    )
 
     assert updated.id == "wake_up"
     assert updated.name == "Réveil"
@@ -2071,6 +2136,8 @@ def test_websocket_update_moment_action():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.name = None
+    connection.user.id = "user_123"
 
     asyncio.run(
         run_websocket_handler(
@@ -2098,6 +2165,8 @@ def test_websocket_update_moment_action():
     runtime.engine.get_moment.assert_called_once_with("wake_up")
 
     updated = runtime.engine.update_moment.call_args.args[0]
+
+    assert runtime.engine.update_moment.call_args.kwargs["modified_by"] == "user_123"
 
     assert updated.id == current.id
     assert updated.name == current.name
@@ -2174,6 +2243,8 @@ def test_websocket_remove_moment_action():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.name = "Utilisateur D"
+    connection.user.id = "user_005"
 
     asyncio.run(
         run_websocket_handler(
@@ -2192,6 +2263,10 @@ def test_websocket_remove_moment_action():
     runtime.engine.get_moment.assert_called_once_with("wake_up")
 
     updated = runtime.engine.update_moment.call_args.args[0]
+
+    assert (
+        runtime.engine.update_moment.call_args.kwargs["modified_by"] == "Utilisateur D"
+    )
 
     assert updated.id == current.id
     assert updated.name == current.name
@@ -2368,6 +2443,8 @@ def test_websocket_add_moment():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.name = "Utilisateur A"
+    connection.user.id = "user_001"
 
     asyncio.run(
         run_websocket_handler(
@@ -2386,6 +2463,7 @@ def test_websocket_add_moment():
 
     created = runtime.engine.add_moment.call_args.args[0]
 
+    assert runtime.engine.add_moment.call_args.kwargs["modified_by"] == "Utilisateur A"
     assert created.id == "wake_up"
     assert created.name == "Réveil"
     assert created.icon == "mdi:alarm"
@@ -2431,6 +2509,8 @@ def test_websocket_update_moment():
 
     hass = create_hass_with_runtime(runtime)
     connection = MagicMock()
+    connection.user.id = "user_002"
+    connection.user.name = "Utilisateur B"
 
     asyncio.run(
         run_websocket_handler(
@@ -2448,6 +2528,10 @@ def test_websocket_update_moment():
     )
 
     runtime.engine.get_moment.assert_called_once_with("wake_up")
+
+    assert (
+        runtime.engine.update_moment.call_args.kwargs["modified_by"] == "Utilisateur B"
+    )
 
     updated = runtime.engine.update_moment.call_args.args[0]
 
