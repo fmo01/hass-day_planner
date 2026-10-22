@@ -11,9 +11,9 @@ Ce document est destiné à `scripts/tests/README.md`. Version publiée de réf�
 Ce bloc est remplacé automatiquement après une exécution réussie. Les valeurs ci-dessous reprennent l'exécution GitHub Actions communiquée par l'utilisateur du 14 octobre 2026 à 12:15:34 Europe/Paris.
 
 <!-- TEST-STATS-START -->
-- Tests réussis : **407**
-- Lignes mesurées : **1907**
-- Lignes couvertes : **1907**
+- Tests réussis : **449**
+- Lignes mesurées : **2154**
+- Lignes couvertes : **2154**
 - Lignes non couvertes : **0**
 - Couverture : **100.00%**
 <!-- TEST-STATS-END -->
@@ -261,46 +261,47 @@ La couverture est suivie sans seuil bloquant. L'objectif de 100 % ne nécessite 
 Les valeurs ci-dessous proviennent de l'exécution GitHub Actions réussie datée dans le tableau. Elles seront actualisées automatiquement lors d'une prochaine exécution.
 
 <!-- COVERAGE-MODULES-START -->
-Dernière mise à jour : **2026-10-19 12:32:41 Europe/Paris**
+Dernière mise à jour : **2026-10-22 12:35:54 Europe/Paris**
 
 | Package | Composant | Instructions | Non couvertes | Couverture |
 |---|---|---:|---:|---:|
-|  | `__init__.py` | 58 | 0 | 100.00% |
-|  | `action_executor.py` | 18 | 0 | 100.00% |
+|  | `__init__.py` | 67 | 0 | 100.00% |
+|  | `action_executor.py` | 131 | 0 | 100.00% |
 |  | `calendar.py` | 56 | 0 | 100.00% |
 |  | `config_flow.py` | 12 | 0 | 100.00% |
-|  | `const.py` | 38 | 0 | 100.00% |
+|  | `const.py` | 40 | 0 | 100.00% |
 |  | `frontend.py` | 7 | 0 | 100.00% |
-|  | `ha_scheduler.py` | 39 | 0 | 100.00% |
+|  | `ha_scheduler.py` | 50 | 0 | 100.00% |
 |  | `integration_info.py` | 9 | 0 | 100.00% |
+|  | `logbook.py` | 31 | 0 | 100.00% |
 |  | `options_flow.py` | 454 | 0 | 100.00% |
 |  | `panel.py` | 10 | 0 | 100.00% |
 |  | `runtime.py` | 18 | 0 | 100.00% |
 |  | `schemas.py` | 21 | 0 | 100.00% |
 |  | `sensor.py` | 99 | 0 | 100.00% |
-|  | `services.py` | 126 | 0 | 100.00% |
+|  | `services.py` | 152 | 0 | 100.00% |
 |  | `storage.py` | 16 | 0 | 100.00% |
 |  | `websocket_api.py` | 449 | 0 | 100.00% |
 | `domain` | `__init__.py` | 11 | 0 | 100.00% |
 | `domain` | `action.py` | 13 | 0 | 100.00% |
-| `domain` | `calendar_exception.py` | 10 | 0 | 100.00% |
-| `domain` | `cycle.py` | 9 | 0 | 100.00% |
-| `domain` | `day_type.py` | 9 | 0 | 100.00% |
-| `domain` | `metadata.py` | 4 | 0 | 100.00% |
-| `domain` | `moment.py` | 11 | 0 | 100.00% |
+| `domain` | `calendar_exception.py` | 16 | 0 | 100.00% |
+| `domain` | `cycle.py` | 15 | 0 | 100.00% |
+| `domain` | `day_type.py` | 15 | 0 | 100.00% |
+| `domain` | `metadata.py` | 9 | 0 | 100.00% |
+| `domain` | `moment.py` | 17 | 0 | 100.00% |
 | `domain` | `planner_configuration.py` | 18 | 0 | 100.00% |
 | `domain` | `resolved_day_context.py` | 5 | 0 | 100.00% |
 | `domain` | `scheduled_event.py` | 5 | 0 | 100.00% |
 | `domain` | `scheduled_moment.py` | 9 | 0 | 100.00% |
 | `domain` | `time_definition.py` | 9 | 0 | 100.00% |
-| `domain` | `week_schedule.py` | 8 | 0 | 100.00% |
-| `planner` | `engine.py` | 133 | 0 | 100.00% |
+| `domain` | `week_schedule.py` | 14 | 0 | 100.00% |
+| `planner` | `engine.py` | 153 | 0 | 100.00% |
 | `planner` | `errors.py` | 3 | 0 | 100.00% |
 | `planner` | `protocols.py` | 2 | 0 | 100.00% |
 | `planner` | `resolver.py` | 45 | 0 | 100.00% |
 | `planner` | `scheduler.py` | 67 | 0 | 100.00% |
 | `planner` | `validator.py` | 106 | 0 | 100.00% |
-| **TOTAL** | | **1907** | **0** | **100.00%** |
+| **TOTAL** | | **2154** | **0** | **100.00%** |
 <!-- COVERAGE-MODULES-END -->
 
 ---
@@ -389,10 +390,10 @@ Python 3.14.8
 pytest 9.0.3
 pytest-cov 7.1.0
 pytest-homeassistant-custom-component 0.13.373
-Tests exécutés : 407 
-Tests réussis : 407 
+Tests exécutés : 449 
+Tests réussis : 449 
 Couverture totale : 100.00%
-Dernière exécution : 2026-10-19 12:32:41 Europe/Paris
+Dernière exécution : 2026-10-22 12:35:54 Europe/Paris
 ```
 <!-- TEST-ENV-END -->
 
