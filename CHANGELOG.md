@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.2](https://github.com/fmo01/hass-day_planner/compare/0.2.1...0.2.2) (2026-10-22)
+
+### Bug Fixes
+
+* Ajout Journalisation et attribution des actions Day Planner, Versions et changelog, Audit, Correction message IHM ([7cfa1a5](https://github.com/fmo01/hass-day_planner/commit/7cfa1a57d47501e2f6b57df8c2d181e4822a48d5))
+
 ## [0.2.1](https://github.com/fmo01/hass-day_planner/compare/0.2.0...0.2.1) (2026-10-19)
 
 ### Bug Fixes
