@@ -1,8 +1,8 @@
 # Day Planner — Roadmap et suivi d’avancement
 
-**Mise à jour : 22 octobre 2026. Version publiée de référence : 0.2.0, dernière version confirmée par l’utilisateur. Traçabilité `Audit` intégrée au modèle et aux trois interfaces de mutation ; contrôles HA confirmés pour les cinq familles d’objets. Les modifications ne constituent pas une nouvelle release 0.2.0.**
+**Mise à jour : 26 octobre 2026. Version publiée de référence : 0.2.0, dernière version confirmée par l’utilisateur. Traçabilité `Audit` intégrée ; L1-06 (sept essais réels) et L1-11 (absence de rattrapage après arrêt) clôturés. L3-06 et L3-07 validés, et L3-08 qualifié : cache frontend OK, accès complet des non-administrateurs constaté, gestion fine des droits reportée (L3-12). Prochain chantier : L3-10, duplication globale, non encore implémentée. Il ne s’agit pas d’une nouvelle publication.**
 
-La roadmap reprend les **six lots de la première version**. Les sept étapes de finalisation des vues sont rattachées aux lots concernés, avec leurs statuts conservés. Les numéros des lots sont des repères stables ; les vues Moments, Types de journée, Semaines types, Cycles et Calendrier / Exceptions sont validées. Le travail immédiat porte sur les contrôles transversaux restants ; L1-06 reste en cours.
+La roadmap reprend les **six lots de la première version**. Les sept étapes de finalisation des vues sont rattachées aux lots concernés, avec leurs statuts conservés. Les numéros des lots sont des repères stables ; les vues Moments, Types de journée, Semaines types, Cycles et Calendrier / Exceptions sont validées. Les sept essais fonctionnels prévus pour L1-06 sont validés le 22 octobre ; L3-06 est clôturé le 23 octobre après validation des contrôles d’erreurs et d’annulation ; L3-07 est clôturé le 24 octobre après les validations sur ordinateur et mobile. L3-08 a été qualifié le 24 octobre : chargement des fichiers frontend avec rechargement simple après mise à jour/redémarrage et droits CRUD des non-administrateurs constatés. La délégation fine des droits reste volontairement reportée à L3-12. L1-11 a été validé en conditions réelles le 26 octobre ; L3-10 (duplication) devient le prochain chantier.
 
 Les statuts des vues proviennent des essais HA confirmés par l’utilisateur jusqu’au 19 octobre. Les constats techniques combinent la relecture historique du ZIP et celle des 14 fichiers frontend actualisés, puis du dernier day-planner-card.js du 19 octobre. La vérification finale des six corrections est une relecture du code et un contrôle syntaxique ; les simulations de doubles appels ont été effectuées sur la version précédente. Les versions cibles restent indicatives, sans date de publication engagée.
 
@@ -50,9 +50,9 @@ Les mentions d'i18n dans les blocs suivants décrivent donc des ajustements oppo
 
 | Lot | Intitulé | Version cible indicative | Avancement actuel |
 | --- | --- | --- | --- |
-| 1 | Stabiliser le socle | Corrections livrées en 0.2.0 | Corrections fonctionnelles, workflow et versions/changelog terminés. L1-06 reste en cours pour les essais réels HA. |
+| 1 | Stabiliser le socle | Corrections livrées en 0.2.0 | Corrections fonctionnelles, workflow et versions/changelog terminés ; L1-06 validé le 22/10 et L1-11 validé le 26/10 après arrêt couvrant un événement. |
 | 2 | Intégrer les Metadata / `Audit` | À définir après 0.2.0 | Modèles, moteur, persistance et trois interfaces validés ; présentation détaillée des métadonnées dans l’interface restant à qualifier. |
-| 3 | Simplifier la gestion quotidienne | 0.3.0 | En cours ; les cinq vues sont validées. Corrections transversales de robustesse vérifiées ; accessibilité, responsive, cache et permissions restent à qualifier. |
+| 3 | Simplifier la gestion quotidienne | 0.3.0 | En cours ; les cinq vues sont validées. Formulaires (L3-06), clavier/mobile (L3-07) validés ; L3-08 qualifié (cache OK, permissions existantes constatées). Attribution fine des droits reportée (L3-12). Duplication globale (L3-10) prioritaire, non encore implémentée. |
 | 4 | Ajouter les horaires avancés | 0.4.0 | À planifier ; périmètre à préciser. |
 | 5 | Ajouter une source de calendrier externe | 0.5.0 | À planifier ; règles de synchronisation à définir. |
 | 6 | Qualifier la première version stable | 1.0.0 | À préparer après consolidation du périmètre retenu. |
@@ -74,11 +74,12 @@ Statuts : **Terminé**, **Terminé et figé**, **Presque terminé**, **En cours*
 | L1-03 | 1 | Assertions de version et tableau par package | Terminé | Conserver la génération automatique. | Tests relus ; générateurs vérifiés avec XML synthétiques. | 13/10/2026 |
 | L1-04 | 1 | Références des sept jours des semaines types | Terminé | Maintenir les contrôles et tests des sept jours ; L3-03 est maintenant clôturé. | Validation métier du 14/10 ; essais HA des semaines types confirmés par l’utilisateur. | 19/10/2026 |
 | L1-05 | 1 | Moments simultanés | Terminé | Maintenir les tests de non-régression dans les fichiers existants. | Deux nouveaux tests réussis ; 29 tests des planificateurs passés, puis suite complète de 403 tests réussie, selon les résultats utilisateur. | 14/10/2026 |
-| L1-06 | 1 | Transitions temporelles et rechargement | En cours | Confirmer dans HA les déclenchements, le passage de minuit, les redémarrages/rechargements, l’absence de doublons et de rattrapage après arrêt. Aucun nouveau rappel programmé par cette mise à jour. | Tests Python de minuit et DST réussis ; 407 tests et 100 % communiqués le 14/10. Maintien explicite en cours par l’utilisateur ; essais réels du planificateur non confirmés. | 19/10/2026 |
+| L1-06 | 1 | Transitions temporelles et rechargement | Terminé | Conserver les validations et tests de non-régression. L’essai distinct après arrêt est validé dans L1-11. | 22/10, sept scénarios HA confirmés successivement par l’utilisateur : action sur deux helpers (logs et événements), deux moments distincts simultanés, modification d’horaire, exception de calendrier, changement de cycle, passage à minuit et redémarrage avant déclenchement. Contrôles Python minuit/DST antérieurs conservés. | 22/10/2026 |
 | L1-07 | 1 | Filtres et présentation du workflow | Terminé | Conserver les rapports et la mise à jour automatique du README, sans seuil bloquant. | Exécution tests.yml réussie confirmée par l'utilisateur ; README généré le 14/10 à 12:15:34 : 407 tests, 1 908 instructions, 100 %. | 14/10/2026 |
 | L1-08 | 1 | Seuil de couverture imposé en CI | Abandonné | Ne pas ajouter de seuil bloquant ; conserver la mesure et les rapports de couverture. | Décision explicite de l'utilisateur le 14/10 : refus de --cov-fail-under=100. L'objectif de couverture reste suivi. | 14/10/2026 |
 | L1-09 | 1 | Versions et changelog | Terminé | Maintenir le manifeste comme référence ; laisser semantic-release gérer les prochaines versions. | Utilisateur : L1-09 terminé. Manifeste 0.2.0 ; ancienne constante supprimée ; entrée 0.1.0 du 10/10 restaurée d'après le tag et doublons retirés. | 14/10/2026 |
 | L1-10 | 1 | Journalisation et attribution des actions Day Planner | Terminé (fonctionnement validé) | Conserver les tests de non-régression et contrôler les cas d’intégrations tierces à exécution différée. | 20/10 : deux activités Logbook observées ; `input_boolean.day_planner_test` désactivé avec cause « Day Planner — action XX1 test (id : XX1) ». Journaux DEBUG/INFO/WARNING/ERROR, cibles manquantes et contexte commun couverts par les tests. | 20/10/2026 |
+| L1-11 | 1 | Non-rattrapage après arrêt couvrant un événement | Terminé | Maintenir ce comportement et les tests de non-régression. | Test HA réel confirmé le 26/10/2026 : arrêt avant un événement, redémarrage après l’horaire, aucune exécution rétroactive ; reprise de la programmation future. Distinct du redémarrage avant événement validé sous L1-06. | 26/10/2026 |
 | L2-01 | 2 | Modèle Metadata et règles auteur/horodatage | Terminé | Conserver le modèle `Audit` et ses règles ; aucune substitution de classe requise. | 21–22/10 : `Audit` intégré aux cinq objets, dates UTC/ISO, création et modification centralisées dans `PlannerEngine`, anciens objets acceptés sans migration ; tests utilisateur confirmés. | 22/10/2026 |
 | L2-02 | 2 | Persistance, migration et interfaces Metadata | En cours | Persistance et trois interfaces validées ; qualifier l’affichage explicite de l’audit dans le panneau / les options. **Aucune migration des anciennes données n’est prévue** dans ce chantier. | 21–22/10 : sérialisation conditionnelle et mutations WebSocket, Services et Options Flow adaptées ; tests Python et essais HA validés. | 22/10/2026 |
 | L2-03 | 2 | Validation fonctionnelle de la traçabilité des cinq objets | Terminé | Maintenir les tests et contrôles après modification du moteur ou du frontend. | 22/10 : utilisateur confirme successivement Moments/Actions, Types de journée/Moments planifiés, Semaines types, Cycles et Exceptions ; champs d’audit vérifiés après création et modification. | 22/10/2026 |
@@ -87,19 +88,21 @@ Statuts : **Terminé**, **Terminé et figé**, **Presque terminé**, **En cours*
 | L3-03 | 3 | Semaines types | Terminé | Maintenir les sept affectations, la conservation des saisies et les messages dans les dialogues. | Quatre essais HA confirmés : création invalide, modification invalide, CRUD et suppression refusée si utilisée par un cycle ; visibilité des erreurs validée. | 19/10/2026 |
 | L3-04 | 3 | Cycles | Terminé | Maintenir le CRUD, les brouillons, les messages i18n et les protections relues ; comportement temporel réel suivi dans L1-06. | Essais HA des cycles tous confirmés le 18/10 ; corrections complémentaires de robustesse relues le 19/10 dans le dernier fichier syntaxiquement valide. | 19/10/2026 |
 | L3-05 | 3 | Calendrier / Exceptions | Terminé | Maintenir le remplacement du programme par une exception et le retour au cycle après suppression ; L1-06 reste distinct. | Tous les essais HA confirmés le 19/10 : CRUD, description facultative vide, conservation des saisies, type appliqué et retour au programme après suppression. | 19/10/2026 |
-| L3-06 | 3 | Cohérence transversale des modales et messages | En cours | Terminer le contrôle global des ouvertures/fermetures, annulations et erreurs, notamment lors d’un échec API ; ne pas confondre relecture et essais HA. | Corrections relues le 19/10 : protection de l’édition cycle lors des actualisations HA, gardes et boutons cycles/exceptions, render dans finally et ordre des validations. | 19/10/2026 |
-| L3-07 | 3 | Nettoyage CSS/JS, accessibilité et responsive | En cours | Poursuivre le nettoyage ciblé ; vérifier focus, clavier, libellés et petits écrans sans rouvrir les moments figés sans défaut concret. | 14 fichiers frontend relus : 12 JS et 2 JSON syntaxiquement valides ; gestionnaire de suppression cycle en double retiré et vérifié. | 19/10/2026 |
-| L3-08 | 3 | Cache/versioning frontend et permissions | À faire | Vérifier chargement après mise à jour et droits retenus. | Passage transversal prévu. | 13/10/2026 |
+| L3-06 | 3 | Cohérence transversale des modales et messages | Terminé | Maintenir les contrôles de non-régression ; toute nouvelle fenêtre doit respecter les comportements validés. Aucun contrôle de fermeture par croix : les fenêtres testées ne disposent pas de croix. | 22–23/10 : utilisateur confirme message explicite au dépassement de la limite des cycles, conservation des saisies après erreur, correction puis enregistrement, annulation sans mutation et absence de croix. Corrections JS relues le 19/10 ; aucun test supplémentaire inventé. | 23/10/2026 |
+| L3-07 | 3 | Nettoyage CSS/JS, accessibilité et responsive | Terminé (contrôles convenus) | Maintenir la navigation au clavier et le rendu mobile lors des évolutions ; les travaux généraux de rationalisation CSS/JS, si nécessaires, restent transversaux et ne rouvrent pas la validation acquise. | 23/10 : après les correctifs L3-07 v2/v3, utilisateur confirme le retour des clics et saisies, le focus initial dans le premier champ, la navigation clavier correcte et la gestion du fond. 24/10 : essai réel sur mobile validé et fermeture par Échap confirmée. Fonctionnement constaté dans HA ; aucune nouvelle exécution complète des tests automatisés n’est impliquée. | 24/10/2026 |
+| L3-08 | 3 | Cache/versioning frontend et permissions actuelles | Terminé (contrôles convenus) | Maintenir le comportement constaté jusqu’à la définition des droits fins en L3-12. | 24/10 : après mise à jour et redémarrage, simple rechargement suffisant (pas de Ctrl+Maj+R) ; compte non-administrateur testé : consultation, ajout, modification et suppression possibles. | 24/10/2026 |
 | L3-09 | 3 | i18n restante | Reporté | Traiter opportunément lorsqu'un composant est retouché ; ne bloque pas un lot. | Priorité utilisateur. | 13/10/2026 |
-| L3-10 | 3 | Duplication et moments prédéfinis guidés | À planifier | Sélectionner selon les besoins après consolidation. | Améliorations conservées. | 13/10/2026 |
+| L3-10 | 3 | Dupliquer tous les objets gérés en complément de modifier/supprimer | À planifier | Ajouter une action « Dupliquer » aux Moments, Actions, Types de journée, Moments planifiés, Semaines types, Cycles et Exceptions ; formulaire prérempli, nouvel ID, validation des contraintes, nouvel audit et tests. | Extension demandée par l’utilisateur le 22/10 ; aucune implémentation ni validation encore annoncée. | 22/10/2026 |
+| L3-11 | 3 | Ajout guidé des moments prédéfinis | À planifier | Conserver comme amélioration future indépendante de L3-10 ; en préciser le parcours après consolidation. | Sous-sujet préexistant à L3-10, conservé lors de sa scission le 22/10/2026. | 22/10/2026 |
+| L3-12 | 3 | Gestion déléguée des droits (gestionnaires/lecteurs) | Reporté | Réexaminer après finalisation des autres fonctionnalités : délégation par utilisateur, droit de modifier les actions HA, protection API/WebSocket et services. | Étude d’impact du 24/10, décision utilisateur le même jour de reporter l’évolution sans changer les droits actuels. | 24/10/2026 |
 | L4-01 | 4 | Horaires avancés | À planifier | Définir règles, indisponibilités, passages de date et compatibilité. | Évolution conservée. | 13/10/2026 |
 | L5-01 | 5 | Source de calendrier externe | À planifier | Définir source, correspondances, priorités et synchronisation. | Évolution conservée. | 13/10/2026 |
 | L6-01 | 6 | Résultat de couverture de référence | Terminé | Actualiser après chaque exécution pertinente ; conserver les résultats précédents dans l’historique. | 21/10 : 449 tests, 2 146 instructions, 0 non couverte, 100 %, 5 avertissements, 1,67 s, Python 3.14.3. Historique 14/10 conservé dans le journal et les guides. | 22/10/2026 |
-| L6-02 | 6 | Validation backend et WebSocket/API après corrections | Terminé | Relancer après de nouvelles modifications ; la validation réelle HA de L1-06 reste ouverte. | Suite complète réussie selon le résultat utilisateur : 407 tests après ajout des tests de minuit et des changements d'heure. | 14/10/2026 |
+| L6-02 | 6 | Validation backend et WebSocket/API après corrections | Terminé | Relancer après de nouvelles modifications ; L1-06 validé le 22/10 et L1-11 validé séparément le 26/10. | Suite complète réussie selon le résultat utilisateur : 407 tests après ajout des tests de minuit et des changements d'heure. | 14/10/2026 |
 | L6-03 | 6 | Tests ciblés frontend et essais visuels | En cours | Compléter les contrôles visuels et interactions utiles sur panneau/carte et ordinateur/mobile ; confirmer les conditions d’erreur et d’attente si nécessaire. | Essais fonctionnels HA des cinq vues confirmés ; simulations API sur version précédente et contrôle syntaxique/relecture des six corrections du dernier fichier. | 19/10/2026 |
 | L6-04 | 6 | HACS et lint/format | À faire | Exécuter les contrôles du périmètre livré. | Résultats restant à confirmer. | 13/10/2026 |
 | L6-05 | 6 | Documentation actualisée dans le dépôt | Terminé | Corriger ensuite les constats devenus obsolètes et le texte sur les plugins. | Documentation intégrée dans le ZIP relu. | 13/10/2026 |
-| L6-06 | 6 | Cohérence finale de la documentation | Terminé | Intégrer les fichiers actualisés au dépôt ; maintenir les guides au fil des prochaines évolutions. | Documentation alignée sur 0.2.0, résultat GitHub Actions du 14/10 à 12:15:34, L1-07/L1-09 terminés, L1-06 toujours en cours ; fichiers préparés pour intégration. | 14/10/2026 |
+| L6-06 | 6 | Cohérence finale de la documentation | Terminé | Intégrer les fichiers actualisés au dépôt ; maintenir les guides au fil des prochaines évolutions. | Documentation alignée sur 0.2.0, résultat GitHub Actions du 14/10 à 12:15:34, L1-07/L1-09 terminés, L1-06 alors en cours (état historique du 14/10) ; fichiers préparés pour intégration. | 14/10/2026 |
 | L6-07 | 6 | Installation, mise à jour et retrait | À faire | Vérifier installation neuve, migrations et retrait avec/sans suppression. | Qualification prévue. | 13/10/2026 |
 | L6-08 | 6 | Préparation d'une version propre | À faire | Fixer périmètre, notes de release et limites connues. | Qualification prévue. | 13/10/2026 |
 | L6-09 | 6 | Tests de régression de l’exécution et du Journal de bord | Terminé | Maintenir les nouveaux cas lors des évolutions de scripts et des mises à jour HA. | 20/10 : 19 tests ciblés réussis en simulation, modules `action_executor.py` et `logbook.py` à 100 % ciblés ; couverture globale 100 % confirmée ensuite par l’utilisateur. | 20/10/2026 |
@@ -117,9 +120,9 @@ Statuts : **Terminé**, **Terminé et figé**, **Presque terminé**, **En cours*
 - Compléter les fichiers existants pour les corrections apportées.
 - Ajouter des tests frontend ciblés si les interactions modifiées le justifient, puis effectuer les essais visuels nécessaires.
 - **Terminé le 14/10/2026 :** correction et tests des moments simultanés ; tous les moments d'un même horaire sont traités par le rappel. Conserver les tests de non-régression, sans rouvrir la vue Moments.
-- Vérifier le passage de minuit, les changements de cycles, le redémarrage et le rechargement près d'un déclenchement.
-- Vérifier les erreurs d'actions, les rappels annulés et l'absence de rattrapage des événements passés.
-- **Tests Python terminés le 14/10/2026 :** règle de type cron Debian pour les horaires fixes. Au printemps, les occurrences de l'heure supprimée sont regroupées au premier instant valide (03:00 en Europe/Paris) ; en automne, exécution au premier passage seulement. Les essais réels HA restent à confirmer.
+- **Terminé le 22/10/2026 (L1-06) :** sept essais réels HA validés : action sur deux helpers et traces, deux moments simultanés, modification d’horaire, exception de calendrier, changement de cycle, passage à minuit et redémarrage avant déclenchement.
+- **Terminé le 26/10/2026 (L1-11) :** test réel confirmé d’un événement manqué pendant un arrêt HA : aucun rattrapage rétroactif, reprise de la planification future. Les autres cas d’erreur et de rappels annulés restent couverts par les tests existants.
+- **Tests Python terminés le 14/10/2026 :** règle de type cron Debian pour les horaires fixes. Au printemps, les occurrences de l'heure supprimée sont regroupées au premier instant valide (03:00 en Europe/Paris) ; en automne, exécution au premier passage seulement. Les scénarios HA de L1-06 sont validés le 22/10 ; les passages DST restent fondés sur les tests Python, sans essai réel supplémentaire annoncé.
 
 ### Ajustements CI et cohérence de version
 
@@ -143,7 +146,7 @@ La configuration invalide est refusée, les événements simultanés sont exécu
 
 Le modèle existant `Audit` est conservé (sans renommage imposé vers `Metadata`). Les cinq objets racine persistés portent un audit facultatif avec auteur/date de création et de modification, et les fonctions d’actualisation sont centralisées dans `PlannerEngine`. Les changements d’`Action` et de `ScheduledMoment` actualisent leur parent ; les objets référencés ne changent pas. WebSocket et services privilégient le nom affiché de l’utilisateur, sinon son identifiant ; les Options Flow utilisent `"system"`.
 
-Les données historiques sans audit restent compatibles ; **aucune migration ni invention d’auteur ou de date historique**. En cas de première édition d’un ancien objet, l’audit commence à cette édition. La persistance et les mutations ont été validées par tests et essais Home Assistant du 22 octobre ; il reste à décider ou qualifier l’affichage direct de ces champs dans le panneau et les formulaires. Les contrôles de reprise/redémarrage temporel du planificateur restent suivis séparément en L1-06.
+Les données historiques sans audit restent compatibles ; **aucune migration ni invention d’auteur ou de date historique**. En cas de première édition d’un ancien objet, l’audit commence à cette édition. La persistance et les mutations ont été validées par tests et essais Home Assistant du 22 octobre ; il reste à décider ou qualifier l’affichage direct de ces champs dans le panneau et les formulaires. Les essais de reprise/redémarrage avant déclenchement sont validés en L1-06 ; le non-rattrapage d’un événement passé pendant l’arrêt est suivi séparément en L1-11.
 
 ## 7. Lot 3 — Simplifier la gestion quotidienne
 
@@ -224,7 +227,7 @@ Un cycle valide est sauvegardé et résolu correctement ; les entrées invalides
 
 **Statut : terminé ; tous les essais fonctionnels HA confirmés le 19 octobre.**
 
-La description reste facultative ; une chaîne vide est transmise à l’API. Les brouillons conservent les saisies après erreur. Création, modification, effacement de description et suppression avec retour au cycle sont validés. Les travaux ci-dessous restent le périmètre de référence ; la qualification transversale et L1-06 restent ouvertes.
+La description reste facultative ; une chaîne vide est transmise à l’API. Les brouillons conservent les saisies après erreur. Création, modification, effacement de description et suppression avec retour au cycle sont validés. Les travaux ci-dessous restent le périmètre de référence ; la qualification transversale reste ouverte ; L1-06 est clôturé le 22/10.
 
 #### Travaux
 
@@ -242,25 +245,53 @@ L'ajout, l'édition et le retrait d'une exception actualisent correctement le pl
 
 ### 3F. Passage transversal final
 
-**Statut : en cours.** Première série de six corrections terminée et vérifiée sur le dernier fichier le 19 octobre : protection de l’édition cycle lors des actualisations HA, gardes des cinq opérations restantes, désactivation des boutons cycles, rendu final des exceptions, gestionnaire de suppression cycle unique et ordre des validations de date. Les contrôles syntaxiques passent. Aucun nouveau résultat de suite Python ni essai complet clavier/mobile/cache/permissions n’est déduit de cette relecture.
+**Statut : L3-06 terminé le 23/10, L3-07 et L3-08 qualifiés le 24/10 ; droits avancés reportés en L3-12.** Première série de six corrections terminée et vérifiée sur le dernier fichier le 19 octobre : protection de l’édition cycle lors des actualisations HA, gardes des cinq opérations restantes, désactivation des boutons cycles, rendu final des exceptions, gestionnaire de suppression cycle unique et ordre des validations de date. Les contrôles syntaxiques passent. Aucun nouveau résultat de suite Python ni essai complet clavier/mobile/cache/permissions n’est déduit de cette relecture.
 
 #### Travaux
 
 - Recenser les onglets en français en dur et les messages généraux : « Chargement… », erreurs globales et navigation. Traduire lorsque les composants sont déjà retouchés ; ne pas en faire une condition de sortie.
 - Réduire les doublons CSS/JS identifiés sans rouvrir inutilement les vues figées.
-- Vérifier la cohérence des modales : ouverture, fermeture, confirmation, annulation et erreurs.
-- Vérifier l'accessibilité : focus, navigation clavier, libellés et boutons.
-- Vérifier le panneau et la carte Lovelace sur ordinateur et mobile.
-- Définir et vérifier le cache/versioning frontend pour qu'une mise à jour charge les nouveaux fichiers.
-- Vérifier les droits de consultation et de modification selon le périmètre retenu.
+- **L3-06 terminé :** cohérence des messages, conservation des champs après erreur, correction/enregistrement et annulation sans effet. Les fenêtres testées n’ont pas de croix de fermeture (contrôle non applicable). Maintenir cette garantie lors des futures évolutions.
+- **L3-07 terminé le 24/10 :** anomalie initiale de focus/Tab/Échap constatée sur tous les formulaires. Premier correctif régressif (clic/saisie bloqués et navigation basculant vers le navigateur), puis correctifs v2/v3 validés progressivement par l’utilisateur dans Home Assistant : clic/saisie rétablis, focus initial dans le premier champ, navigation clavier correcte, affichage mobile OK et Échap opérationnel. Les regressions du premier correctif ne doivent pas être réintroduites. Conserver le retour du focus et les cas de sélecteurs complexes dans les vérifications de non-régression si les formulaires évoluent.
+- Maintenir l’accessibilité validée (focus initial, navigation clavier et Échap) ; vérifier les éventuels nouveaux libellés et boutons au fil des modifications.
+- Affichage mobile des fenêtres testé et validé le 24/10 ; poursuivre les contrôles spécifiques de la carte Lovelace si elle évolue (L6-03).
+- **L3-08 validé :** après mise à jour et redémarrage HA, le frontend charge les fichiers actualisés avec un rechargement simple de la page. Conserver les tests de non-régression.
+- **L3-08 qualifié :** compte HA non administrateur testé en consultation, ajout, modification et suppression. La création de profils gestionnaires / lecteurs et le contrôle côté backend sont reportés à L3-12.
 
 #### Critère de sortie
 
 Les vues ont des comportements communs cohérents et restent accessibles. La mise à jour du frontend ne laisse pas un ancien code en cache dans les scénarios vérifiés. Les écarts i18n non traités restent recensés.
 
+### 3G. Duplication de tous les objets — L3-10
+
+**Statut : prochain chantier après L1-11 (26 octobre 2026), sans implémentation à ce jour.** Ajout demandé le 22 octobre 2026. Cette fonctionnalité complète les commandes de gestion existantes (« Éditer/Modifier » et « Supprimer ») sans rouvrir les validations déjà acquises ni considérer la duplication comme implémentée.
+
+#### Périmètre de l'action « Dupliquer »
+
+- **Moments :** créer un nouveau moment à partir d'un existant ; reprendre son nom, son icône et ses actions. Générer de nouveaux identifiants pour le moment et pour les actions copiées. Les références des journées vers le moment source restent inchangées.
+- **Actions d'un moment :** dupliquer une action (libellé et séquence Home Assistant) dans le même moment, avec un identifiant d'action distinct ; aucune exécution lors de la copie.
+- **Types de journée :** reprendre les horaires et les moments planifiés dans un nouveau type de journée ; copier les entrées enfants avec de nouveaux identifiants si nécessaire, tout en conservant les références vers les moments existants.
+- **Moments planifiés :** dupliquer une affectation moment/horaire dans un type de journée, sans contourner les contraintes de validation et d'unicité applicables.
+- **Semaines types :** reprendre les sept affectations de types de journée dans une nouvelle semaine, sans copier physiquement les types de journée référencés.
+- **Cycles :** reprendre la séquence ordonnée des semaines types ; exiger une nouvelle date de début valide (lundi et date distincte), respecter le nombre maximal de cycles configuré et les références existantes.
+- **Exceptions de calendrier :** reprendre type de journée et description, mais exiger une autre date afin d'éviter deux exceptions pour la même journée.
+
+#### Comportement commun attendu
+
+1. Afficher « Dupliquer » à côté des actions existantes de gestion, dans les écrans concernés. Préremplir un formulaire de création à partir de la source et laisser corriger les valeurs avant validation (nom, date, heure, autres champs selon l'objet).
+2. Créer un **nouvel objet distinct** : identifiants uniques et métadonnées d'audit de création fraîches (acteur et horodatage courants), sans reprendre l'historique `Audit` de la source.
+3. Conserver l'objet source, ses références et les liens existants ; une copie ne doit pas déplacer, modifier ou supprimer la source, ni déclencher immédiatement les actions Home Assistant.
+4. Utiliser les mêmes règles métier et contrôles de référence que la création normale ; signaler les collisions d'identifiant, de date, les limites de cycles et les références invalides. Conserver le formulaire prérempli si la création échoue.
+5. Réutiliser la chaîne de persistance, notification et replanification habituelle après réussite ; actualiser les vues. Une annulation ne doit rien écrire.
+6. Compléter les tests existants (`test_engine.py`, `test_validator.py`, `test_websocket_api.py`, tests services/options concernés) et les parcours HA, avec non-régression des opérations Modifier et Supprimer.
+
+#### Critères de sortie
+
+Les sept familles d'objets sont duplicables depuis leur gestion, avec des identifiants valides, sans modifier la source, avec un nouvel audit ; les cas de limites, erreurs API, annulation, dépendances et rafraîchissement sont testés. Les éléments de structure réutilisables restent des références ; les contenus enfants propres à une copie sont indépendants.
+
 ### Améliorations ultérieures conservées
 
-La duplication des journées/semaines et l'ajout guidé des moments prédéfinis restent des améliorations possibles, à sélectionner selon les besoins après consolidation. Import/export, profils multiples et synchronisation bidirectionnelle ne font pas partie du périmètre immédiat.
+L'ajout guidé des moments prédéfinis reste distinct (L3-11). Import/export, profils multiples et synchronisation bidirectionnelle ne font pas partie du périmètre immédiat.
 
 
 ## 8. Lot 4 — Ajouter les horaires avancés
@@ -292,9 +323,9 @@ Définir conflits, événements sur plusieurs jours, fuseaux horaires, origine d
 - Compléter les fichiers existants pour les corrections apportées.
 - Ajouter des tests frontend ciblés si les interactions modifiées le justifient, puis effectuer les essais visuels nécessaires.
 - **Terminé le 14/10/2026 :** correction et tests des moments simultanés ; tous les moments d'un même horaire sont traités par le rappel. Conserver les tests de non-régression, sans rouvrir la vue Moments.
-- Vérifier le passage de minuit, les changements de cycles, le redémarrage et le rechargement près d'un déclenchement.
-- Vérifier les erreurs d'actions, les rappels annulés et l'absence de rattrapage des événements passés.
-- **Tests Python terminés le 14/10/2026 :** règle de type cron Debian pour les horaires fixes. Au printemps, les occurrences de l'heure supprimée sont regroupées au premier instant valide (03:00 en Europe/Paris) ; en automne, exécution au premier passage seulement. Les essais réels HA restent à confirmer.
+- **Terminé le 22/10/2026 (L1-06) :** sept essais réels HA validés : action sur deux helpers et traces, deux moments simultanés, modification d’horaire, exception de calendrier, changement de cycle, passage à minuit et redémarrage avant déclenchement.
+- **Terminé le 26/10/2026 (L1-11) :** test réel confirmé d’un événement manqué pendant un arrêt HA : aucun rattrapage rétroactif, reprise de la planification future. Les autres cas d’erreur et de rappels annulés restent couverts par les tests existants.
+- **Tests Python terminés le 14/10/2026 :** règle de type cron Debian pour les horaires fixes. Au printemps, les occurrences de l'heure supprimée sont regroupées au premier instant valide (03:00 en Europe/Paris) ; en automne, exécution au premier passage seulement. Les scénarios HA de L1-06 sont validés le 22/10 ; les passages DST restent fondés sur les tests Python, sans essai réel supplémentaire annoncé.
 
 
 - **Terminé (L1-07) :** filtres du workflow corrigés et exécution GitHub Actions réussie.
@@ -363,17 +394,29 @@ Les critères des lots peuvent être précisés et de nouvelles tâches ajoutée
 | 21/10/2026 | Audit étendu aux modèles `Moment`, `WeekSchedule`, `Cycle` et `CalendarException`, après `DayType` ; fonctions centralisées dans `PlannerEngine`. Validation progressive des tests dans les fichiers existants, sans patch et sans migration. Dernier rapport complet chiffré : 449 tests, 2 146 instructions, 0 non couverte, 100 % de couverture. |
 | 21–22/10/2026 | WebSocket et services HA transmettent l’auteur réel lorsqu’il est disponible ; Options Flow utilise explicitement `"system"`. Création/modification d’Actions et Moments planifiés attribuées à leur parent. Tests validés successivement. |
 | 22/10/2026 | Contrôles fonctionnels Home Assistant confirmés par l’utilisateur pour Moments, Actions, Types de journée, Moments planifiés, Semaines types, Cycles et Exceptions. L2-01 et L2-03 terminés ; L2-02 reste ouvert uniquement pour l’affichage détaillé des métadonnées et qualification associée. Aucune migration d’audit. |
+| 22/10/2026 | Extension fonctionnelle décidée : opération « Dupliquer » sur toutes les familles gérées (Moments, Actions, Types de journée, Moments planifiés, Semaines types, Cycles et Exceptions), en complément des opérations de modification/suppression. L3-10 élargi ; création de L3-11 pour conserver le sujet historique des moments prédéfinis guidés. Statut : À planifier ; aucun code déclaré modifié. |
+| 22/10/2026 | **L1-06 clôturé** après confirmation utilisateur des sept scénarios HA (deux helpers et traces, deux moments simultanés, replanification horaire, exception, changement de cycle, passage à minuit, redémarrage avant événement). Le test de non-rattrapage après un arrêt couvrant un événement n’a pas été annoncé : suivi explicite L1-11 « À confirmer » ; aucune nouvelle exécution de pytest attribuée à cette validation. L3-06 devient la prochaine priorité. |
+
+| 23/10/2026 | **L3-06 clôturé** après retours utilisateurs : affichage du message de limite à 4 cycles, conservation des saisies lors d’une erreur, possibilité de corriger puis enregistrer, annulation sans modification. Pas de croix de fermeture sur les fenêtres : contrôle non applicable, sans nouveau test requis. Prochaine priorité L3-07 (focus, clavier, libellés et responsive), en lien avec L6-03. |
+
+| 22–23/10/2026 | **L3-07 : défaut de navigation clavier identifié sur l'ensemble des formulaires modaux.** Les onglets de fond reçoivent le focus avant la fenêtre ; Échap ne ferme pas. Patch commun préparé, contrôle syntaxique et `git apply --check` réussis sur le JS de la bibliothèque (19/10). Essais HA indispensables avant validation ou clôture du lot. |
+
+| 24/10/2026 | **L3-07 clôturé** après validation utilisateur dans HA : souris et saisie fonctionnent après correction v2, focus initial correct avec v3, navigation Tab/Maj+Tab correcte, affichage mobile réel OK, touche Échap opérationnelle. Le premier patch avait bloqué clic et saisie et ne doit pas être réintroduit. L3-08 est le prochain point à traiter. Aucun nouveau total pytest n’est attribué à ces essais manuels. |
+
+| 24/10/2026 | **L3-08 qualifié** : simple rechargement après mise à jour/redémarrage HA fonctionne ; un compte non administrateur peut consulter, ajouter, modifier et supprimer. Étude d’impact des droits fins réalisée ; **L3-12 reporté** par décision utilisateur jusqu’à la finalisation des autres fonctionnalités. Aucun changement de permissions. |
+
+| 26/10/2026 | **L1-11 clôturé** après confirmation utilisateur du test HA : événement tombant pendant un arrêt non rattrapé au redémarrage, prochain événement futur replanifié et continuité assurée. **L3-10** devient le prochain chantier ; aucune duplication annoncée comme implémentée. |
 
 ## 12. Prochaine étape
 
-**Terminer le passage transversal final**, en conservant les validations fonctionnelles acquises. Le cœur de la traçabilité est validé ; l’affichage éventuel des métadonnées dans les écrans est à qualifier dans L2-02 :
+**L1-06 est Terminé (22/10/2026)** et **L1-11 est Terminé (26/10/2026)** sur la base des essais réels HA rapportés par l’utilisateur. Les validations L3-06 et L3-07 restent acquises. L3-08 a été qualifié le 24/10 : cache/frontend fonctionnel et droits existants constatés, sans modification des permissions.
 
-1. L3-06 : contrôler les annulations et les erreurs API dans les dialogues ; confirmer les protections en situation réelle si nécessaire.
-2. L3-07 et L6-03 : qualifier clavier, focus et petits écrans, puis panneau et carte Lovelace.
-3. L3-08 : vérifier le chargement des nouveaux fichiers après mise à jour et les droits de consultation/modification.
-4. L6-04 : confirmer les contrôles HACS et lint/format ; actualiser les documents concernés lors de la livraison.
+1. **L3-10 : priorité suivante, duplication des objets.** Commencer par les Moments puis les Actions, et avancer fichier par fichier. Conserver le même parcours d'ajout, avec formulaire prérempli, nouvel identifiant, nouvel audit et aucune modification de la source. Tester chaque étape avant la suivante.
+2. **L3-12 : reporté.** Étude d'impact du 24/10 conservée ; attribution des droits de gestion aux utilisateurs nommés et lecture seule pour les autres à rediscuter une fois les autres fonctionnalités finalisées. Ne pas changer les droits actuels.
+3. **L6-03 / L6-04 :** maintenir les contrôles des formulaires/clavier/mobile, puis confirmer HACS et lint/format avant la livraison.
+4. **L3-11 et L2-02 :** conserver respectivement la création guidée des moments et l'éventuel affichage des métadonnées dans les écrans, sans les confondre avec L3-10.
 
-**L1-06 reste En cours** : essais réels de déclenchement, passage de minuit, redémarrage/rechargement et absence de doublons ou de rattrapage des événements passés. Les rappels historiques restent dans le journal ; aucune échéance future n’est affirmée sans vérification de leur état.
+Les validations manuelles du 26/10 n’impliquent aucun nouveau comptage de tests Python ; la dernière suite complète chiffrée connue demeure le résultat utilisateur du 21/10.
 
 Les vues Moments, Types de journée, Semaines types, Cycles et Calendrier / Exceptions sont validées. Cela ne clôture ni tout le lot 3, ni la qualification finale du lot 6.
 

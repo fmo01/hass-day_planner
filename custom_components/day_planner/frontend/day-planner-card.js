@@ -195,6 +195,7 @@ class DayPlannerCard extends HTMLElement {
       this._deletingCalendarExceptionId ||
       this._creatingMomentAction ||
       this._editingMomentActionId ||
+      this._editingMomentActionsId ||
       this._deletingMomentActionId ||
       this._creatingMoment ||
       this._editingMomentId ||
@@ -3057,9 +3058,225 @@ class DayPlannerCard extends HTMLElement {
     }
   }
 
+  /*
+   * L3-07 : gestion commune du focus pour tous les formulaires modaux.
+   * Les fenêtres existent déjà dans le shadow DOM de la carte.
+   */
+  _captureModalOpener() {
+    const card = this.shadowRoot.querySelector('ha-card');
+    const active = this.shadowRoot.activeElement;
+
+    if (!card || !active || !card.contains(active)) {
+      this._modalOpener = null;
+      return;
+    }
+
+    const controls = Array.from(
+      card.querySelectorAll('button, input, select, textarea, [tabindex]')
+    );
+
+    this._modalOpener = {
+      id: active.id || null,
+      classes: Array.from(active.classList),
+      data: Array.from(active.attributes)
+        .filter((attr) => attr.name.startsWith('data-'))
+        .map((attr) => [attr.name, attr.value]),
+      index: controls.indexOf(active),
+    };
+  }
+
+  _restoreModalOpener() {
+    const opener = this._modalOpener;
+    this._modalOpener = null;
+
+    const card = this.shadowRoot.querySelector('ha-card');
+    if (!card) {
+      return;
+    }
+
+    const controls = Array.from(
+      card.querySelectorAll('button, input, select, textarea, [tabindex]')
+    );
+
+    let target = null;
+
+    if (opener?.id) {
+      target = controls.find((el) => el.id === opener.id);
+    }
+
+    if (!target && opener?.data.length) {
+      target = controls.find((el) =>
+        opener.data.every(([name, value]) => el.getAttribute(name) === value) &&
+        opener.classes.every((name) => el.classList.contains(name))
+      );
+    }
+
+    if (!target && opener?.index >= 0) {
+      target = controls[opener.index];
+    }
+
+    // L'élément d'origine a pu être supprimé après l'enregistrement.
+    (target || card.querySelector('.tab.active'))?.focus({ preventScroll: true });
+  }
+
+  _setupModalAccessibility(hadModal) {
+    const dialog = this.shadowRoot.querySelector('.modal-backdrop .modal-dialog');
+
+    if (!dialog) {
+      if (hadModal) {
+        this._restoreModalOpener();
+      }
+      return;
+    }
+
+    // Ne pas appliquer `inert` sur ha-card : les fenêtres sont des éléments
+    // distincts de la carte et l'inertie peut bloquer les interactions HA.
+    // La couche .modal-backdrop protège déjà le contenu en arrière-plan.
+    dialog.setAttribute('role', 'dialog');
+    dialog.setAttribute('aria-modal', 'true');
+    dialog.setAttribute('tabindex', '-1');
+
+    const title = dialog.querySelector('.modal-title');
+    if (title) {
+      if (!title.id) {
+        title.id = 'day-planner-active-dialog-title';
+      }
+      dialog.setAttribute('aria-labelledby', title.id);
+    }
+
+    const selector = [
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      'a[href]',
+      'ha-selector',
+      'ha-icon-picker',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(', ');
+
+    const focusables = () => Array.from(dialog.querySelectorAll(selector))
+      .filter((element) =>
+        element.getClientRects().length > 0 &&
+        element.getAttribute('aria-hidden') !== 'true' &&
+        !element.closest('[hidden]')
+      );
+
+    // Le gestionnaire appartient uniquement à la modale active.
+    // Aucun élément sentinelle ni écouteur global n'est nécessaire.
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        if (this._loading) {
+          return;
+        }
+        const cancel = dialog.querySelector(
+          'button[id^="cancel-"], button#close-moment-actions'
+        );
+        if (cancel && !cancel.disabled) {
+          event.preventDefault();
+          event.stopPropagation();
+          cancel.click();
+        }
+        return;
+      }
+
+      if (event.key !== 'Tab') {
+        return;
+      }
+
+      const elements = focusables();
+      if (!elements.length) {
+        event.preventDefault();
+        dialog.focus({ preventScroll: true });
+        return;
+      }
+
+      const current = this.shadowRoot.activeElement;
+      const currentIndex = elements.findIndex((element) =>
+        element === current || element.contains(current)
+      );
+
+      if (currentIndex === -1) {
+        event.preventDefault();
+        (event.shiftKey ? elements.at(-1) : elements[0])
+          .focus({ preventScroll: true });
+        return;
+      }
+
+      if (event.shiftKey && currentIndex === 0) {
+        event.preventDefault();
+        elements.at(-1).focus({ preventScroll: true });
+      } else if (!event.shiftKey && currentIndex === elements.length - 1) {
+        event.preventDefault();
+        elements[0].focus({ preventScroll: true });
+      }
+    });
+
+    // Mettre le focus dans le premier champ du formulaire (et non sur les
+    // boutons du fond). Les éléments HA peuvent finir leur rendu après
+    // l'insertion de la modale dans le shadow DOM.
+    const focusFirstField = () => {
+      // Un rendu plus récent a pu fermer/remplacer cette fenêtre.
+      if (
+        !dialog.isConnected ||
+        this.shadowRoot.querySelector('.modal-backdrop .modal-dialog') !== dialog
+      ) {
+        return;
+      }
+
+      // Ne jamais déplacer le focus si l'utilisateur est déjà dans la modale.
+      const active = this.shadowRoot.activeElement;
+      if (active && active !== dialog && dialog.contains(active)) {
+        return;
+      }
+
+      const fieldSelector = [
+        'input:not([type="hidden"]):not([disabled]):not([readonly])',
+        'select:not([disabled])',
+        'textarea:not([disabled]):not([readonly])',
+        'ha-selector:not([disabled])',
+        'ha-icon-picker:not([disabled])',
+      ].join(', ');
+
+      const firstField = Array.from(dialog.querySelectorAll(fieldSelector))
+        .find((field) =>
+          field.getClientRects().length > 0 &&
+          field.getAttribute('aria-hidden') !== 'true' &&
+          !field.closest('[hidden]')
+        );
+
+      if (firstField) {
+        firstField.focus({ preventScroll: true });
+        // Certains contrôles HA délèguent le focus à leur Shadow DOM.
+        if (this.shadowRoot.activeElement !== firstField && firstField.shadowRoot) {
+          firstField.shadowRoot.querySelector(
+            'input:not([disabled]), select:not([disabled]), ' +
+            'textarea:not([disabled]), button:not([disabled]), ' +
+            '[tabindex]:not([tabindex="-1"])'
+          )?.focus({ preventScroll: true });
+        }
+      } else {
+        // Fenêtre de confirmation : aucun champ, premier bouton disponible.
+        (focusables()[0] || dialog).focus({ preventScroll: true });
+      }
+    };
+
+    focusFirstField();
+    // Après le clic d'ouverture et le rendu des composants personnalisés.
+    requestAnimationFrame(() => requestAnimationFrame(focusFirstField));
+  }
+
   render() {
     if (!this._hass) {
       return;
+    }
+
+    const hadModal = Boolean(
+      this.shadowRoot.querySelector('.modal-backdrop .modal-dialog')
+    );
+
+    if (!hadModal) {
+      this._captureModalOpener();
     }
 
     this.shadowRoot.innerHTML = `
@@ -3191,6 +3408,7 @@ ${
     `;
 
     this._bindEvents();
+    this._setupModalAccessibility(hadModal);
   }
 
   _editScheduledMoment(momentId, time) {

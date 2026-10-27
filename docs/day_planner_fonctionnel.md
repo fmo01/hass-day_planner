@@ -150,7 +150,7 @@ Pour les horaires fixes, la règle de changement d'heure retenue est celle du cr
 | Automne : l'heure 02:00–03:00 est répétée | Chaque moment est exécuté au premier passage uniquement. |
 | Redémarrage ou rechargement après un événement passé | Aucun rattrapage général. L'exception de rattrapage concerne uniquement l'heure supprimée par le changement d'heure. |
 
-Ces règles sont vérifiées dans les tests Python pour Europe/Paris. Le rafraîchissement réel des entités à minuit et les scénarios de redémarrage/rechargement dans Home Assistant restent à confirmer dans L1-06.
+Ces règles de changement d’heure sont vérifiées dans les tests Python pour Europe/Paris. Les sept contrôles fonctionnels L1-06 (dont passage de minuit et redémarrage avant un déclenchement) ont été validés dans Home Assistant par l’utilisateur le 22 octobre 2026. Le cas distinct d’un événement manqué pendant un arrêt demeure à confirmer en situation réelle (L1-11).
 
 ## 3. Règles de cohérence
 
@@ -242,4 +242,4 @@ Le test réel du Journal de bord du 20 octobre confirme également l'attribution
 
 La couverture est mesurée sans seuil bloquant. Elle ne garantit pas à elle seule le comportement réel de l'intégration et ne mesure pas la couverture du frontend JavaScript.
 
-**L1-06 reste en cours.** À confirmer dans Home Assistant : rafraîchissement des capteurs et du calendrier à minuit, puis redémarrage/rechargement près d'un déclenchement, sans doublon ni rattrapage général. Les essais utiliseront des actions de test sans effet sur les appareils. Ils ne nécessitent pas de modifier l'horloge système.
+**L1-06 est clôturé le 22 octobre 2026** sur les sept scénarios fonctionnels HA confirmés : action sur deux helpers avec traces, deux moments simultanés, replanification après changement d’horaire, exception, changement de cycle, passage de minuit et redémarrage avant déclenchement. **L1-11 demeure à confirmer** pour un événement dont l’horaire est passé pendant un arrêt HA ; les tests Python décrivent le non-rattrapage général attendu. Aucun essai réel distinct de ce dernier cas n’est affirmé.

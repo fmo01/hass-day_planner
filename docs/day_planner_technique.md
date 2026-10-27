@@ -361,16 +361,20 @@ Les rapports sont suivis sans seuil de couverture bloquant, conformément à la 
 - 20 octobre : attribution causale de l'action Day Planner au changement d'état confirmée dans le Journal de bord avec `XX1` et `input_boolean.day_planner_test` ; compléments de journalisation et tests validés, couverture globale 100 % reconfirmée par l'utilisateur.
 - 21–22 octobre : audit ajouté et testé pour les cinq modèles, puis propagation de l’auteur dans `PlannerEngine`, WebSocket, services et Options Flow ; validations fonctionnelles HA confirmées pour Moments/Actions, Types de journée/Moments planifiés, Semaines types, Cycles et Exceptions.
 
-### Essais réels restant à confirmer — L1-06
+### Essais réels Home Assistant — L1-06 clôturé le 22/10/2026
 
-| Essai | Observation attendue | Statut |
+| Essai | Observation | Statut |
 | --- | --- | --- |
-| Passage de minuit | Type de journée, moment courant, prochain événement et calendrier se mettent à jour dans HA. | À confirmer |
-| Rechargement avant un déclenchement | Ancien rappel annulé, nouveau rappel actif ; une seule exécution de chaque moment prévu. | À confirmer |
-| Redémarrage avant un déclenchement | Seuls les événements encore futurs sont programmés ; pas de doublon. | À confirmer |
-| Retour après un événement passé | Absence de rattrapage général des événements survenus pendant l'arrêt. | À confirmer |
+| Action pilotant deux helpers | Les deux cibles sont commandées ; traces présentes dans les logs et événements. | Validé par l’utilisateur |
+| Deux moments distincts simultanés | Les deux moments sont déclenchés à l’heure commune. | Validé par l’utilisateur |
+| Modification d’horaire | Exécution au nouvel horaire sans exécution supplémentaire à l’ancien. | Validé par l’utilisateur |
+| Exception de calendrier | Le type exceptionnel remplace le planning ordinaire et reprogramme les actions. | Validé par l’utilisateur |
+| Changement de cycle | Recalcul et replanification du planning actif. | Validé par l’utilisateur |
+| Passage de minuit | Continuité du planning au changement de journée. | Validé par l’utilisateur |
+| Redémarrage avant un déclenchement | Programmation conservée et exécution unique. | Validé par l’utilisateur |
+| Redémarrage après l’heure d’un événement manqué pendant un arrêt | Non-rattrapage général attendu, conformément aux tests Python. | À confirmer en situation réelle (L1-11) |
 
-Ces essais se feront avec des actions de test sans effet sur les appareils, sans modifier l'horloge système. Un rappel avait été prévu pour le **15 octobre 2026 vers 18 h, Europe/Paris** (information historique, sans confirmation d'exécution ici). L'essai réel d'attribution du changement d'état du 20 octobre est confirmé, mais ne clôture pas les essais temporels de L1-06.
+La validation du 22 octobre se fonde sur les confirmations de tests effectués par l’utilisateur dans Home Assistant, sans nouvelle exécution de la suite Python par l’assistant. L’essai du non-rattrapage après une interruption couvrant un événement reste séparé : il ne doit pas être assimilé au redémarrage avant déclenchement déjà validé. Un ancien rappel était prévu pour le **15 octobre 2026 vers 18 h, Europe/Paris** ; cette mention historique ne présume pas de son exécution.
 
 ### Autres points de suivi
 
