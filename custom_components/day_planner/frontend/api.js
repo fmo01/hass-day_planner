@@ -1,4 +1,3 @@
-console.info('api.js v1');
 export class DayPlannerApi {
   constructor(hass) {
     this.hass = hass;
@@ -236,3 +235,9 @@ async removeMoment(momentId) {
 }
 
 }
+
+console.info(
+  '%c API  %c v0.1.0',
+  'color: orange; font-weight: bold; background: black',
+  'color: white; font-weight: bold; background: dimgray'
+);

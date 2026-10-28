@@ -1,5 +1,3 @@
-console.info('moments-view.js v2');
-
 import {
   escapeHtml,
   countActionSequenceTargets,
@@ -285,6 +283,22 @@ export function renderMomentsView(card) {
   </button>
 
   <button
+    class="icon-button duplicate-moment"
+    data-moment-id="${escapeHtml(moment.id)}"
+    type="button"
+    title="${escapeHtml(
+      t('moments.duplicate', 'Dupliquer le moment')
+    )}"
+    aria-label="${escapeHtml(
+      t('moments.duplicate', 'Dupliquer le moment')
+    )}"
+  >
+    <ha-icon
+      icon="mdi:content-copy"
+    ></ha-icon>
+  </button>
+
+  <button
     class="icon-button edit-moment"
     data-moment-id="${escapeHtml(moment.id)}"
     type="button"
@@ -541,3 +555,9 @@ return targets
     </div>
   `;
 }
+
+console.info(
+  '%c MOMENTS-VIEW %c v0.1.0',
+  'color: orange; font-weight: bold; background: black',
+  'color: white; font-weight: bold; background: dimgray'
+);

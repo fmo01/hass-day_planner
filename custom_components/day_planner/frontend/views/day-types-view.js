@@ -1,4 +1,3 @@
-console.info('day-types-view.js v 1.1');
 import { dayTypeColor, escapeHtml } from '../utils.js';
 
 import { renderTimeline } from '../components/timeline.js';
@@ -133,6 +132,16 @@ function renderDayTypeItem(dayType, selectedDayType, t) {
                   <ha-icon icon="mdi:pencil"></ha-icon>
                 </button>
 
+                <button
+                  class="icon-button duplicate-day-type"
+                  data-day-type-id="${escapeHtml(dayType.id)}"
+                  type="button"
+                  title="${escapeHtml(t('day_types.duplicate', 'Dupliquer le type de journée'))}"
+                  aria-label="${escapeHtml(t('day_types.duplicate', 'Dupliquer le type de journée'))}"
+                >
+                  <ha-icon icon="mdi:content-copy"></ha-icon>
+                </button>
+
                 ${
                   count === 0
                     ? /* html */ `
@@ -233,3 +242,9 @@ function resolveScheduledMoments(configuration, dayType) {
     time_definition: scheduled.time_definition,
   }));
 }
+
+console.info(
+  '%c DAY-TYPES-VIEW  %c v0.1.0',
+  'color: orange; font-weight: bold; background: black',
+  'color: white; font-weight: bold; background: dimgray'
+);

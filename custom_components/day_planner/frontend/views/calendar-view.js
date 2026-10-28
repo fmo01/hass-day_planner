@@ -256,6 +256,16 @@ export function renderSelectedDay(card) {
           </button>
 
           <button
+            class="icon-button duplicate-calendar-exception"
+            data-calendar-exception-id="${escapeHtml(day.calendar_exception_id)}"
+            type="button"
+            title="Dupliquer l'exception"
+            aria-label="Dupliquer l'exception du ${escapeHtml(label)}"
+          >
+            <ha-icon icon="mdi:content-copy"></ha-icon>
+          </button>
+
+          <button
             class="icon-button delete-calendar-exception"
             data-calendar-exception-id="${escapeHtml(day.calendar_exception_id)}"
             type="button"
@@ -323,3 +333,9 @@ export function renderCalendarView(card) {
     ${renderSelectedDay(card)}
   `;
 }
+
+console.info(
+  '%c CALENDAR-VIEW %c v0.1.0',
+  'color: orange; font-weight: bold; background: black',
+  'color: white; font-weight: bold; background: dimgray'
+);

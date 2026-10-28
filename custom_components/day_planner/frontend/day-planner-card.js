@@ -74,27 +74,33 @@ class DayPlannerCard extends HTMLElement {
     this._editingDayTypeId = null;
 
     this._creatingDayType = false;
+    this._duplicatingDayTypeSourceId = null;
     this._deletingDayTypeId = null;
 
     this._creatingScheduledMoment = false;
     this._creatingScheduledMomentDayTypeId = null;
 
     this._creatingWeekSchedule = false;
+    this._duplicatingWeekScheduleSourceId = null;
     this._expandedWeekScheduleIds = new Set();
     this._editingWeekScheduleId = null;
     this._deletingWeekScheduleId = null;
 
     this._creatingCycle = false;
+    this._duplicatingCycleSourceId = null;
     this._editingCycleId = null;
     this._deletingCycleId = null;
 
     this._creatingCalendarException = false;
     this._creatingCalendarExceptionDate = null;
+    this._duplicatingCalendarExceptionSourceId = null;
     this._editingCalendarExceptionId = null;
     this._deletingCalendarExceptionId = null;
 
     this._creatingMomentAction = false;
     this._newMomentActionSequence = [];
+    this._duplicatingMomentActionSourceId = null;
+    this._creatingMomentActionDraft = null;
 
     this._editingMomentActionId = null;
 
@@ -103,6 +109,8 @@ class DayPlannerCard extends HTMLElement {
     this._deletingMomentActionId = null;
 
     this._creatingMoment = false;
+    this._duplicatingMomentSourceId = null;
+    this._creatingMomentDraft = null;
     this._editingMomentId = null;
     this._deletingMomentId = null;
     this._expandedMomentIds = new Set();
@@ -499,8 +507,18 @@ class DayPlannerCard extends HTMLElement {
       this._openCreateDayTypeDialog();
     });
 
+    this.shadowRoot.querySelectorAll('.duplicate-day-type[data-day-type-id]')
+      .forEach((element) => {
+        element.addEventListener('click', (event) => {
+          event.stopPropagation();
+          this._openDuplicateDayTypeDialog(element.dataset.dayTypeId);
+        });
+      });
+
     this.shadowRoot.querySelector('#cancel-create-day-type')?.addEventListener('click', () => {
       this._creatingDayType = false;
+      this._duplicatingDayTypeSourceId = null;
+      this._creatingDayTypeDraft = null;
       this._error = null;
       this.render();
     });
@@ -576,14 +594,24 @@ class DayPlannerCard extends HTMLElement {
       });
 
     this.shadowRoot.querySelector('#add-week-schedule')?.addEventListener('click', () => {
+      this._duplicatingWeekScheduleSourceId = null;
       this._creatingWeekScheduleDraft = null;
       this._error = null;
       this._creatingWeekSchedule = true;
       this.render();
     });
 
+    this.shadowRoot.querySelectorAll('.duplicate-week-schedule[data-week-schedule-id]')
+      .forEach((element) => {
+        element.addEventListener('click', (event) => {
+          event.stopPropagation();
+          this._openDuplicateWeekScheduleDialog(element.dataset.weekScheduleId);
+        });
+      });
+
     this.shadowRoot.querySelector('#cancel-create-week-schedule')?.addEventListener('click', () => {
       this._creatingWeekSchedule = false;
+      this._duplicatingWeekScheduleSourceId = null;
       this._error = null;
       this._creatingWeekScheduleDraft = null;
       this.render();
@@ -657,13 +685,22 @@ class DayPlannerCard extends HTMLElement {
       });
 
     this.shadowRoot.querySelector('#add-cycle')?.addEventListener('click', () => {
+      this._duplicatingCycleSourceId = null;
       this._creatingCycle = true;
       this._error = null;
       this._creatingCycleDraft = null;
       this.render();
     });
 
+    this.shadowRoot.querySelectorAll('.duplicate-cycle[data-cycle-id]').forEach((element) => {
+      element.addEventListener('click', (event) => {
+        event.stopPropagation();
+        this._openDuplicateCycleDialog(element.dataset.cycleId);
+      });
+    });
+
     this.shadowRoot.querySelector('#cancel-create-cycle')?.addEventListener('click', () => {
+      this._duplicatingCycleSourceId = null;
       this._creatingCycle = false;
       this._error = null;
       this._creatingCycleDraft = null;
@@ -716,12 +753,20 @@ class DayPlannerCard extends HTMLElement {
       event.stopPropagation();
 
       this._creatingCalendarExceptionDate = event.currentTarget.dataset.date;
+      this._duplicatingCalendarExceptionSourceId = null;
 
       this._creatingCalendarException = true;
       this._error = null;
       this._creatingCalendarExceptionDraft = null;
       this.render();
     });
+
+    this.shadowRoot
+      .querySelector('.duplicate-calendar-exception')
+      ?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        this._openDuplicateCalendarExceptionDialog(event.currentTarget.dataset.calendarExceptionId);
+      });
 
     this.shadowRoot
       .querySelector('.edit-calendar-exception')
@@ -747,6 +792,7 @@ class DayPlannerCard extends HTMLElement {
       ?.addEventListener('click', () => {
         this._creatingCalendarException = false;
         this._creatingCalendarExceptionDate = null;
+        this._duplicatingCalendarExceptionSourceId = null;
         this._error = null;
         this._creatingCalendarExceptionDraft = null;
         this.render();
@@ -797,17 +843,67 @@ class DayPlannerCard extends HTMLElement {
       await this._ensureActionSelectorLoaded();
 
       this._creatingMomentAction = true;
+      this._duplicatingMomentActionSourceId = null;
+      this._creatingMomentActionDraft = null;
       this._newMomentActionSequence = [];
+      this._error = null;
 
       this.render();
     });
+
+    this.shadowRoot.querySelectorAll('.duplicate-moment-action[data-action-id]')
+      .forEach((element) => {
+        element.addEventListener('click', async (event) => {
+          event.stopPropagation();
+          const moment = this._configuration?.moments?.find(
+            (item) => item.id === this._editingMomentActionsId
+          );
+          const action = moment?.actions?.find(
+            (item) => item.id === element.dataset.actionId
+          );
+          if (!action) {
+            return;
+          }
+
+          await this._ensureActionSelectorLoaded();
+
+          this._duplicatingMomentActionSourceId = action.id;
+          this._creatingMomentActionDraft = {
+            id: this._nextCopyId(
+              action.id,
+              new Set((moment.actions || []).map((item) => item.id))
+            ),
+            label: `${action.label || action.id} (copie)`,
+          };
+          this._newMomentActionSequence = structuredClone(action.sequence || []);
+          this._creatingMomentAction = true;
+          this._error = null;
+          this.render();
+        });
+      });
 
     this.shadowRoot.querySelector('#cancel-create-moment-action')?.addEventListener('click', () => {
       this._creatingMomentAction = false;
+      this._duplicatingMomentActionSourceId = null;
+      this._creatingMomentActionDraft = null;
       this._newMomentActionSequence = [];
+      this._error = null;
 
       this.render();
     });
+
+    if (this._duplicatingMomentActionSourceId) {
+      for (const [selector, key] of [
+        ['#new-moment-action-id', 'id'],
+        ['#new-moment-action-label', 'label'],
+      ]) {
+        this.shadowRoot.querySelector(selector)?.addEventListener('input', (event) => {
+          if (this._creatingMomentActionDraft) {
+            this._creatingMomentActionDraft[key] = event.target.value;
+          }
+        });
+      }
+    }
 
     this.shadowRoot
       .querySelector('#save-create-moment-action')
@@ -965,8 +1061,16 @@ class DayPlannerCard extends HTMLElement {
 
     this.shadowRoot.querySelector('#add-moment')?.addEventListener('click', () => {
       this._creatingMoment = true;
-
+      this._duplicatingMomentSourceId = null;
+      this._creatingMomentDraft = null;
+      this._error = null;
       this.render();
+    });
+
+    this.shadowRoot.querySelectorAll('.duplicate-moment[data-moment-id]').forEach((element) => {
+      element.addEventListener('click', () => {
+        this._openDuplicateMomentDialog(element.dataset.momentId);
+      });
     });
 
     this.shadowRoot.querySelectorAll('.edit-moment[data-moment-id]').forEach((element) => {
@@ -987,7 +1091,9 @@ class DayPlannerCard extends HTMLElement {
 
     this.shadowRoot.querySelector('#cancel-create-moment')?.addEventListener('click', () => {
       this._creatingMoment = false;
-
+      this._duplicatingMomentSourceId = null;
+      this._creatingMomentDraft = null;
+      this._error = null;
       this.render();
     });
 
@@ -1015,14 +1121,32 @@ class DayPlannerCard extends HTMLElement {
       await this._deleteMoment();
     });
 
+    // Préserver les champs de copie, notamment après une erreur WebSocket.
+    if (this._duplicatingMomentSourceId) {
+      for (const [selector, key] of [
+        ['#new-moment-id', 'id'],
+        ['#new-moment-name', 'name'],
+      ]) {
+        this.shadowRoot.querySelector(selector)?.addEventListener('input', (event) => {
+          if (this._creatingMomentDraft) {
+            this._creatingMomentDraft[key] = event.target.value;
+          }
+        });
+      }
+    }
+
     const newMomentIconPicker = this.shadowRoot.querySelector('#new-moment-icon');
 
     if (newMomentIconPicker) {
       newMomentIconPicker.hass = this._hass;
-      newMomentIconPicker.value = '';
+      newMomentIconPicker.value = this._creatingMomentDraft?.icon || '';
 
       newMomentIconPicker.addEventListener('value-changed', (event) => {
-        newMomentIconPicker.value = event.detail?.value || '';
+        const icon = event.detail?.value || '';
+        newMomentIconPicker.value = icon;
+        if (this._creatingMomentDraft) {
+          this._creatingMomentDraft.icon = icon;
+        }
       });
     }
 
@@ -1551,6 +1675,26 @@ class DayPlannerCard extends HTMLElement {
 
                           <div class="moment-action-buttons">
                             <button
+                              class="icon-button duplicate-moment-action"
+                              data-action-id="${escapeHtml(action.id)}"
+                              type="button"
+                              title="${escapeHtml(
+                                this._i18n?.t(
+                                  'moments.duplicate_action_group',
+                                  "Dupliquer le groupe d'actions"
+                                ) ?? "Dupliquer le groupe d'actions"
+                              )}"
+                              aria-label="${escapeHtml(
+                                this._i18n?.t(
+                                  'moments.duplicate_action_group',
+                                  "Dupliquer le groupe d'actions"
+                                ) ?? "Dupliquer le groupe d'actions"
+                              )}"
+                            >
+                              <ha-icon icon="mdi:content-copy"></ha-icon>
+                            </button>
+
+                            <button
                               class="icon-button edit-moment-action"
                               data-action-id="${escapeHtml(action.id)}"
                               type="button"
@@ -1637,6 +1781,9 @@ class DayPlannerCard extends HTMLElement {
       return '';
     }
 
+    const isCopy = Boolean(this._duplicatingMomentActionSourceId);
+    const draft = this._creatingMomentActionDraft || {};
+
     return `
     <div class="modal-backdrop">
       <div
@@ -1649,11 +1796,20 @@ class DayPlannerCard extends HTMLElement {
           id="create-moment-action-dialog-title"
           class="modal-title"
         >
-          ${escapeHtml(
-            this._i18n?.t('moments.add_action_group', "Ajouter un groupe d'actions") ??
+          ${escapeHtml(isCopy
+            ? (this._i18n?.t(
+              'moments.duplicate_action_group',
+              "Dupliquer le groupe d'actions"
+            ) ?? "Dupliquer le groupe d'actions")
+            : (this._i18n?.t(
+              'moments.add_action_group',
               "Ajouter un groupe d'actions"
-          )}
+            ) ?? "Ajouter un groupe d'actions"))}
         </div>
+
+        ${isCopy && this._error ? `
+          <div class="modal-error" role="alert">${escapeHtml(this._error)}</div>
+        ` : ''}
 
         <div class="modal-moment-name">
           ${
@@ -1679,6 +1835,7 @@ class DayPlannerCard extends HTMLElement {
           <input
             id="new-moment-action-id"
             type="text"
+            value="${escapeHtml(draft.id || '')}"
             placeholder="ex: allumer_salon"
           />
         </label>
@@ -1691,6 +1848,7 @@ class DayPlannerCard extends HTMLElement {
           <input
             id="new-moment-action-label"
             type="text"
+            value="${escapeHtml(draft.label || '')}"
             placeholder="ex: Ouvrir les volets du matin"
           />
         </label>
@@ -1723,7 +1881,9 @@ class DayPlannerCard extends HTMLElement {
             class="editor-button primary"
             type="button"
           >
-            ${escapeHtml(this._i18n?.t('common.save', 'Enregistrer') ?? 'Enregistrer')}
+            ${escapeHtml(isCopy
+              ? (this._i18n?.t('common.duplicate', 'Dupliquer') ?? 'Dupliquer')
+              : (this._i18n?.t('common.save', 'Enregistrer') ?? 'Enregistrer'))}
           </button>
         </div>
       </div>
@@ -1936,6 +2096,9 @@ class DayPlannerCard extends HTMLElement {
       return '';
     }
 
+    const isCopy = Boolean(this._duplicatingMomentSourceId);
+    const draft = this._creatingMomentDraft || {};
+
     return `
     <div class="modal-backdrop">
       <div
@@ -1949,8 +2112,21 @@ class DayPlannerCard extends HTMLElement {
             id="create-moment-dialog-title"
             class="modal-title"
           >
-            ${escapeHtml(this._i18n?.t('moments.add', 'Ajouter un moment') ?? 'Ajouter un moment')}
+            ${escapeHtml(isCopy
+              ? (this._i18n?.t('moments.duplicate', 'Dupliquer le moment') ?? 'Dupliquer le moment')
+              : (this._i18n?.t('moments.add', 'Ajouter un moment') ?? 'Ajouter un moment'))}
           </div>
+
+          ${isCopy && this._error ? `
+            <div class="modal-error" role="alert">${escapeHtml(this._error)}</div>
+          ` : ''}
+
+          ${isCopy ? `
+            <div class="modal-message">
+              Les actions seront copiées avec de nouveaux identifiants.
+              Les journées existantes resteront liées au moment d’origine.
+            </div>
+          ` : ''}
 
           <label class="modal-field">
             <span>
@@ -1960,6 +2136,7 @@ class DayPlannerCard extends HTMLElement {
             <input
               id="new-moment-id"
               type="text"
+              value="${escapeHtml(draft.id || '')}"
               placeholder="ex: wake_up"
             />
           </label>
@@ -1972,6 +2149,7 @@ class DayPlannerCard extends HTMLElement {
             <input
               id="new-moment-name"
               type="text"
+              value="${escapeHtml(draft.name || '')}"
               placeholder="ex: Réveil"
             />
           </label>
@@ -2001,7 +2179,9 @@ class DayPlannerCard extends HTMLElement {
             class="editor-button primary"
             type="button"
           >
-            ${escapeHtml(this._i18n?.t('common.save', 'Enregistrer') ?? 'Enregistrer')}
+            ${escapeHtml(isCopy
+              ? (this._i18n?.t('common.duplicate', 'Dupliquer') ?? 'Dupliquer')
+              : (this._i18n?.t('common.save', 'Enregistrer') ?? 'Enregistrer'))}
           </button>
         </div>
       </div>
@@ -2262,6 +2442,10 @@ class DayPlannerCard extends HTMLElement {
   }
 
   async _saveCreateMomentAction() {
+    if (this._loading) {
+      return;
+    }
+
     const momentId = this._editingMomentActionsId;
 
     const actionId = this.shadowRoot.querySelector('#new-moment-action-id')?.value?.trim();
@@ -2269,8 +2453,16 @@ class DayPlannerCard extends HTMLElement {
     const label = this.shadowRoot.querySelector('#new-moment-action-label')?.value?.trim();
 
     const sequence = this._newMomentActionSequence || [];
+    const isCopy = Boolean(this._duplicatingMomentActionSourceId);
+    if (isCopy) {
+      this._creatingMomentActionDraft = { id: actionId || '', label: label || '' };
+    }
 
     if (!momentId || !actionId || !label) {
+      if (isCopy) {
+        this._error = 'L’identifiant et le libellé sont obligatoires.';
+        this.render();
+      }
       return;
     }
 
@@ -2287,13 +2479,17 @@ class DayPlannerCard extends HTMLElement {
 
     this._loading = true;
     this._error = null;
+    let created = false;
 
     try {
       await this._api.addMomentAction(momentId, actionId, label, sequence);
+      created = true;
 
       this._configuration = await this._api.getConfiguration();
 
       this._creatingMomentAction = false;
+      this._duplicatingMomentActionSourceId = null;
+      this._creatingMomentActionDraft = null;
       this._newMomentActionSequence = [];
 
       this._loadedMonthKey = null;
@@ -2308,6 +2504,18 @@ class DayPlannerCard extends HTMLElement {
           "Impossible d'ajouter le groupe d'actions."
         ) ??
           "Impossible d'ajouter le groupe d'actions.");
+
+      if (created) {
+        // L'ajout a réussi mais pas le rafraîchissement : ne pas proposer
+        // une deuxième création accidentelle avec le même identifiant.
+        this._error = `Le groupe d'actions « ${actionId} » a été créé, ` +
+          `mais l'affichage n'a pas été actualisé : ${this._error}`;
+        this._creatingMomentAction = false;
+        this._duplicatingMomentActionSourceId = null;
+        this._creatingMomentActionDraft = null;
+        this._newMomentActionSequence = [];
+        this._loadedMonthKey = null;
+      }
     } finally {
       this._loading = false;
       this.render();
@@ -2316,6 +2524,7 @@ class DayPlannerCard extends HTMLElement {
 
   _openCreateDayTypeDialog() {
     this._error = null;
+    this._duplicatingDayTypeSourceId = null;
     this._creatingDayTypeDraft = {
       id: '',
       name: '',
@@ -2324,10 +2533,33 @@ class DayPlannerCard extends HTMLElement {
     this.render();
   }
 
+  _openDuplicateDayTypeDialog(sourceId) {
+    const source = this._configuration?.day_types?.find((item) => item.id === sourceId);
+    if (!source) {
+      return;
+    }
+
+    this._duplicatingDayTypeSourceId = source.id;
+    this._creatingDayTypeDraft = {
+      id: this._nextCopyId(
+        source.id,
+        new Set((this._configuration?.day_types || []).map((item) => item.id))
+      ),
+      name: `${source.name} (copie)`,
+    };
+    this._error = null;
+    this._creatingDayType = true;
+    this.render();
+  }
+
   _renderCreateDayTypeDialog() {
     if (!this._creatingDayType) {
       return '';
     }
+
+    const duplicateSource = this._configuration?.day_types?.find(
+      (item) => item.id === this._duplicatingDayTypeSourceId
+    );
 
     return `
     <div class="modal-backdrop">
@@ -2343,11 +2575,18 @@ class DayPlannerCard extends HTMLElement {
         >
           ${escapeHtml(
             this._i18n?.t(
-              'day_types.add',
-              'Ajouter un type de journée'
-            ) ?? 'Ajouter un type de journée'
+              duplicateSource ? 'day_types.duplicate' : 'day_types.add',
+              duplicateSource ? 'Dupliquer un type de journée' : 'Ajouter un type de journée'
+            ) ?? (duplicateSource ? 'Dupliquer un type de journée' : 'Ajouter un type de journée')
           )}
         </div>
+        ${
+          duplicateSource
+            ? `<p>${escapeHtml(
+                `${duplicateSource.scheduled_moments?.length || 0} moment(s) planifié(s) seront recopiés avec leurs horaires. Les Moments et leurs Actions resteront partagés.`
+              )}</p>`
+            : ''
+        }
         ${
           this._error
             ? /* html */ `
@@ -2415,9 +2654,9 @@ class DayPlannerCard extends HTMLElement {
           >
             ${escapeHtml(
               this._i18n?.t(
-                'common.create',
-                'Créer'
-              ) ?? 'Créer'
+                duplicateSource ? 'common.duplicate' : 'common.create',
+                duplicateSource ? 'Dupliquer' : 'Créer'
+              ) ?? (duplicateSource ? 'Dupliquer' : 'Créer')
             )}
           </button>
         </div>
@@ -2572,8 +2811,100 @@ class DayPlannerCard extends HTMLElement {
   `;
   }
 
+  async _saveDuplicateDayType() {
+    if (this._loading) {
+      return;
+    }
+
+    const source = this._configuration?.day_types?.find(
+      (item) => item.id === this._duplicatingDayTypeSourceId
+    );
+    if (!source) {
+      this._error = 'Le type de journée source est introuvable.';
+      this.render();
+      return;
+    }
+
+    const dayTypeId = this.shadowRoot.querySelector('#new-day-type-id')?.value?.trim() || '';
+    const name = this.shadowRoot.querySelector('#new-day-type-name')?.value?.trim() || '';
+    this._creatingDayTypeDraft = { id: dayTypeId, name };
+    if (!dayTypeId || !name) {
+      this._error = 'L’identifiant et le libellé sont obligatoires.';
+      this.render();
+      return;
+    }
+
+    // Les moments référencés restent les mêmes : seuls le type de journée
+    // et ses affectations horaires sont recréés.
+    const scheduled = structuredClone(source.scheduled_moments || []);
+    if (scheduled.some((item) => !item.moment_id || !item.time_definition?.fixed_time)) {
+      this._error = 'Impossible de copier les moments : horaire ou identifiant absent.';
+      this.render();
+      return;
+    }
+
+    this._loading = true;
+    this._error = null;
+    this.render();
+    let dayTypeCreated = false;
+    let schedulesCopied = false;
+
+    try {
+      await this._api.addDayType(dayTypeId, name);
+      dayTypeCreated = true;
+      for (const item of scheduled) {
+        await this._api.addScheduledMoment(
+          dayTypeId,
+          item.moment_id,
+          item.time_definition.fixed_time
+        );
+      }
+      schedulesCopied = true;
+      this._configuration = await this._api.getConfiguration();
+      this._selectedDayTypeId = dayTypeId;
+      this._loadedMonthKey = null;
+      this._calendarKey = null;
+      this._creatingDayType = false;
+      this._duplicatingDayTypeSourceId = null;
+      this._creatingDayTypeDraft = null;
+    } catch (error) {
+      console.error('Day Planner duplicate day type error', error);
+      let message = error?.message || 'Impossible de dupliquer le type de journée.';
+      if (dayTypeCreated && !schedulesCopied) {
+        try {
+          await this._api.removeDayType(dayTypeId);
+        } catch (rollbackError) {
+          console.error('Day Planner duplicate day type rollback error', rollbackError);
+          message += ` Suppression de la copie incomplète « ${dayTypeId} » impossible : ` +
+            (rollbackError?.message || 'vérifiez les types de journée.');
+        }
+      } else if (schedulesCopied) {
+        message = `Le type de journée « ${dayTypeId} » a été copié, ` +
+          `mais son affichage n’a pas été actualisé : ${message}`;
+        // Ne jamais proposer un deuxième enregistrement après succès de la copie.
+        this._creatingDayType = false;
+        this._duplicatingDayTypeSourceId = null;
+        this._creatingDayTypeDraft = null;
+        this._selectedDayTypeId = dayTypeId;
+      }
+      try {
+        this._configuration = await this._api.getConfiguration();
+      } catch (refreshError) {
+        console.error('Day Planner duplicate day type refresh error', refreshError);
+      }
+      this._error = message;
+    } finally {
+      this._loading = false;
+      this.render();
+    }
+  }
+
   async _saveCreateDayType() {
     if (this._loading) {
+      return;
+    }
+    if (this._duplicatingDayTypeSourceId) {
+      await this._saveDuplicateDayType();
       return;
     }
     const idInput = this.shadowRoot.querySelector('#new-day-type-id');
@@ -2636,6 +2967,30 @@ class DayPlannerCard extends HTMLElement {
       this._expandedWeekScheduleIds.add(weekScheduleId);
     }
 
+    this.render();
+  }
+
+  _openDuplicateWeekScheduleDialog(sourceId) {
+    const source = this._configuration?.week_schedules?.find((item) => item.id === sourceId);
+    if (!source) {
+      return;
+    }
+
+    const usedIds = new Set((this._configuration?.week_schedules || []).map((item) => item.id));
+    this._duplicatingWeekScheduleSourceId = source.id;
+    this._creatingWeekScheduleDraft = {
+      id: this._nextCopyId(source.id, usedIds),
+      name: `${source.name} (copie)`,
+      monday: source.monday,
+      tuesday: source.tuesday,
+      wednesday: source.wednesday,
+      thursday: source.thursday,
+      friday: source.friday,
+      saturday: source.saturday,
+      sunday: source.sunday,
+    };
+    this._creatingWeekSchedule = true;
+    this._error = null;
     this.render();
   }
 
@@ -2710,6 +3065,7 @@ class DayPlannerCard extends HTMLElement {
       );
 
       this._creatingWeekSchedule = false;
+      this._duplicatingWeekScheduleSourceId = null;
       this._creatingWeekScheduleDraft = null;
 
       this._configuration = await this._api.getConfiguration();
@@ -2789,6 +3145,27 @@ class DayPlannerCard extends HTMLElement {
       this._loading = false;
       this.render();
     }
+  }
+
+  _openDuplicateCycleDialog(sourceId) {
+    const source = this._configuration?.cycles?.find((item) => item.id === sourceId);
+    if (!source) {
+      return;
+    }
+
+    const usedIds = new Set((this._configuration?.cycles || []).map((item) => item.id));
+    this._duplicatingCycleSourceId = source.id;
+    this._creatingCycleDraft = {
+      id: this._nextCopyId(source.id, usedIds),
+      name: `${source.name} (copie)`,
+      // Une date identique serait rejetée et modifierait potentiellement le planning.
+      // L'utilisateur choisit explicitement un autre lundi.
+      start_date: '',
+      weekSelections: [...(source.week_schedule_ids || [])],
+    };
+    this._creatingCycle = true;
+    this._error = null;
+    this.render();
   }
 
   async _saveCreateCycle() {
@@ -2882,6 +3259,7 @@ class DayPlannerCard extends HTMLElement {
       await this._api.addCycle(cycleId, name, startDate, weekScheduleIds);
 
       this._creatingCycle = false;
+      this._duplicatingCycleSourceId = null;
       this._creatingCycleDraft = null;
 
       this._configuration = await this._api.getConfiguration();
@@ -3781,6 +4159,7 @@ ${
 
     const dayTypes = this._configuration?.day_types || [];
     const draft = this._creatingWeekScheduleDraft;
+    const isDuplication = Boolean(this._duplicatingWeekScheduleSourceId);
 
     const renderDayTypeOptions = (selectedId) =>
       dayTypes
@@ -3817,7 +4196,7 @@ ${
           id="create-week-schedule-dialog-title"
           class="modal-title"
         >
-          Créer une semaine type
+          ${isDuplication ? 'Dupliquer une semaine type' : 'Créer une semaine type'}
         </div>
         ${
           this._error
@@ -3880,7 +4259,7 @@ ${
             type="button"
             ${this._loading ? 'disabled' : ''}
           >
-            Créer
+            ${isDuplication ? 'Dupliquer' : 'Créer'}
           </button>
         </div>
 
@@ -4331,6 +4710,7 @@ ${
       return '';
     }
 
+    const isDuplication = Boolean(this._duplicatingCycleSourceId);
     const draft = this._creatingCycleDraft;
     const weekIds = draft?.weekSelections ?? [];
 
@@ -4380,8 +4760,16 @@ ${
       <div class="modal-dialog">
 
         <div class="modal-title">
-          ${escapeHtml(t('cycles.create_title', 'Créer un cycle'))}
+          ${escapeHtml(isDuplication
+            ? t('cycles.duplicate_title', 'Dupliquer un cycle')
+            : t('cycles.create_title', 'Créer un cycle'))}
         </div>
+        ${isDuplication ? `
+          <p class="modal-message">
+            Les semaines types sont conservées. Choisissez une nouvelle date
+            de début, un lundi distinct des cycles existants.
+          </p>
+        ` : ''}
 ${
   this._error
     ? `
@@ -4469,7 +4857,9 @@ ${
             type="button"
             ${this._loading ? 'disabled' : ''}
           >
-            ${escapeHtml(t('common.create', 'Créer'))}
+            ${escapeHtml(isDuplication
+              ? t('common.duplicate', 'Dupliquer')
+              : t('common.create', 'Créer'))}
           </button>
         </div>
 
@@ -4478,17 +4868,46 @@ ${
   `;
   }
 
+  _openDuplicateCalendarExceptionDialog(sourceId) {
+    const source = this._configuration?.calendar_exceptions?.find((item) => item.id === sourceId);
+    if (!source) {
+      return;
+    }
+
+    this._duplicatingCalendarExceptionSourceId = source.id;
+    this._creatingCalendarExceptionDate = null;
+    this._creatingCalendarExceptionDraft = {
+      date: '', // Une exception ne peut pas partager la date de l'originale.
+      day_type_id: source.day_type_id,
+      description: source.description ?? '',
+    };
+    this._creatingCalendarException = true;
+    this._error = null;
+    this.render();
+  }
+
   _renderCreateCalendarExceptionDialog() {
-    if (!this._creatingCalendarException || !this._creatingCalendarExceptionDate) {
+    if (!this._creatingCalendarException) {
       return '';
     }
 
-    const date = this._creatingCalendarExceptionDate;
+    const isDuplication = Boolean(this._duplicatingCalendarExceptionSourceId);
+    if (!isDuplication && !this._creatingCalendarExceptionDate) {
+      return '';
+    }
 
+    const source = isDuplication
+      ? this._configuration?.calendar_exceptions?.find(
+          (item) => item.id === this._duplicatingCalendarExceptionSourceId
+        )
+      : null;
     const dayTypes = this._configuration?.day_types || [];
     const draft = this._creatingCalendarExceptionDraft;
 
-    const dateLabel = formatLongDate(this._creatingCalendarExceptionDate, this._hass);
+    const dateLabel = formatLongDate(
+      source?.date || this._creatingCalendarExceptionDate,
+      this._hass
+    );
 
     const t = (key, fallback) => this._i18n?.t(key, fallback) ?? fallback;
 
@@ -4497,7 +4916,9 @@ ${
       <div class="modal-dialog">
 
         <div class="modal-title">
-          ${escapeHtml(t('calendar_exceptions.create_title', 'Créer une exception'))}
+          ${escapeHtml(isDuplication
+            ? t('calendar_exceptions.duplicate_title', 'Dupliquer une exception')
+            : t('calendar_exceptions.create_title', 'Créer une exception'))}
         </div>
 
         ${
@@ -4518,7 +4939,22 @@ ${
   <strong>
     ${escapeHtml(dateLabel)}
   </strong>
+  ${isDuplication ? `<span>(${escapeHtml(t('calendar_exceptions.source_date', 'Date d’origine'))})</span>` : ''}
 </div>
+
+        ${isDuplication ? `
+          <div class="editor-field">
+            <label for="duplicate-calendar-exception-date">
+              ${escapeHtml(t('calendar_exceptions.new_date', 'Nouvelle date'))}
+            </label>
+            <input
+              id="duplicate-calendar-exception-date"
+              type="date"
+              required
+              value="${escapeHtml(draft?.date ?? '')}"
+            />
+          </div>
+        ` : ''}
 
         <div class="editor-field">
           <label for="create-calendar-exception-day-type">
@@ -4539,6 +4975,7 @@ ${
                 (dayType) => `
                   <option
                     value="${escapeHtml(dayType.id)}"
+                    ${dayType.id === draft?.day_type_id ? 'selected' : ''}
                   >
                     ${escapeHtml(dayType.name)}
                   </option>
@@ -4576,7 +5013,9 @@ ${
             type="button"
             ${this._loading ? 'disabled' : ''}
           >
-            ${escapeHtml(t('common.create', 'Créer'))}
+            ${escapeHtml(isDuplication
+              ? t('common.duplicate', 'Dupliquer')
+              : t('common.create', 'Créer'))}
           </button>
         </div>
 
@@ -4716,11 +5155,10 @@ ${
       return;
     }
 
-    const date = this._creatingCalendarExceptionDate;
-
-    if (!date) {
-      return;
-    }
+    const isDuplication = Boolean(this._duplicatingCalendarExceptionSourceId);
+    const date = isDuplication
+      ? this.shadowRoot.querySelector('#duplicate-calendar-exception-date')?.value?.trim() ?? ''
+      : this._creatingCalendarExceptionDate;
 
     const dayTypeId = this.shadowRoot
       .querySelector('#create-calendar-exception-day-type')
@@ -4732,9 +5170,33 @@ ${
         ?.value?.trim() ?? '';
 
     this._creatingCalendarExceptionDraft = {
+      date: date ?? '',
       day_type_id: dayTypeId ?? '',
       description: description ?? '',
     };
+
+    if (isDuplication) {
+      // La nouvelle date est une clé métier unique ; l'ID suit la création habituelle.
+      const parsed = /^\d{4}-\d{2}-\d{2}$/.test(date)
+        ? new Date(`${date}T12:00:00`)
+        : null;
+      if (!parsed || Number.isNaN(parsed.getTime()) || formatDate(parsed) !== date) {
+        this._error = this._i18n?.t('errors.invalid_date', 'Veuillez choisir une date valide.')
+          ?? 'Veuillez choisir une date valide.';
+        this.render();
+        return;
+      }
+      if ((this._configuration?.calendar_exceptions || []).some((item) => item.date === date)) {
+        this._error = this._i18n?.t(
+          'errors.duplicate_calendar_exception_date',
+          'Une exception existe déjà pour cette date.'
+        ) ?? 'Une exception existe déjà pour cette date.';
+        this.render();
+        return;
+      }
+    } else if (!date) {
+      return;
+    }
 
     if (!dayTypeId) {
       this._error =
@@ -4758,8 +5220,16 @@ ${
 
       this._creatingCalendarException = false;
       this._creatingCalendarExceptionDate = null;
+      this._duplicatingCalendarExceptionSourceId = null;
       this._creatingCalendarExceptionDraft = null;
 
+      if (isDuplication) {
+        // Montrer la nouvelle exception, même si sa date est dans un autre mois.
+        const [year, month] = date.split('-').map(Number);
+        this._displayYear = year;
+        this._displayMonth = month - 1;
+        this._selectedDate = date;
+      }
       await this._refreshCalendarConfiguration();
 
       return;
@@ -4773,7 +5243,136 @@ ${
     }
   }
 
+  // Le moment copié n'est pas affecté automatiquement à un type de journée.
+  // Ses actions sont indépendantes des actions du moment source.
+  _nextCopyId(sourceId, usedIds) {
+    const base = `${sourceId}_copy`;
+    let candidate = base;
+    let suffix = 2;
+    while (usedIds.has(candidate)) {
+      candidate = `${base}_${suffix++}`;
+    }
+    usedIds.add(candidate);
+    return candidate;
+  }
+
+  _openDuplicateMomentDialog(sourceId) {
+    const source = this._configuration?.moments?.find((item) => item.id === sourceId);
+    if (!source) {
+      return;
+    }
+
+    const usedIds = new Set((this._configuration?.moments || []).map((item) => item.id));
+    this._duplicatingMomentSourceId = source.id;
+    this._creatingMomentDraft = {
+      id: this._nextCopyId(source.id, usedIds),
+      name: `${source.name} (copie)`,
+      icon: source.icon || '',
+    };
+    this._creatingMoment = true;
+    this._error = null;
+    this.render();
+  }
+
+  async _saveDuplicateMoment() {
+    if (this._loading) {
+      return;
+    }
+
+    const source = this._configuration?.moments?.find(
+      (item) => item.id === this._duplicatingMomentSourceId
+    );
+    if (!source) {
+      this._error = 'Le moment source est introuvable.';
+      this.render();
+      return;
+    }
+
+    const momentId = this.shadowRoot.querySelector('#new-moment-id')?.value?.trim() || '';
+    const name = this.shadowRoot.querySelector('#new-moment-name')?.value?.trim() || '';
+    const icon = this.shadowRoot.querySelector('#new-moment-icon')?.value?.trim?.() || null;
+
+    this._creatingMomentDraft = { id: momentId, name, icon: icon || '' };
+    if (!momentId || !name) {
+      this._error = 'L’identifiant et le libellé sont obligatoires.';
+      this.render();
+      return;
+    }
+
+    // Clonage profond : la séquence copiée ne partage aucune donnée mutable
+    // avec celle d'origine. Les identifiants d'actions sont tous renouvelés.
+    const actions = structuredClone(source.actions || []);
+    const usedActionIds = new Set(actions.map((action) => action.id));
+    this._loading = true;
+    this._error = null;
+    let momentCreated = false;
+    let actionsCopied = false;
+
+    try {
+      await this._api.addMoment(momentId, name, icon);
+      momentCreated = true;
+
+      for (const action of actions) {
+        const copiedActionId = this._nextCopyId(action.id, usedActionIds);
+        await this._api.addMomentAction(
+          momentId,
+          copiedActionId,
+          action.label || action.id,
+          action.sequence
+        );
+      }
+      actionsCopied = true;
+      this._configuration = await this._api.getConfiguration();
+      this._creatingMoment = false;
+      this._duplicatingMomentSourceId = null;
+      this._creatingMomentDraft = null;
+      this._loadedMonthKey = null;
+      this._calendarKey = null;
+    } catch (error) {
+      console.error('Day Planner duplicate moment error', error);
+      let message = error?.message || 'Impossible de dupliquer le moment.';
+
+      if (momentCreated && !actionsCopied) {
+        // Une création WebSocket peut avoir réussi avant l'échec d'une action.
+        // Revenir à l'état initial au lieu de laisser une copie incomplète.
+        try {
+          await this._api.removeMoment(momentId);
+        } catch (rollbackError) {
+          console.error('Day Planner duplicate moment rollback error', rollbackError);
+          message += ` Suppression de la copie incomplète « ${momentId} » impossible : ` +
+            (rollbackError?.message || 'vérifiez manuellement les moments.');
+        }
+      } else if (actionsCopied) {
+        // La copie existe : une erreur de rafraîchissement ne doit pas la supprimer.
+        message = `Le moment « ${momentId} » a été copié, mais son affichage n’a pas été actualisé : ${message}`;
+        this._creatingMoment = false;
+        this._duplicatingMomentSourceId = null;
+        this._creatingMomentDraft = null;
+      }
+
+      // Recoller à l'état du serveur après un éventuel rollback.
+      try {
+        this._configuration = await this._api.getConfiguration();
+      } catch (refreshError) {
+        console.error('Day Planner duplicate moment refresh error', refreshError);
+      }
+      this._error = message;
+    } finally {
+      this._loading = false;
+      this.render();
+    }
+  }
+
   async _saveCreateMoment() {
+    if (this._duplicatingMomentSourceId) {
+      await this._saveDuplicateMoment();
+      return;
+    }
+
+    if (this._loading) {
+      return;
+    }
+
     const momentId = this.shadowRoot.querySelector('#new-moment-id')?.value?.trim();
 
     const name = this.shadowRoot.querySelector('#new-moment-name')?.value?.trim();
@@ -5063,7 +5662,7 @@ if (!customElements.get('day-planner-card')) {
 }
 
 console.info(
-  '%c DAY-PLANNER-CARD %c v0.0.4',
+  '%c DAY-PLANNER-CARD %c v0.2.7',
   'color: orange; font-weight: bold; background: black',
   'color: white; font-weight: bold; background: dimgray'
 );

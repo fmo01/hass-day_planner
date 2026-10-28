@@ -1,5 +1,3 @@
-console.info('cycles-view.js v1');
-
 import { escapeHtml, formatLongDate, getLanguage } from '../utils.js';
 
 export function renderCyclesView(card) {
@@ -64,6 +62,16 @@ export function renderCyclesView(card) {
     </button>
 
     <button
+      class="icon-button duplicate-cycle"
+      data-cycle-id="${escapeHtml(cycle.id)}"
+      type="button"
+      title="${escapeHtml(t('common.duplicate', 'Dupliquer'))}"
+      aria-label="${escapeHtml(t('common.duplicate', 'Dupliquer'))} : ${escapeHtml(cycle.name)}"
+    >
+      <ha-icon icon="mdi:content-copy"></ha-icon>
+    </button>
+
+    <button
       class="icon-button delete-cycle"
       data-cycle-id="${escapeHtml(cycle.id)}"
       type="button"
@@ -114,3 +122,10 @@ ${escapeHtml(formatLongDate(cycle.start_date, card._hass ))}
     </div>
   `;
 }
+
+
+console.info(
+  '%c CYCLES-VIEW %c v0.1.0',
+  'color: orange; font-weight: bold; background: black',
+  'color: white; font-weight: bold; background: dimgray'
+);

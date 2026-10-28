@@ -1,5 +1,3 @@
-console.info('week-schedules-view.js v1');
-
 import { escapeHtml } from '../utils.js';
 
 const DAYS = [
@@ -70,6 +68,15 @@ ${
                       icon="mdi:pencil"
                     ></ha-icon>
                   </button>
+                  <button
+                    class="icon-button duplicate-week-schedule"
+                    data-week-schedule-id="${escapeHtml(weekSchedule.id)}"
+                    type="button"
+                    title="Dupliquer la semaine type"
+                    aria-label="Dupliquer la semaine type"
+                  >
+                    <ha-icon icon="mdi:content-copy"></ha-icon>
+                  </button>
 <button
   class="icon-button danger delete-week-schedule"
   data-week-schedule-id="${escapeHtml(weekSchedule.id)}"
@@ -135,3 +142,10 @@ ${
     </div>
   `;
 }
+
+
+console.info(
+  '%c WEEK-SCHEDULES-VIEW  %c v0.1.0',
+  'color: orange; font-weight: bold; background: black',
+  'color: white; font-weight: bold; background: dimgray'
+);
