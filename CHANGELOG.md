@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.3](https://github.com/fmo01/hass-day_planner/compare/0.2.2...0.2.3) (2026-10-28)
+
+### Bug Fixes
+
+* divers correction IHM ([67a0eb4](https://github.com/fmo01/hass-day_planner/commit/67a0eb4fe1ab2c5f45f167996b93c8f652993ed6))
+
 ## [0.2.2](https://github.com/fmo01/hass-day_planner/compare/0.2.1...0.2.2) (2026-10-22)
 
 ### Bug Fixes
