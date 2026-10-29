@@ -6,10 +6,17 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.helpers import selector
 
-from .const import (CONF_DELETE_DATA_ON_REMOVE, CONF_MAX_CYCLES,
-                    CONF_SHOW_SIDEBAR_PANEL, DEFAULT_DELETE_DATA_ON_REMOVE,
-                    DEFAULT_MAX_CYCLES, DEFAULT_SHOW_SIDEBAR_PANEL,
-                    MAX_MAX_CYCLES, MIN_MAX_CYCLES, PANEL_URL_PATH)
+from .const import (
+    CONF_DELETE_DATA_ON_REMOVE,
+    CONF_MAX_CYCLES,
+    CONF_SHOW_SIDEBAR_PANEL,
+    DEFAULT_DELETE_DATA_ON_REMOVE,
+    DEFAULT_MAX_CYCLES,
+    DEFAULT_SHOW_SIDEBAR_PANEL,
+    MAX_MAX_CYCLES,
+    MIN_MAX_CYCLES,
+    PANEL_URL_PATH,
+)
 from .domain.action import Action
 from .domain.calendar_exception import CalendarException
 from .domain.cycle import Cycle

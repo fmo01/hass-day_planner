@@ -120,3 +120,28 @@ export function dayTypeColor(dayType) {
 
   return colors[Math.abs(hash) % colors.length];
 }
+
+/** References that prevent deleting a day type; dates remain part of history. */
+export function getDayTypeDependencies(configuration, dayTypeId) {
+  const weekdays = [
+    'monday', 'tuesday', 'wednesday', 'thursday',
+    'friday', 'saturday', 'sunday',
+  ];
+  const weeks = (configuration?.week_schedules || [])
+    .map((week) => ({
+      id: week.id,
+      name: week.name || week.id,
+      days: weekdays.filter((day) => week[day] === dayTypeId),
+    }))
+    .filter((week) => week.days.length > 0);
+  const exceptions = (configuration?.calendar_exceptions || [])
+    .filter((exception) => exception.day_type_id === dayTypeId)
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  return {
+    weeks,
+    weekUses: weeks.reduce((count, week) => count + week.days.length, 0),
+    exceptions,
+  };
+}
+
+console.info('utils.js v0.1.0');

@@ -2,13 +2,14 @@
 
 from collections.abc import Callable
 
-from homeassistant.components.logbook import (LOGBOOK_ENTRY_MESSAGE,
-                                              LOGBOOK_ENTRY_NAME,
-                                              LOGBOOK_ENTRY_SOURCE)
+from homeassistant.components.logbook import (
+    LOGBOOK_ENTRY_MESSAGE,
+    LOGBOOK_ENTRY_NAME,
+    LOGBOOK_ENTRY_SOURCE,
+)
 from homeassistant.core import Event, HomeAssistant, callback
 
-from .const import (DOMAIN, EVENT_DAY_PLANNER_ACTION,
-                    EVENT_DAY_PLANNER_ACTION_RESULT)
+from .const import DOMAIN, EVENT_DAY_PLANNER_ACTION, EVENT_DAY_PLANNER_ACTION_RESULT
 
 
 def _action_identity(data: dict) -> tuple[str, str, str]:

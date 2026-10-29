@@ -41,7 +41,7 @@ jobs:
       run: black custom_components/day_planner/
     
     - name: Run isort
-      run: isort custom_components/day_planner/
+      run: isort --profile black custom_components/day_planner/
     
     - name: Run flake8
       run: flake8 custom_components/day_planner/ --max-line-length=120

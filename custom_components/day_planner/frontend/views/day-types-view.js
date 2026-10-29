@@ -1,4 +1,4 @@
-import { dayTypeColor, escapeHtml } from '../utils.js';
+import { dayTypeColor, escapeHtml, formatDate, formatLongDate, getDayTypeDependencies } from '../utils.js';
 
 import { renderTimeline } from '../components/timeline.js';
 
@@ -50,6 +50,8 @@ export function renderDayTypesView(card) {
                     renderDayTypeItem(
                       dayType,
                       selectedDayType,
+                      configuration,
+                      card._hass,
                       t
                     )
                   )
@@ -75,9 +77,30 @@ export function renderDayTypesView(card) {
   `;
 }
 
-function renderDayTypeItem(dayType, selectedDayType, t) {
+function renderDayTypeItem(dayType, selectedDayType, configuration, hass, t) {
   const count = dayType.scheduled_moments?.length || 0;
   const selected = dayType.id === selectedDayType?.id;
+  const dependencies = getDayTypeDependencies(configuration, dayType.id);
+  const today = formatDate(new Date());
+  const dayNames = (days) => days.map((day) => t(`day_types.weekdays.${day}`, day)).join(', ');
+  const weeksLabel = t(
+    dependencies.weekUses === 1 ? 'day_types.week_usage_one' : 'day_types.week_usage_other',
+    dependencies.weekUses === 1 ? '{count} utilisation en semaine' : '{count} utilisations en semaine'
+  ).replace('{count}', dependencies.weekUses);
+  const exceptionsLabel = t(
+    dependencies.exceptions.length === 1 ? 'day_types.exception_one' : 'day_types.exception_other',
+    dependencies.exceptions.length === 1 ? '{count} exception' : '{count} exceptions'
+  ).replace('{count}', dependencies.exceptions.length);
+  const weekDetails = dependencies.weeks.length
+    ? `<ul>${dependencies.weeks.map((week) => `<li><strong>${escapeHtml(week.name)}</strong> : ${escapeHtml(dayNames(week.days))}</li>`).join('')}</ul>`
+    : `<p>${escapeHtml(t('day_types.no_week_usage', 'Aucune semaine type.'))}</p>`;
+  const exceptionDetails = dependencies.exceptions.length
+    ? `<ul>${dependencies.exceptions.map((exception) => {
+        const status = exception.date < today ? 'past' : exception.date === today ? 'today' : 'future';
+        const statusLabel = t(`day_types.exception_${status}`, status);
+        return `<li>${escapeHtml(formatLongDate(exception.date, hass))} — ${escapeHtml(statusLabel)}${exception.description ? ` : ${escapeHtml(exception.description)}` : ''}</li>`;
+      }).join('')}</ul>`
+    : `<p>${escapeHtml(t('day_types.no_exception_usage', 'Aucune exception.'))}</p>`;
 
   return /* html */ `
     <div
@@ -96,17 +119,33 @@ function renderDayTypeItem(dayType, selectedDayType, t) {
         ${escapeHtml(dayType.name)}
       </span>
 
-      <span class="day-type-count">
-        ${count}
-        ${escapeHtml(
-          t(
-            count === 1
-              ? 'day_types.scheduled_moment'
-              : 'day_types.scheduled_moments',
+      <div class="day-type-usage">
+        <details class="day-type-usage-details">
+          <summary title="${escapeHtml(exceptionsLabel)}" aria-label="${escapeHtml(exceptionsLabel)}">
+            <ha-icon icon="mdi:calendar-alert"></ha-icon> ${escapeHtml(exceptionsLabel)}
+          </summary>
+          <div class="day-type-usage-popover" role="note">
+            <strong>${escapeHtml(t('day_types.exceptions_details', 'Exceptions de calendrier'))}</strong>
+            ${exceptionDetails}
+          </div>
+        </details>
+        <details class="day-type-usage-details">
+          <summary title="${escapeHtml(weeksLabel)}" aria-label="${escapeHtml(weeksLabel)}">
+            <ha-icon icon="mdi:calendar-week"></ha-icon> ${escapeHtml(weeksLabel)}
+          </summary>
+          <div class="day-type-usage-popover" role="note">
+            <strong>${escapeHtml(t('day_types.weeks_details', 'Semaines types'))}</strong>
+            ${weekDetails}
+          </div>
+        </details>
+        <span class="day-type-count">
+          ${count}
+          ${escapeHtml(t(
+            count === 1 ? 'day_types.scheduled_moment' : 'day_types.scheduled_moments',
             count === 1 ? 'moment' : 'moments'
-          )
-        )}
-      </span>
+          ))}
+        </span>
+      </div>
 
       ${
         selected
@@ -244,7 +283,7 @@ function resolveScheduledMoments(configuration, dayType) {
 }
 
 console.info(
-  '%c DAY-TYPES-VIEW  %c v0.1.0',
+  '%c DAY-TYPES-VIEW  %c v0.1.1',
   'color: orange; font-weight: bold; background: black',
   'color: white; font-weight: bold; background: dimgray'
 );

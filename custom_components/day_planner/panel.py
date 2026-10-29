@@ -4,8 +4,14 @@ from homeassistant.components import frontend, panel_custom
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import (CONF_SHOW_SIDEBAR_PANEL, DEFAULT_SHOW_SIDEBAR_PANEL, NAME,
-                    PANEL_COMPONENT_NAME, PANEL_ICON, PANEL_URL_PATH)
+from .const import (
+    CONF_SHOW_SIDEBAR_PANEL,
+    DEFAULT_SHOW_SIDEBAR_PANEL,
+    NAME,
+    PANEL_COMPONENT_NAME,
+    PANEL_ICON,
+    PANEL_URL_PATH,
+)
 from .frontend import FRONTEND_URL
 
 

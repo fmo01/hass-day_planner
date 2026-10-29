@@ -5,6 +5,7 @@ import {
   formatLongDate,
   getLanguage,
   countActionSequenceTargets,
+  getDayTypeDependencies,
 } from './utils.js';
 import { styles } from './styles.js';
 import { DayPlannerI18n } from './i18n.js';
@@ -456,6 +457,42 @@ class DayPlannerCard extends HTMLElement {
     this.shadowRoot.querySelectorAll('.tab[data-tab]').forEach((element) => {
       element.addEventListener('click', () => {
         this._setActiveTab(element.dataset.tab);
+      });
+    });
+
+    const dayTypeUsageHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    this.shadowRoot.querySelectorAll('.day-type-usage-details').forEach((element) => {
+      const summary = element.querySelector('summary');
+
+      element.addEventListener('click', (event) => {
+        event.stopPropagation();
+        // On desktop the detail opens on hover; do not toggle it on mouse click.
+        if (dayTypeUsageHover && event.detail > 0 && event.target.closest('summary')) {
+          event.preventDefault();
+        }
+      });
+
+      if (!dayTypeUsageHover || !summary) {
+        return; // Keep native <details> tap-to-toggle behaviour on touch screens.
+      }
+
+      element.addEventListener('pointerenter', (event) => {
+        if (event.pointerType === 'mouse') {
+          element.open = true;
+        }
+      });
+      element.addEventListener('pointerleave', (event) => {
+        if (event.pointerType === 'mouse' && !summary.matches(':focus-visible')) {
+          element.open = false;
+        }
+      });
+      summary.addEventListener('focus', () => {
+        element.open = true; // Tab / Shift+Tab exposes the detail for keyboard users.
+      });
+      summary.addEventListener('blur', () => {
+        if (!element.matches(':hover')) {
+          element.open = false;
+        }
       });
     });
 
@@ -1445,12 +1482,9 @@ class DayPlannerCard extends HTMLElement {
     } catch (error) {
       console.error('Day Planner remove scheduled moment error', error);
 
-        this._error =
-          error?.message ||
-          (this._i18n?.t(
-            'day_types.delete_scheduled_moment_error',
-            'Impossible de supprimer le moment.'
-          ) ?? 'Impossible de supprimer le moment.');
+      this._error = this._dayTypeError(
+        error, 'delete_scheduled_moment_error', 'Impossible de supprimer le moment.'
+      );
     } finally {
       this._loading = false;
       this.render();
@@ -2374,12 +2408,9 @@ class DayPlannerCard extends HTMLElement {
     } catch (error) {
       console.error('Day Planner scheduled moment update error', error);
 
-      this._error =
-        error?.message ||
-        (this._i18n?.t(
-          'day_types.update_scheduled_moment_error',
-          'Impossible de modifier le moment.'
-        ) ?? 'Impossible de modifier le moment.');
+      this._error = this._dayTypeError(
+        error, 'update_scheduled_moment_error', 'Impossible de modifier le moment.'
+      );
 
     } finally {
       this._loading = false;
@@ -2428,12 +2459,9 @@ class DayPlannerCard extends HTMLElement {
     } catch (error) {
       console.error('Day Planner day type update error', error);
 
-      this._error =
-        error?.message ||
-        (this._i18n?.t(
-          'day_types.update_error',
-          'Impossible de modifier le type de journée.'
-        ) ?? 'Impossible de modifier le type de journée.');
+      this._error = this._dayTypeError(
+        error, 'update_error', 'Impossible de modifier le type de journée.'
+      );
 
     } finally {
       this._loading = false;
@@ -2460,7 +2488,7 @@ class DayPlannerCard extends HTMLElement {
 
     if (!momentId || !actionId || !label) {
       if (isCopy) {
-        this._error = 'L’identifiant et le libellé sont obligatoires.';
+        this._error = this._i18n?.t('day_types.id_name_required', 'L’identifiant et le libellé sont obligatoires.');
         this.render();
       }
       return;
@@ -2522,6 +2550,20 @@ class DayPlannerCard extends HTMLElement {
     }
   }
 
+  _dayTypeError(error, key, fallback) {
+    const message = String(error?.message || '');
+    const mappings = [
+      [/Cannot remove a day type used by a week schedule/, 'used_by_week'],
+      [/Cannot remove a day type used by a calendar exception/, 'used_by_exception'],
+      [/Day type not found:/, 'not_found'],
+      [/Duplicate (?:day type|id)|already exists/i, 'duplicate_id_error'],
+      [/Duplicate moment in day type/, 'duplicate_moment_error'],
+      [/Scheduled moment not found/, 'scheduled_moment_not_found'],
+    ];
+    const match = mappings.find(([pattern]) => pattern.test(message));
+    return this._i18n?.t(`day_types.${match ? match[1] : key}`, fallback) ?? fallback;
+  }
+
   _openCreateDayTypeDialog() {
     this._error = null;
     this._duplicatingDayTypeSourceId = null;
@@ -2545,7 +2587,7 @@ class DayPlannerCard extends HTMLElement {
         source.id,
         new Set((this._configuration?.day_types || []).map((item) => item.id))
       ),
-      name: `${source.name} (copie)`,
+      name: `${source.name} ${this._i18n?.t('day_types.copy_suffix', '(copie)') ?? '(copie)'}`,
     };
     this._error = null;
     this._creatingDayType = true;
@@ -2583,7 +2625,13 @@ class DayPlannerCard extends HTMLElement {
         ${
           duplicateSource
             ? `<p>${escapeHtml(
-                `${duplicateSource.scheduled_moments?.length || 0} moment(s) planifié(s) seront recopiés avec leurs horaires. Les Moments et leurs Actions resteront partagés.`
+                (this._i18n?.t(
+                  duplicateSource.scheduled_moments?.length === 1
+                    ? 'day_types.copy_information_one'
+                    : 'day_types.copy_information_other',
+                  '{count} moments planifiés seront recopiés avec leurs horaires. Les Moments et leurs Actions resteront partagés.'
+                ) ?? '{count} moments planifiés seront recopiés avec leurs horaires. Les Moments et leurs Actions resteront partagés.')
+                  .replace('{count}', duplicateSource.scheduled_moments?.length || 0)
               )}</p>`
             : ''
         }
@@ -2610,7 +2658,7 @@ class DayPlannerCard extends HTMLElement {
             id="new-day-type-id"
             type="text"
             value="${escapeHtml(this._creatingDayTypeDraft?.id ?? '')}"
-            placeholder="ex : jour_maison"
+            placeholder="${escapeHtml(this._i18n?.t('day_types.id_example', 'ex : jour_maison') ?? 'ex : jour_maison')}"
           />
         </label>
 
@@ -2628,7 +2676,7 @@ class DayPlannerCard extends HTMLElement {
             id="new-day-type-name"
             type="text"
             value="${escapeHtml(this._creatingDayTypeDraft?.name ?? '')}"
-            placeholder="ex : Journée Maison"
+            placeholder="${escapeHtml(this._i18n?.t('day_types.name_example', 'ex : Journée Maison') ?? 'ex : Journée Maison')}"
           />
         </label>
 
@@ -2678,7 +2726,13 @@ class DayPlannerCard extends HTMLElement {
 
     const usedMomentIds = new Set((dayType?.scheduled_moments || []).map((item) => item.moment_id));
 
-    const availableMoments = moments.filter((moment) => !usedMomentIds.has(moment.id));
+    const collator = new Intl.Collator(getLanguage(this._hass), {
+      sensitivity: 'base',
+      numeric: true,
+    });
+    const availableMoments = moments
+      .filter((moment) => !usedMomentIds.has(moment.id))
+      .sort((a, b) => collator.compare(a.name || a.id, b.name || b.id));
 
     return `
     <div class="modal-backdrop">
@@ -2820,7 +2874,7 @@ class DayPlannerCard extends HTMLElement {
       (item) => item.id === this._duplicatingDayTypeSourceId
     );
     if (!source) {
-      this._error = 'Le type de journée source est introuvable.';
+      this._error = this._i18n?.t('day_types.source_missing', 'Le type de journée source est introuvable.');
       this.render();
       return;
     }
@@ -2838,7 +2892,7 @@ class DayPlannerCard extends HTMLElement {
     // et ses affectations horaires sont recréés.
     const scheduled = structuredClone(source.scheduled_moments || []);
     if (scheduled.some((item) => !item.moment_id || !item.time_definition?.fixed_time)) {
-      this._error = 'Impossible de copier les moments : horaire ou identifiant absent.';
+      this._error = this._i18n?.t('day_types.copy_schedule_invalid', 'Impossible de copier les moments : horaire ou identifiant absent.');
       this.render();
       return;
     }
@@ -2869,18 +2923,24 @@ class DayPlannerCard extends HTMLElement {
       this._creatingDayTypeDraft = null;
     } catch (error) {
       console.error('Day Planner duplicate day type error', error);
-      let message = error?.message || 'Impossible de dupliquer le type de journée.';
+      let message = this._dayTypeError(error, 'copy_error', 'Impossible de dupliquer le type de journée.');
       if (dayTypeCreated && !schedulesCopied) {
         try {
           await this._api.removeDayType(dayTypeId);
         } catch (rollbackError) {
           console.error('Day Planner duplicate day type rollback error', rollbackError);
-          message += ` Suppression de la copie incomplète « ${dayTypeId} » impossible : ` +
-            (rollbackError?.message || 'vérifiez les types de journée.');
+          message += ' ' + (this._i18n?.t(
+            'day_types.copy_rollback_error',
+            'Impossible de supprimer la copie incomplète « {id} ». Vérifiez les types de journée.'
+          ) ?? 'Impossible de supprimer la copie incomplète « {id} ». Vérifiez les types de journée.')
+            .replace('{id}', dayTypeId);
         }
       } else if (schedulesCopied) {
-        message = `Le type de journée « ${dayTypeId} » a été copié, ` +
-          `mais son affichage n’a pas été actualisé : ${message}`;
+        message = (this._i18n?.t(
+          'day_types.copy_refresh_error',
+          'Le type de journée « {id} » a été copié, mais son affichage n’a pas été actualisé.'
+        ) ?? 'Le type de journée « {id} » a été copié, mais son affichage n’a pas été actualisé.')
+          .replace('{id}', dayTypeId);
         // Ne jamais proposer un deuxième enregistrement après succès de la copie.
         this._creatingDayType = false;
         this._duplicatingDayTypeSourceId = null;
@@ -2947,12 +3007,9 @@ class DayPlannerCard extends HTMLElement {
     } catch (error) {
       console.error('Day Planner add day type error', error);
 
-      this._error =
-        error?.message ||
-        (this._i18n?.t(
-          'day_types.add_error',
-          "Impossible d'ajouter le type de journée."
-        ) ?? "Impossible d'ajouter le type de journée.");
+      this._error = this._dayTypeError(
+        error, 'add_error', "Impossible d'ajouter le type de journée."
+      );
 
           } finally {
             this._loading = false;
@@ -3135,12 +3192,9 @@ class DayPlannerCard extends HTMLElement {
         error
       );
 
-      this._error =
-        error?.message ||
-        (this._i18n?.t(
-          'day_types.add_scheduled_moment_error',
-          "Impossible d'ajouter le moment."
-        ) ?? "Impossible d'ajouter le moment.");
+      this._error = this._dayTypeError(
+        error, 'add_scheduled_moment_error', "Impossible d'ajouter le moment."
+      );
     } finally {
       this._loading = false;
       this.render();
@@ -3827,11 +3881,22 @@ ${
     if (!dayType) {
       return '';
     }
+    const dependencies = getDayTypeDependencies(this._configuration, dayType.id);
+    const blocked = dependencies.weeks.length > 0 || dependencies.exceptions.length > 0;
+    const dayNames = (days) => days
+      .map((day) => this._i18n?.t(`day_types.weekdays.${day}`, day) ?? day).join(', ');
+    const today = formatDate(new Date());
+    const weekList = dependencies.weeks.map((week) => `<li><strong>${escapeHtml(week.name)}</strong> : ${escapeHtml(dayNames(week.days))}</li>`).join('');
+    const exceptionList = dependencies.exceptions.map((exception) => {
+      const status = exception.date < today ? 'past' : exception.date === today ? 'today' : 'future';
+      const label = this._i18n?.t(`day_types.exception_${status}`, status) ?? status;
+      return `<li>${escapeHtml(formatLongDate(exception.date, this._hass))} — ${escapeHtml(label)}${exception.description ? ` : ${escapeHtml(exception.description)}` : ''}</li>`;
+    }).join('');
 
     return `
     <div class="modal-backdrop">
       <div
-        class="modal-dialog"
+        class="modal-dialog day-type-delete-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="delete-day-type-dialog-title"
@@ -3870,6 +3935,21 @@ ${
           </strong>
         </div>
 
+        ${blocked ? `
+          <div class="modal-error" role="alert">
+            ${escapeHtml(this._i18n?.t(
+              'day_types.delete_blocked',
+              'Suppression impossible : ce type de journée est encore utilisé.'
+            ) ?? 'Suppression impossible : ce type de journée est encore utilisé.')}
+          </div>
+          ${weekList ? `<div class="day-type-dependency-list"><strong>${escapeHtml(this._i18n?.t('day_types.weeks_details', 'Semaines types'))}</strong><ul>${weekList}</ul></div>` : ''}
+          ${exceptionList ? `<div class="day-type-dependency-list"><strong>${escapeHtml(this._i18n?.t('day_types.exceptions_details', 'Exceptions de calendrier'))}</strong><ul>${exceptionList}</ul></div>` : ''}
+          <p>${escapeHtml(this._i18n?.t(
+            'day_types.delete_blocked_hint',
+            'Modifiez ou supprimez les références ci-dessus avant de supprimer ce type de journée.'
+          ) ?? 'Modifiez ou supprimez les références ci-dessus avant de supprimer ce type de journée.')}</p>
+        ` : ''}
+
         <div class="modal-actions">
           <button
             id="cancel-delete-day-type"
@@ -3888,7 +3968,7 @@ ${
             id="confirm-delete-day-type"
             class="editor-button danger"
             type="button"
-            ${this._loading ? 'disabled' : ''}
+            ${this._loading || blocked ? 'disabled' : ''}
           >
             ${escapeHtml(
               this._i18n?.t(
@@ -3912,6 +3992,15 @@ ${
     if (!dayTypeId) {
       return;
     }
+    const dependencies = getDayTypeDependencies(this._configuration, dayTypeId);
+    if (dependencies.weeks.length || dependencies.exceptions.length) {
+      this._error = this._i18n?.t(
+        'day_types.delete_blocked',
+        'Suppression impossible : ce type de journée est encore utilisé.'
+      );
+      this.render();
+      return;
+    }
 
     this._loading = true;
     this._error = null;
@@ -3932,12 +4021,9 @@ ${
     } catch (error) {
       console.error('Day Planner remove day type error', error);
 
-      this._error =
-        error?.message ||
-        (this._i18n?.t(
-          'day_types.delete_error',
-          'Impossible de supprimer le type de journée.'
-        ) ?? 'Impossible de supprimer le type de journée.');
+      this._error = this._dayTypeError(
+        error, 'delete_error', 'Impossible de supprimer le type de journée.'
+      );
 
     } finally {
       this._loading = false;
@@ -4000,7 +4086,6 @@ ${
           <input
             id="day-type-name"
             type="text"
-            value="${escapeHtml(dayType.name)}"
             value="${escapeHtml(this._editingDayTypeNameDraft ?? dayType.name)}"
           />
         </label>
@@ -5662,7 +5747,7 @@ if (!customElements.get('day-planner-card')) {
 }
 
 console.info(
-  '%c DAY-PLANNER-CARD %c v0.2.7',
+  '%c DAY-PLANNER-CARD %c v0.2.9',
   'color: orange; font-weight: bold; background: black',
   'color: white; font-weight: bold; background: dimgray'
 );

@@ -1,4 +1,4 @@
-console.info('style v0.5');
+console.info('style v0.7');
 export const styles = `
   :host {
     display: block;
@@ -214,6 +214,57 @@ export const styles = `
       var(--secondary-text-color);
     font-size: 12px;
   }
+
+  .day-type-usage {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    min-width: 0;
+  }
+  .day-type-usage-details {
+    position: relative;
+    font-size: 12px;
+    color: var(--secondary-text-color);
+  }
+  .day-type-usage-details > summary {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    list-style: none;
+    border-radius: 4px;
+    padding: 3px;
+  }
+  .day-type-usage-details > summary::-webkit-details-marker { display: none; }
+  .day-type-usage-details > summary:focus-visible {
+    outline: 2px solid var(--primary-color);
+  }
+  .day-type-usage-details > summary ha-icon { --mdc-icon-size: 15px; }
+  .day-type-usage-popover {
+    position: absolute;
+    top: calc(100% - 1px);
+    right: 0;
+    z-index: 20;
+    width: min(310px, 75vw);
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--divider-color);
+    background: var(--card-background-color);
+    color: var(--primary-text-color);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.22);
+    white-space: normal;
+  }
+  .day-type-usage-popover ul { margin: 8px 0 0; padding-left: 18px; }
+  .day-type-usage-popover li + li { margin-top: 5px; }
+  .day-type-usage-popover p { margin: 8px 0 0; }
+  .day-type-delete-dialog { overflow-y: auto; }
+  .day-type-dependency-list { max-height: 160px; overflow-y: auto; margin: 6px 0; }
+  .day-type-dependency-list ul { margin: 6px 0; padding-left: 22px; }
+  .day-type-dependency-list li + li { margin-top: 4px; }
 
   .day-types-empty {
     color:
@@ -494,8 +545,9 @@ export const styles = `
       row-gap: 6px;
     }
 
-    .day-type-count {
+    .day-type-usage {
       grid-column: 2;
+      justify-content: flex-start;
     }
 
     .day-type-actions {

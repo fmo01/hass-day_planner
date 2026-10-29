@@ -5,9 +5,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
 from .action_executor import ActionExecutor
-from .const import (CONF_DELETE_DATA_ON_REMOVE, CONF_MAX_CYCLES,
-                    DEFAULT_DELETE_DATA_ON_REMOVE, DEFAULT_MAX_CYCLES,
-                    PLATFORMS)
+from .const import (
+    CONF_DELETE_DATA_ON_REMOVE,
+    CONF_MAX_CYCLES,
+    DEFAULT_DELETE_DATA_ON_REMOVE,
+    DEFAULT_MAX_CYCLES,
+    PLATFORMS,
+)
 from .frontend import async_setup_frontend
 from .ha_scheduler import HomeAssistantScheduler
 from .panel import async_setup_panel, async_unload_panel
