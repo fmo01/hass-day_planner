@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.4](https://github.com/fmo01/hass-day_planner/compare/0.2.3...0.2.4) (2026-10-29)
+
+### Bug Fixes
+
+* ajout info dans type de journées ([4fd56fe](https://github.com/fmo01/hass-day_planner/commit/4fd56fe47ce61dd23659800903bcfd0e72f8eace))
+
 ## [0.2.3](https://github.com/fmo01/hass-day_planner/compare/0.2.2...0.2.3) (2026-10-28)
 
 ### Bug Fixes
