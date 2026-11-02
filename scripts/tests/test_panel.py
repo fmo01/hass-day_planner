@@ -5,12 +5,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from custom_components.day_planner.const import (CONF_SHOW_SIDEBAR_PANEL, NAME,
-                                                 PANEL_COMPONENT_NAME,
-                                                 PANEL_ICON, PANEL_URL_PATH)
+from custom_components.day_planner.const import (
+    CONF_SHOW_SIDEBAR_PANEL,
+    NAME,
+    PANEL_COMPONENT_NAME,
+    PANEL_ICON,
+    PANEL_URL_PATH,
+)
 from custom_components.day_planner.frontend import FRONTEND_URL
-from custom_components.day_planner.panel import (async_setup_panel,
-                                                 async_unload_panel)
+from custom_components.day_planner.panel import async_setup_panel, async_unload_panel
 
 
 @pytest.mark.parametrize(

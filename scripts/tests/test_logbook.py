@@ -2,12 +2,17 @@
 
 from unittest.mock import MagicMock
 
-from homeassistant.components.logbook import (LOGBOOK_ENTRY_MESSAGE,
-                                              LOGBOOK_ENTRY_NAME,
-                                              LOGBOOK_ENTRY_SOURCE)
+from homeassistant.components.logbook import (
+    LOGBOOK_ENTRY_MESSAGE,
+    LOGBOOK_ENTRY_NAME,
+    LOGBOOK_ENTRY_SOURCE,
+)
 
 from custom_components.day_planner.const import (
-    DOMAIN, EVENT_DAY_PLANNER_ACTION, EVENT_DAY_PLANNER_ACTION_RESULT)
+    DOMAIN,
+    EVENT_DAY_PLANNER_ACTION,
+    EVENT_DAY_PLANNER_ACTION_RESULT,
+)
 from custom_components.day_planner.logbook import async_describe_events
 
 

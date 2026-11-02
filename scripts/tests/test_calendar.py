@@ -5,8 +5,7 @@ from unittest.mock import MagicMock, patch
 from homeassistant.components.calendar import CalendarEvent
 from homeassistant.util import dt as dt_util
 
-from custom_components.day_planner.calendar import (DayPlannerCalendar,
-                                                    async_setup_entry)
+from custom_components.day_planner.calendar import DayPlannerCalendar, async_setup_entry
 from custom_components.day_planner.const import SIGNAL_PLANNER_UPDATED
 from custom_components.day_planner.domain.moment import Moment
 from custom_components.day_planner.domain.scheduled_event import ScheduledEvent

@@ -1,5 +1,7 @@
 from custom_components.day_planner.integration_info import (
-    INTEGRATION_VERSION, integration_attributes)
+    INTEGRATION_VERSION,
+    integration_attributes,
+)
 
 
 def test_integration_attributes():

@@ -4,18 +4,19 @@ from unittest.mock import AsyncMock, MagicMock
 
 from homeassistant.config_entries import ConfigEntry
 
-from custom_components.day_planner.const import (CONF_DELETE_DATA_ON_REMOVE,
-                                                 CONF_MAX_CYCLES,
-                                                 DEFAULT_DELETE_DATA_ON_REMOVE,
-                                                 DEFAULT_MAX_CYCLES, DOMAIN)
+from custom_components.day_planner.const import (
+    CONF_DELETE_DATA_ON_REMOVE,
+    CONF_MAX_CYCLES,
+    DEFAULT_DELETE_DATA_ON_REMOVE,
+    DEFAULT_MAX_CYCLES,
+    DOMAIN,
+)
 from custom_components.day_planner.domain.action import Action
-from custom_components.day_planner.domain.calendar_exception import \
-    CalendarException
+from custom_components.day_planner.domain.calendar_exception import CalendarException
 from custom_components.day_planner.domain.cycle import Cycle
 from custom_components.day_planner.domain.day_type import DayType
 from custom_components.day_planner.domain.moment import Moment
-from custom_components.day_planner.domain.scheduled_moment import \
-    ScheduledMoment
+from custom_components.day_planner.domain.scheduled_moment import ScheduledMoment
 from custom_components.day_planner.domain.time_definition import TimeDefinition
 from custom_components.day_planner.domain.week_schedule import WeekSchedule
 from custom_components.day_planner.options_flow import DayPlannerOptionsFlow

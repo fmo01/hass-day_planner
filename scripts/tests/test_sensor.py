@@ -5,13 +5,15 @@ from unittest.mock import MagicMock, patch
 from custom_components.day_planner.const import SIGNAL_PLANNER_UPDATED
 from custom_components.day_planner.domain.day_type import DayType
 from custom_components.day_planner.domain.moment import Moment
-from custom_components.day_planner.domain.resolved_day_context import \
-    ResolvedDayContext
+from custom_components.day_planner.domain.resolved_day_context import ResolvedDayContext
 from custom_components.day_planner.domain.scheduled_event import ScheduledEvent
 from custom_components.day_planner.integration_info import INTEGRATION_VERSION
 from custom_components.day_planner.sensor import (
-    DayPlannerCurrentDayTypeSensor, DayPlannerCurrentMomentSensor,
-    DayPlannerNextEventSensor, async_setup_entry)
+    DayPlannerCurrentDayTypeSensor,
+    DayPlannerCurrentMomentSensor,
+    DayPlannerNextEventSensor,
+    async_setup_entry,
+)
 
 
 def test_sensor_setup_entry():

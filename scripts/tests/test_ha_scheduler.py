@@ -4,8 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from custom_components.day_planner.domain.moment import Moment
 from custom_components.day_planner.domain.scheduled_event import ScheduledEvent
-from custom_components.day_planner.domain.scheduled_moment import \
-    ScheduledMoment
+from custom_components.day_planner.domain.scheduled_moment import ScheduledMoment
 from custom_components.day_planner.domain.time_definition import TimeDefinition
 from custom_components.day_planner.ha_scheduler import HomeAssistantScheduler
 from custom_components.day_planner.planner.scheduler import PlannerScheduler

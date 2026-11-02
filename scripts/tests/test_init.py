@@ -1,18 +1,27 @@
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from custom_components.day_planner import (_async_migrate_entity_ids,
-                                           _async_options_updated,
-                                           async_remove_entry, async_setup,
-                                           async_setup_entry,
-                                           async_unload_entry)
-from custom_components.day_planner.const import (CONF_MAX_CYCLES,
-                                                 DEFAULT_MAX_CYCLES, PLATFORMS)
-from custom_components.day_planner.domain.planner_configuration import \
-    PlannerConfiguration
-from custom_components.day_planner.frontend import (FRONTEND_PATH,
-                                                    FRONTEND_URL,
-                                                    async_setup_frontend)
+from custom_components.day_planner import (
+    _async_migrate_entity_ids,
+    _async_options_updated,
+    async_remove_entry,
+    async_setup,
+    async_setup_entry,
+    async_unload_entry,
+)
+from custom_components.day_planner.const import (
+    CONF_MAX_CYCLES,
+    DEFAULT_MAX_CYCLES,
+    PLATFORMS,
+)
+from custom_components.day_planner.domain.planner_configuration import (
+    PlannerConfiguration,
+)
+from custom_components.day_planner.frontend import (
+    FRONTEND_PATH,
+    FRONTEND_URL,
+    async_setup_frontend,
+)
 
 
 @patch("custom_components.day_planner.async_setup_panel", new_callable=AsyncMock)

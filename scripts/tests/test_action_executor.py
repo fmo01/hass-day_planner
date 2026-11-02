@@ -6,7 +6,9 @@ from homeassistant.core import Context, HomeAssistant
 
 from custom_components.day_planner.action_executor import ActionExecutor
 from custom_components.day_planner.const import (
-    EVENT_DAY_PLANNER_ACTION, EVENT_DAY_PLANNER_ACTION_RESULT)
+    EVENT_DAY_PLANNER_ACTION,
+    EVENT_DAY_PLANNER_ACTION_RESULT,
+)
 from custom_components.day_planner.domain.action import Action
 from custom_components.day_planner.domain.moment import Moment
 
@@ -406,7 +408,9 @@ def test_warning_handler_filters_context_logger_and_message():
     import logging
 
     from custom_components.day_planner.action_executor import (
-        _ACTIVE_ACTION, _HAServiceWarningHandler)
+        _ACTIVE_ACTION,
+        _HAServiceWarningHandler,
+    )
 
     marker = object()
     handler = _HAServiceWarningHandler(marker, Action(id="XX1", sequence=[]), None)
@@ -474,8 +478,7 @@ def test_warning_handler_filters_context_logger_and_message():
 )
 def test_requested_service_does_not_invent_ambiguous_details(sequence):
     """A logbook description must not claim unsupported service targets."""
-    from custom_components.day_planner.action_executor import \
-        _simple_requested_service
+    from custom_components.day_planner.action_executor import _simple_requested_service
 
     assert _simple_requested_service(Action(id="XX1", sequence=sequence)) is None
 
