@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0](https://github.com/fmo01/hass-day_planner/compare/0.2.4...0.3.0) (2026-11-08)
+
+### Features
+
+* **eedomus:** ajouter la reprise des agendas et l'export XLSX ([4f83782](https://github.com/fmo01/hass-day_planner/commit/4f837825b51d24c1cc380ba7ba49891715cc7abf))
+
 ## [0.2.4](https://github.com/fmo01/hass-day_planner/compare/0.2.3...0.2.4) (2026-10-29)
 
 ### Bug Fixes
