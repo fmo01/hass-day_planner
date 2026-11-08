@@ -1,6 +1,9 @@
 # Day Planner — Documentation fonctionnelle
 
-**Version publiée de référence : 0.2.0. Documentation actualisée le 22 octobre 2026 : traçabilité des cinq objets métier et contrôles fonctionnels Home Assistant confirmés. Les travaux réalisés après la publication 0.2.0 ne constituent pas une nouvelle release.**
+> **État au 8 novembre 2026.** Base de développement : Day Planner 0.2.3, avec les modifications locales de reprise eedomus **v5.16**. Ces numéros `v5.x` sont ceux des correctifs de travail, pas des versions publiées de l’intégration. Le dernier rapport pytest **complet communiqué** (7 novembre) donne **517 tests réussis, 2 990 instructions, 243 non couvertes, 92 % de couverture**. Un complément de **55 tests** a été préparé et validé de façon ciblée ; **le 100 % global reste à confirmer par la prochaine exécution complète**.
+
+
+**Contexte historique : version 0.2.0, documentation initiale du 22 octobre 2026 : traçabilité des cinq objets métier et contrôles fonctionnels Home Assistant confirmés. Les travaux réalisés après la publication 0.2.0 ne constituent pas une nouvelle release.**
 
 ## 1. Présentation
 
@@ -236,10 +239,32 @@ La suite inclut les tests des moments simultanés, des références des sept jou
 
 **Résultat le plus récent, communiqué le 20 octobre 2026 : couverture Python globale de 100 % confirmée par l'utilisateur** après ajout des tests liés à l'exécuteur d'actions et au Journal de bord. Le rapport intermédiaire indiquait 2 093 instructions, dont 9 non couvertes (99 %, exécuteur à 93 %) ; les nouveaux tests ont été validés et l'utilisateur a confirmé le retour à 100 %. Le nombre exact de tests de cette dernière exécution complète n'a pas été communiqué. Les 407 tests du tableau ci-dessus correspondent uniquement au résultat historique du 14 octobre.
 
-**Dernier rapport complet chiffré du 21 octobre 2026 : 449 tests réussis, 2 146 instructions Python mesurées, 0 non couverte, 100 % de couverture, 5 avertissements, en 1,67 s sous Python 3.14.3.** L’utilisateur a confirmé les tests après les dernières adaptations et réalisé les contrôles fonctionnels en HA les 22 octobre : Moments et Actions, Types de journée et Moments planifiés, Semaines types, Cycles et Exceptions du calendrier. La suite complète n’a pas été relancée par l’assistant et aucun nouveau rapport de comptage ultérieur n’est disponible.
+**Rapport historique complet chiffré du 21 octobre 2026 : 449 tests réussis, 2 146 instructions Python mesurées, 0 non couverte, 100 % de couverture, 5 avertissements, en 1,67 s sous Python 3.14.3.** L’utilisateur a confirmé les tests après les dernières adaptations et réalisé les contrôles fonctionnels en HA les 22 octobre : Moments et Actions, Types de journée et Moments planifiés, Semaines types, Cycles et Exceptions du calendrier. La suite complète n’a pas été relancée par l’assistant pour cette période historique ; un rapport plus récent du 7 novembre 2026 est indiqué dans la mise à jour du 8 novembre.
 
 Le test réel du Journal de bord du 20 octobre confirme également l'attribution de la désactivation de `input_boolean.day_planner_test` à l'action `XX1` du moment `Retour Travail`.
 
 La couverture est mesurée sans seuil bloquant. Elle ne garantit pas à elle seule le comportement réel de l'intégration et ne mesure pas la couverture du frontend JavaScript.
 
 **L1-06 est clôturé le 22 octobre 2026** sur les sept scénarios fonctionnels HA confirmés : action sur deux helpers avec traces, deux moments simultanés, replanification après changement d’horaire, exception, changement de cycle, passage de minuit et redémarrage avant déclenchement. **L1-11 demeure à confirmer** pour un événement dont l’horaire est passé pendant un arrêt HA ; les tests Python décrivent le non-rattrapage général attendu. Aucun essai réel distinct de ce dernier cas n’est affirmé.
+
+## 8. Reprise ponctuelle d’un agenda eedomus (v5.16)
+
+Depuis **Paramètres → Appareils et services → Day Planner → Configurer → Reprise agenda eedomus**, sélectionner une box eedomus **active** puis un export JSON sur l’ordinateur. Si une seule box est active, sa sélection est automatique. Le formulaire affiche le résumé et les associations avant toute écriture.
+
+- Les **semaines types, types de journée, moments, actions et identifiants Day Planner** portent la provenance lisible `Eedomus (<adresse de la box>)`. Les identifiants des entités existantes dans Home Assistant ne sont pas modifiés.
+- Les commandes de domaines non compatibles (dont `sensor`) sont **identifiées comme ignorées**, mais les moments sont créés même s’ils ne possèdent aucune action compatible. Les horaires sont conservés.
+- L’absence d’association ou une association ambiguë, notamment plusieurs cibles compatibles, interdit l’import plutôt que d’inventer la cible ; les entités de diagnostic `_battery` sont exclues de la recherche.
+- Les **règles conditionnelles eedomus** et paramètres internes non interprétés ne sont pas convertis en actions Day Planner ; ils sont annoncés dans le récapitulatif.
+- Une reprise précédente de la **même box** peut être remplacée après confirmation ; aucune création manuelle ni reprise d’une autre box ne doit être effacée.
+- La reprise **ne crée ni cycle ni exception**, ne planifie pas automatiquement une semaine dans un cycle et ne commande aucun appareil au moment de l’import.
+- Le JSON d’origine reste sur le poste ; la copie téléversée par le formulaire est temporaire.
+
+**Rapports disponibles :** tableau des associations avec statut, zone de copie par sélection du texte, CSV et fichier **XLSX à 7 onglets**. Le fichier est constitué en mémoire, avant même la confirmation de création. Son téléchargement passe par un lien temporaire Home Assistant ; selon le frontend, la navigation des liens peut nécessiter une ouverture externe. Les fichiers ne sont pas stockés sous `/config`.
+
+La référence de test de l’export du **1er novembre 2026 à 18:02** contient **9 types de journée, 8 moments, 41 horaires et 10 actions directes** lorsque les entités correspondantes sont compatibles. Ces chiffres ne sont pas des valeurs fixes : le résultat réel dépend du JSON et des entités actives.
+
+Voir [le guide détaillé de reprise](reprise_eedomus.md) et [l’export Excel](export_xlsx_eedomus.md).
+
+## 9. Validation de la reprise et couverture
+
+Dernière mesure de suite complète fournie (7 novembre 2026) : **517 tests réussis, 92 %** (2 990 instructions, 243 non couvertes). Le complément préparé cible la couverture intégrale de l’extracteur et des cas limites d’import, d’export Excel et de flux d’options ; le résultat global de 100 % doit être confirmé par une nouvelle exécution avec Home Assistant. Les tests isolés ne valent pas recette de bout en bout.

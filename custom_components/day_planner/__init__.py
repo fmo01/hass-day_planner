@@ -12,6 +12,10 @@ from .const import (
     DEFAULT_MAX_CYCLES,
     PLATFORMS,
 )
+from .eedomus_download import (
+    EedomusAssociationsDownloadView,
+    EedomusAssociationsExcelView,
+)
 from .frontend import async_setup_frontend
 from .ha_scheduler import HomeAssistantScheduler
 from .panel import async_setup_panel, async_unload_panel
@@ -81,6 +85,8 @@ async def async_setup(
     async_setup_websocket_api(hass)
 
     await async_setup_frontend(hass)
+    hass.http.register_view(EedomusAssociationsDownloadView(hass))
+    hass.http.register_view(EedomusAssociationsExcelView(hass))
 
     return True
 

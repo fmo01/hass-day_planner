@@ -1,6 +1,9 @@
 # Day Planner — Documentation technique
 
-**Version publiée de référence : 0.2.0 (`manifest.json`). Documentation actualisée le 22 octobre 2026 : journalisation du 20 octobre conservée ; généralisation de la traçabilité `Audit` et validations fonctionnelles Home Assistant des 21–22 octobre intégrées. Il ne s’agit pas d’une nouvelle publication.**
+> **État au 8 novembre 2026.** Base de développement : Day Planner 0.2.3, avec les modifications locales de reprise eedomus **v5.16**. Ces numéros `v5.x` sont ceux des correctifs de travail, pas des versions publiées de l’intégration. Le dernier rapport pytest **complet communiqué** (7 novembre) donne **517 tests réussis, 2 990 instructions, 243 non couvertes, 92 % de couverture**. Un complément de **55 tests** a été préparé et validé de façon ciblée ; **le 100 % global reste à confirmer par la prochaine exécution complète**.
+
+
+**Contexte historique : version 0.2.0, documentation initiale du 22 octobre 2026 : journalisation du 20 octobre conservée ; généralisation de la traçabilité `Audit` et validations fonctionnelles Home Assistant des 21–22 octobre intégrées. Il ne s’agit pas d’une nouvelle publication.**
 
 *Portée : ce guide décrit les comportements validés par l’utilisateur jusqu’au 22 octobre. Les sources Python de `Ha DayPlanner/python` dans la bibliothèque peuvent être antérieures à ces changements : la documentation n’atteste pas leur actualisation et ne les remplace pas.*
 
@@ -322,7 +325,7 @@ Résultat GitHub Actions communiqué par l'utilisateur, **14 octobre 2026 à 12:
 
 Un contrôle ciblé simulant Home Assistant, exécuté lors de la préparation des tests du 20 octobre, a produit **19 tests réussis**, avec **100 %** de couverture pour `action_executor.py` (131/131 instructions) et `logbook.py` (31/31). Il ne remplace pas la suite complète exécutée par l'utilisateur.
 
-**Dernier rapport complet chiffré communiqué le 21 octobre 2026 : 449 tests réussis, 5 avertissements, 2 146 instructions Python mesurées, aucune non couverte, 100 % de couverture globale (Python 3.14.3, 1,67 s).** L’utilisateur a ensuite confirmé les tests au fil des adaptations Options Flow et les contrôles HA, sans nouveau rapport chiffré complet partagé. La suite n’a pas été exécutée par l’assistant.
+**Rapport historique complet chiffré communiqué le 21 octobre 2026 : 449 tests réussis, 5 avertissements, 2 146 instructions Python mesurées, aucune non couverte, 100 % de couverture globale (Python 3.14.3, 1,67 s).** L’utilisateur a ensuite confirmé les tests au fil des adaptations Options Flow et les contrôles HA, durant cette période historique. Un rapport plus récent, daté du 7 novembre 2026, est indiqué dans la mise à jour du 8 novembre. La suite n’a pas été exécutée intégralement par l’assistant.
 
 Les ajouts sont intégrés aux fichiers existants :
 
@@ -403,3 +406,34 @@ La classe `Audit` est désormais sérialisée sur les cinq objets principaux ; l
 - Poursuite des contrôles de cohérence et fiabilisation des vérifications CI et du frontend.
 
 Ces évolutions doivent conserver la séparation entre domaine, moteur, persistance et adaptateurs Home Assistant.
+
+## 19. Reprise eedomus : architecture et contrôles de sécurité (v5.16)
+
+| Module | Rôle |
+| --- | --- |
+| `eedomus_agenda_extract.py` | Chargement et extraction du JSON eedomus, jours, phases, horaires, actions et limites. |
+| `eedomus_import.py` | Construction du plan d’import, association au registre HA, conversions, exclusions, nouveaux identifiants et fusion validée. |
+| `options_flow.py` | Choix de la box active et du JSON navigateur, prévalidation, confirmation, appel à la persistance et génération de liens d’export. |
+| `eedomus_download.py` | Routes HTTP temporaires pour CSV et XLSX, jetons et signature Home Assistant. |
+| `eedomus_excel.py` | Construction du classeur OOXML XLSX en mémoire avec les 7 feuilles ; protection contre les chaînes interprétées comme formules. |
+| `planner/engine.py` | Application de la configuration fusionnée uniquement après validation. |
+
+### Identification des box et des périphériques
+
+Les entrées sont obtenues par `hass.config_entries.async_entries("eedomus")`. La box sélectionnée doit être activée (`disabled_by is None`) et chargée (`ConfigEntryState.LOADED`). Le nom de provenance `Eedomus (<api_host>)` sert aux **noms ET IDs des nouveaux objets Day Planner**. Le `entry_id` demeure une clé de rattachement technique au registre des entités Home Assistant, sans modification de ses `unique_id`.
+
+Pour un numéro de périphérique eedomus, la recherche peut reconnaître les quatre variantes de `unique_id` associées à l’entrée sélectionnée : `eedomus_<entry_id>_<numéro>`, `eedomus_<entry_id>_<numéro>_<suffixe>`, `<entry_id>_<numéro>` et `<entry_id>_<numéro>_<suffixe>`. Les entités de diagnostic dont le suffixe contient le segment `battery` sont ignorées. On ne réutilise pas d’anciens enregistrements orphelins d’une autre `config_entry`.
+
+Les domaines actuellement convertis en actions sont `climate`, `cover`, `switch`, `light` et `input_boolean`, selon des valeurs reconnues. Les autres associations (par exemple `sensor`) restent **informatives et non bloquantes** ; elles ne génèrent pas d’action. Un moment sans action reste valide et conserve ses `scheduled_moments`. Les cibles absentes, désactivées ou ambiguës sont contrôlées séparément et peuvent interrompre la prévalidation.
+
+### Téléversement, écriture et export
+
+Le fichier JSON choisi via `selector.FileSelector` et l’intégration HA `file_upload` est lu puis supprimé de l’espace temporaire ; aucun fichier d’import n’est requis dans `/config`. Les objets ne sont persistés qu’après confirmation et validation. Le remplacement est limité aux créations antérieures de la même box, y compris les anciens identifiants pré-v5.5 après confirmation explicite ; conserver les objets manuels et les autres box.
+
+Les routes `GET /api/day_planner/eedomus_associations.csv` et `.xlsx` servent respectivement un CSV et un classeur XLSX. Leurs liens sont signés temporairement par Home Assistant et associés à un jeton aléatoire ; les rapports sont générés en mémoire, sans fichier sous `/config/www`. L’export **n’exécute aucun service HA** et ne valide pas la reprise. Les sept feuilles et leurs contenus sont décrits dans [export_xlsx_eedomus.md](export_xlsx_eedomus.md).
+
+### Tests et suivi
+
+Le code de production v5.16 et ses tests existants ont produit **517 tests réussis, 92 %** sur le dernier rapport complet communiqué. Un correctif complémentaire ajoute **55 tests** dans `test_eedomus_agenda_extract.py` (nouveau), `test_eedomus_import.py`, `test_eedomus_excel.py` et `test_options_flow.py`. Les 90 tests ciblés ont été contrôlés dans un environnement de préparation isolé ; la mesure de couverture complète **reste à confirmer** sur la machine de développement avec Home Assistant installé. Aucun `pragma: no cover`, `coverage omit` ou seuil `--cov-fail-under=100` n'est introduit.
+
+La gestion fine des droits HA des gestionnaires désignés reste reportée ; cette évolution ne doit pas être confondue avec un renforcement déjà validé des permissions. Voir [qualification_couverture.md](qualification_couverture.md) et la [roadmap](ROADMAP.md).

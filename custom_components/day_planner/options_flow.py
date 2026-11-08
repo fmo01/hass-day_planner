@@ -1,9 +1,14 @@
 """Options flow for Day Planner."""
 
+import hashlib
+import html
+import json
+import logging
 from datetime import date, time
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.components.file_upload import process_uploaded_file
 from homeassistant.helpers import selector
 
 from .const import (
@@ -25,7 +30,16 @@ from .domain.moment import Moment
 from .domain.scheduled_moment import ScheduledMoment
 from .domain.time_definition import TimeDefinition
 from .domain.week_schedule import WeekSchedule
+from .eedomus_download import create_eedomus_csv_link, create_eedomus_xlsx_link
+from .eedomus_import import (
+    EedomusImportError,
+    create_import_plan,
+    get_eedomus_entity_map,
+    prepare_import,
+)
 from .planner.errors import ValidationError
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class DayPlannerOptionsFlow(
@@ -51,6 +65,9 @@ class DayPlannerOptionsFlow(
         self._selected_action_moment_id: str | None = None
         self._selected_action_id: str | None = None
         self._selected_remove_action_id: str | None = None
+        self._eedomus_import_source: str | None = None
+        self._eedomus_import_agenda: dict | None = None
+        self._eedomus_configuration_digest: str | None = None
 
     async def async_step_init(
         self,
@@ -68,7 +85,369 @@ class DayPlannerOptionsFlow(
                 "cycles",
                 "calendar_exceptions",
                 "settings",
+                "import_eedomus",
             ],
+        )
+
+    @staticmethod
+    def _eedomus_digest(configuration):
+        """Detect concurrent edits during the confirmation step."""
+        serialized = json.dumps(configuration.to_dict(), sort_keys=True)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    async def _eedomus_actor(self):
+        """Use the HA display name for audit where available."""
+        user_id = self.context.get("user_id")
+        if not user_id:
+            return "system"
+        user = await self.hass.auth.async_get_user(user_id)
+        return (user.name or user.id) if user is not None else user_id
+
+    async def _eedomus_read_upload(self, uploaded_file_id, source_entry_id):
+        """Consume a browser-uploaded JSON in an executor; HA deletes the upload."""
+
+        def read_file():
+            with process_uploaded_file(self.hass, uploaded_file_id) as path:
+                if path.suffix.lower() != ".json":
+                    raise EedomusImportError("Le fichier doit être au format JSON")
+                if not path.is_file() or path.stat().st_size > 20 * 1024 * 1024:
+                    raise EedomusImportError("JSON introuvable ou supérieur à 20 Mo")
+                # The uploaded raw export stays temporary and is deleted by HA
+                # on leaving the process_uploaded_file context manager.
+                return prepare_import(self.hass, source_entry_id, path)
+
+        return await self.hass.async_add_executor_job(read_file)
+
+    @staticmethod
+    def _eedomus_entry_active(entry):
+        """Only enabled, successfully loaded eedomus integrations are importable."""
+        return (
+            entry.domain == "eedomus"
+            and entry.disabled_by is None
+            and entry.state is config_entries.ConfigEntryState.LOADED
+        )
+
+    async def _eedomus_plan(self, source_entry_id, agenda):
+        """Validate imported data and HA entity mapping, without saving."""
+        source = self.hass.config_entries.async_get_entry(source_entry_id)
+        if source is None or not self._eedomus_entry_active(source):
+            raise EedomusImportError(
+                "La box eedomus sélectionnée est désactivée ou non chargée dans Home Assistant"
+            )
+        runtime = self.config_entry.runtime_data
+        # Use api_host for all imported names AND Day Planner IDs. HA's own
+        # entity unique_ids still require source_entry_id for registry lookup.
+        host = source.data.get("api_host")
+        if not isinstance(host, str) or not host.strip():
+            raise EedomusImportError(
+                "Adresse de la box eedomus absente (api_host) : reprise impossible"
+            )
+        week_name = f"Eedomus ({host.strip()})"
+        # Without the config entry ID in imported object IDs, two active HA
+        # entries pointing at the same host would have identical IDs.
+        duplicates = [
+            entry
+            for entry in self.hass.config_entries.async_entries("eedomus")
+            if entry.entry_id != source_entry_id
+            and self._eedomus_entry_active(entry)
+            and isinstance(entry.data.get("api_host"), str)
+            and entry.data["api_host"].strip() == host.strip()
+        ]
+        if duplicates:
+            raise EedomusImportError(
+                f"Plusieurs intégrations eedomus actives utilisent {host} : "
+                "impossible de distinguer leurs objets Day Planner"
+            )
+        return create_import_plan(
+            agenda,
+            runtime.engine.configuration,
+            source_entry_id,
+            get_eedomus_entity_map(self.hass, source_entry_id),
+            replace_existing=True,
+            actor=await self._eedomus_actor(),
+            max_cycles=runtime.engine.max_cycles,
+            week_name=week_name,
+        )
+
+    async def async_step_import_eedomus(self, user_input=None):
+        """One-shot import: choose HA eedomus config entry and browser JSON."""
+        available = self.hass.config_entries.async_entries("eedomus")
+        if not available:
+            return self.async_abort(reason="eedomus_not_configured")
+        entries = [entry for entry in available if self._eedomus_entry_active(entry)]
+        if not entries:
+            return self.async_abort(reason="eedomus_not_active")
+        # A single existing config entry identifies the source unambiguously;
+        # ask the user to choose only when multiple eedomus boxes exist.
+        fields = {}
+        if len(entries) > 1:
+            fields[vol.Required("source_entry_id")] = selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=[
+                        selector.SelectOptionDict(
+                            value=e.entry_id, label=f"{e.title} ({e.entry_id})"
+                        )
+                        for e in entries
+                    ],
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                )
+            )
+        fields[vol.Required("json_upload")] = selector.FileSelector(
+            selector.FileSelectorConfig(accept=".json,application/json")
+        )
+        schema = vol.Schema(fields)
+        errors = {}
+        details = ""
+        if user_input is not None:
+            try:
+                source_id = (
+                    entries[0].entry_id
+                    if len(entries) == 1
+                    else user_input["source_entry_id"]
+                )
+                if not any(entry.entry_id == source_id for entry in entries):
+                    raise EedomusImportError("Box eedomus sélectionnée introuvable")
+                source = self.hass.config_entries.async_get_entry(source_id)
+                if source is None or not self._eedomus_entry_active(source):
+                    raise EedomusImportError(
+                        "Box eedomus sélectionnée désactivée ou non chargée dans Home Assistant"
+                    )
+                agenda = await self._eedomus_read_upload(
+                    user_input["json_upload"], source_id
+                )
+                await self._eedomus_plan(source_id, agenda)
+            except (OSError, ValueError, KeyError, TypeError) as exc:
+                _LOGGER.warning("eedomus import preflight rejected: %s", exc)
+                errors["base"] = "eedomus_import_invalid"
+                details = (
+                    f"ÉCHEC DU CONTRÔLE — {exc}. "
+                    "Aucune donnée n'a été importée dans Day Planner."
+                )
+            else:
+                self._eedomus_import_source = source_id
+                self._eedomus_import_agenda = agenda
+                self._eedomus_configuration_digest = self._eedomus_digest(
+                    self.config_entry.runtime_data.engine.configuration
+                )
+                return await self.async_step_import_eedomus_confirm()
+        return self.async_show_form(
+            step_id="import_eedomus",
+            data_schema=schema,
+            errors=errors,
+            description_placeholders={
+                "details": details,
+                "box_count": str(len(entries)),
+                "selected_box": (
+                    f"{entries[0].title} ({entries[0].entry_id})"
+                    if len(entries) == 1
+                    else ""
+                ),
+            },
+        )
+
+    @staticmethod
+    def _eedomus_mappings_table(mapped_entities, unsupported_associations=()):
+        """Show supported and skipped associations together in the same table.
+
+        Every eedomus command with a registered but unsupported HA target
+        remains visible, including sensor and binary_sensor domains. No
+        unsupported association becomes a Day Planner action.
+        """
+
+        def escape_cell(value):
+            """Avoid broken Markdown table cells from registry device names."""
+            return (
+                str(value)
+                .replace("\\", "\\\\")
+                .replace("|", "\\|")
+                .replace("`", "\\`")
+                .replace("\r", " ")
+                .replace("\n", " ")
+            )
+
+        rows = []
+        for association in mapped_entities:
+            eedomus, separator, entity_id = association.rpartition(" → ")
+            if not separator:
+                eedomus, entity_id = association, "—"
+            rows.append(
+                f"| {escape_cell(eedomus)} | `{escape_cell(entity_id)}` | Pris en charge |"
+            )
+
+        for peripheral, entity_id, reason in unsupported_associations:
+            rows.append(
+                f"| {escape_cell(peripheral)} | `{escape_cell(entity_id)}` | "
+                f"Ignoré : {escape_cell(reason)} |"
+            )
+        return "\n".join(rows) if rows else "| — | — | Aucune association |"
+
+    @staticmethod
+    def _eedomus_unsupported_table(associations):
+        """Render skipped, incompatible eedomus-to-HA associations in Markdown."""
+        if not associations:
+            return "| — | — | — |"
+
+        def safe(value):
+            return (
+                str(value)
+                .replace("\\", "\\\\")
+                .replace("|", "\\|")
+                .replace("`", "\\`")
+                .replace("\r", " ")
+                .replace("\n", " ")
+            )
+
+        return "\n".join(
+            f"| {safe(peripheral)} | `{safe(entity_id)}` | {safe(reason)} |"
+            for peripheral, entity_id, reason in associations
+        )
+
+    @staticmethod
+    def _eedomus_copy_table(mapped_entities, unsupported_associations):
+        """Prepare Excel-ready, tab-separated associations for clipboard copying."""
+
+        def safe_cell(value):
+            """Prevent row breaks and spreadsheet formula evaluation."""
+            cell = " ".join(str(value).split())
+            if cell.lstrip().startswith(("=", "+", "-", "@")):
+                return "'" + cell
+            return cell
+
+        rows = [
+            (
+                "Périphérique eedomus (ID)",
+                "Entité Home Assistant",
+                "Statut / motif",
+            )
+        ]
+        for association in mapped_entities:
+            peripheral, separator, entity_id = association.rpartition(" → ")
+            if not separator:
+                peripheral, entity_id = association, "—"
+            rows.append((peripheral, entity_id, "Pris en charge"))
+
+        for peripheral, entity_id, reason in unsupported_associations:
+            rows.append((peripheral, entity_id, f"Ignoré : {reason}"))
+
+        return "\n".join("\t".join(safe_cell(cell) for cell in row) for row in rows)
+
+    @staticmethod
+    def _eedomus_csv_download_url(hass, tsv, host):
+        """Make a short-lived download link; do not persist the associations."""
+        return create_eedomus_csv_link(hass, tsv, host)
+
+    @staticmethod
+    def _eedomus_xlsx_download_url(hass, plan, host, agenda=None):
+        """Generate the seven-sheet Excel export from the validated plan."""
+        return create_eedomus_xlsx_link(hass, plan, host, agenda)
+
+    async def async_step_import_eedomus_confirm(self, user_input=None):
+        """Explicit confirmation, mandatory when replacing prior import."""
+        if self._eedomus_import_source is None or self._eedomus_import_agenda is None:
+            return await self.async_step_import_eedomus()
+        errors = {}
+        try:
+            plan = await self._eedomus_plan(
+                self._eedomus_import_source, self._eedomus_import_agenda
+            )
+            runtime = self.config_entry.runtime_data
+            if (
+                self._eedomus_digest(runtime.engine.configuration)
+                != self._eedomus_configuration_digest
+            ):
+                raise EedomusImportError(
+                    "Configuration Day Planner modifiée pendant la confirmation"
+                )
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            _LOGGER.warning("eedomus confirmation rejected: %s", exc)
+            return self.async_show_form(
+                step_id="import_eedomus_confirm",
+                data_schema=vol.Schema({}),
+                errors={"base": "eedomus_import_changed"},
+            )
+
+        # HA's config-flow frontend turns selector read_only=True into a
+        # disabled field (no selection/copy, forbidden cursor).  Keep this
+        # optional textarea enabled for selection/clipboard access instead.
+        # Its submitted value is NEVER read or used to build the import plan.
+        copy_table = self._eedomus_copy_table(
+            plan.mapped_entities, plan.unsupported_associations
+        )
+        schema = vol.Schema(
+            {
+                vol.Optional(
+                    "associations_excel", default=copy_table
+                ): selector.TextSelector(selector.TextSelectorConfig(multiline=True)),
+                vol.Required("confirm", default=False): bool,
+                vol.Optional("replace_existing", default=False): bool,
+            }
+        )
+        if user_input is not None:
+            if not user_input.get("confirm"):
+                errors["base"] = "eedomus_confirm_required"
+            elif plan.had_previous_import and not user_input.get("replace_existing"):
+                errors["base"] = "eedomus_replace_required"
+            else:
+                previous = runtime.engine.configuration
+                try:
+                    runtime.engine.replace_configuration(plan.configuration)
+                    await runtime.async_configuration_updated()
+                except Exception:
+                    # Restore the prior runtime and best-effort persist/reschedule.
+                    _LOGGER.exception("eedomus import failed during persistence")
+                    runtime.engine.replace_configuration(previous)
+                    try:
+                        await runtime.async_configuration_updated()
+                    except Exception:
+                        _LOGGER.exception("eedomus rollback failed")
+                    errors["base"] = "eedomus_import_failed"
+                else:
+                    return self.async_create_entry(
+                        title="",
+                        data=self.config_entry.options,
+                    )
+        # Only publish a fresh link if the confirmation is actually displayed.
+        source = self.hass.config_entries.async_get_entry(self._eedomus_import_source)
+        host = source.data.get("api_host", "box") if source else "box"
+        if not isinstance(host, str):
+            host = "box"
+        download_url = self._eedomus_xlsx_download_url(
+            self.hass, plan, host, self._eedomus_import_agenda
+        )
+        # Keep markup out of translation strings: ICU rejects literal <a> tags.
+        # The frontend Markdown sanitizer permits target=_blank on anchors,
+        # preventing the HA SPA router from intercepting a normal click.
+        download_link = (
+            f'<a href="{html.escape(download_url, quote=True)}" '
+            f'target="_blank">📥 Télécharger le classeur Excel (.xlsx)</a>'
+        )
+        summary = (
+            f"{plan.day_types} journées, {plan.moments} moments, "
+            f"{plan.scheduled} horaires, {plan.actions} actions. "
+            f"{plan.moments_without_actions} moment(s) sans action compatible."
+        )
+        limitations = (
+            f"{plan.conditional_rules_not_imported} règles conditionnelles actives "
+            f"et {plan.unresolved_embedded_parameters} paramètres internes non repris."
+        )
+        return self.async_show_form(
+            step_id="import_eedomus_confirm",
+            data_schema=schema,
+            errors=errors,
+            description_placeholders={
+                "summary": summary,
+                "limitations": limitations,
+                "download_url": download_url,
+                "download_link": download_link,
+                "mappings": self._eedomus_mappings_table(
+                    plan.mapped_entities, plan.unsupported_associations
+                ),
+                "unsupported": self._eedomus_unsupported_table(
+                    plan.unsupported_associations
+                ),
+                "unsupported_count": str(len(plan.unsupported_associations)),
+                "replacement": ("Oui" if plan.had_previous_import else "Non"),
+            },
         )
 
     async def async_step_management(self, user_input=None):

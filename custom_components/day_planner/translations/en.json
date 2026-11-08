@@ -13,7 +13,12 @@
       "week_schedule_in_use": "This week schedule cannot be removed because it is still used by a cycle.",
       "maximum_cycles_reached": "The maximum number of allowed cycles has been reached.",
       "max_cycles_too_small": "The value {value} is too small. The minimum value is {minimum}.",
-      "action_sequence_required": "At least one Home Assistant action is required."
+      "action_sequence_required": "At least one Home Assistant action is required.",
+      "eedomus_import_invalid": "Import stopped. The diagnostic above the form identifies the device, value, and reason. No Day Planner data was changed.",
+      "eedomus_import_changed": "Day Planner changed during confirmation. Start the import again.",
+      "eedomus_confirm_required": "Explicit confirmation is required.",
+      "eedomus_replace_required": "Check replacement to overwrite this box’s existing imported week, days and moments.",
+      "eedomus_import_failed": "Unable to save the imported agenda."
     },
     "step": {
       "init": {
@@ -25,7 +30,8 @@
           "cycles": "Cycles",
           "calendar_exceptions": "Calendar exceptions",
           "settings": "Settings",
-          "management": "Open management"
+          "management": "Open management",
+          "import_eedomus": "Import eedomus agenda"
         }
       },
       "settings": {
@@ -325,7 +331,28 @@
       "management": {
         "title": "Day Planner management",
         "description": "[Open the Day Planner management screen]({url})\n\nThis link remains available when the panel is hidden from the sidebar."
+      },
+      "import_eedomus": {
+        "title": "Import eedomus agenda once",
+        "description": "Export the configuration using [eedomus Import / Export](https://secure.eedomus.com/import_export), then use Browse to select the JSON file on your device. No /config upload is needed. The source JSON is temporary and is deleted after parsing. Day Planner objects are saved only after confirmation; no processed JSON file is produced.\n\nEnabled and loaded eedomus boxes: {box_count}. If there is only one, it is automatically selected: {selected_box}. If several are active, choose the one corresponding to this JSON.\n\n{details}",
+        "data": {
+          "source_entry_id": "eedomus integration / box",
+          "json_upload": "Choose eedomus JSON file"
+        }
+      },
+      "import_eedomus_confirm": {
+        "title": "Confirm eedomus import",
+        "description": "**Import summary:** {summary}\n\n**Previous import:** {replacement}\n\n**eedomus → Home Assistant associations** — {unsupported_count} skipped command(s). Moments and schedules are preserved even without supported actions.\n\n| eedomus device (ID) | Home Assistant entity | Status / reason |\n| --- | --- | --- |\n{mappings}\n\n**{download_link}** — link valid for 15 minutes. If needed, [use the alternative link]({download_url}) with **Ctrl+click**.\n\n**Copy to Excel:** the selectable field below contains tab-separated associations. Click it, press Ctrl+A, then Ctrl+C, and paste into Excel with Ctrl+V.\n\n**Not imported:** {limitations}\n\nConfirming updates Day Planner without triggering Home Assistant devices.",
+        "data": {
+          "confirm": "Import this eedomus agenda",
+          "replace_existing": "Replace the previous import for this eedomus box",
+          "associations_excel": "Excel associations (select all, then Ctrl+C)"
+        }
       }
+    },
+    "abort": {
+      "eedomus_not_configured": "No eedomus integration is configured.",
+      "eedomus_not_active": "No enabled, loaded eedomus box is available in Home Assistant. Enable a box and wait for it to connect."
     }
   }
 }

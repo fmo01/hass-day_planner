@@ -516,6 +516,13 @@ def test_integration_setup_registers_websocket_and_frontend():
             assert await async_setup(hass, {}) is True
             register.assert_called_once_with(hass)
             setup.assert_awaited_once_with(hass)
+            assert hass.http.register_view.call_count == 2
+            views = [call.args[0] for call in hass.http.register_view.call_args_list]
+            assert {view.url for view in views} == {
+                "/api/day_planner/eedomus_associations.csv",
+                "/api/day_planner/eedomus_associations.xlsx",
+            }
+            assert all(view.requires_auth for view in views)
 
     asyncio.run(run())
 

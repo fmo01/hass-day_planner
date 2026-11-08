@@ -1609,3 +1609,31 @@ def test_calendar_exception_audit_update_preserves_creation(
 
     assert audit.modified_by == "Utilisateur Secondaire"
     assert audit.modified_at >= original_audit.modified_at
+
+
+def test_engine_replace_configuration_validates_all_objects():
+    engine = PlannerEngine(PlannerConfiguration.empty())
+    valid = PlannerConfiguration(
+        moments=(), day_types=(), week_schedules=(), cycles=(), calendar_exceptions=()
+    )
+    engine.replace_configuration(valid)
+    assert engine.configuration is valid
+    invalid = replace(
+        valid,
+        week_schedules=(
+            WeekSchedule(
+                id="missing_refs",
+                name="Broken",
+                monday="missing",
+                tuesday="missing",
+                wednesday="missing",
+                thursday="missing",
+                friday="missing",
+                saturday="missing",
+                sunday="missing",
+            ),
+        ),
+    )
+    with pytest.raises(ValidationError):
+        engine.replace_configuration(invalid)
+    assert engine.configuration is valid

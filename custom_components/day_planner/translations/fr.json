@@ -13,7 +13,12 @@
       "week_schedule_in_use": "Cette semaine ne peut pas être supprimée car elle est encore utilisée par un cycle.",
       "maximum_cycles_reached": "Le nombre maximum de cycles autorisés est atteint.",
       "max_cycles_too_small": "La valeur {value} est trop petite. La valeur minimale est {minimum}.",
-      "action_sequence_required": "Au moins une action Home Assistant doit être définie."
+      "action_sequence_required": "Au moins une action Home Assistant doit être définie.",
+      "eedomus_import_invalid": "Import interrompu. Le diagnostic affiché au-dessus du formulaire précise le périphérique, la valeur et la cause. Aucune donnée Day Planner modifiée.",
+      "eedomus_import_changed": "Day Planner a changé pendant la confirmation. Recommencez la reprise.",
+      "eedomus_confirm_required": "Une confirmation explicite est nécessaire.",
+      "eedomus_replace_required": "Cochez le remplacement pour écraser la précédente semaine, les journées et les moments issus de cette box.",
+      "eedomus_import_failed": "Impossible d’enregistrer l’agenda importé."
     },
     "step": {
       "init": {
@@ -25,7 +30,8 @@
           "cycles": "Cycles",
           "calendar_exceptions": "Exceptions",
           "settings": "Paramètres",
-          "management": "Ouvrir la gestion"
+          "management": "Ouvrir la gestion",
+          "import_eedomus": "Reprise agenda eedomus"
         }
       },
       "settings": {
@@ -331,7 +337,28 @@
       "management": {
         "title": "Gestion Day Planner",
         "description": "[Ouvrir l’écran de gestion Day Planner]({url})\n\nCe lien reste disponible lorsque le panneau est masqué du menu latéral."
+      },
+      "import_eedomus": {
+        "title": "Reprise ponctuelle de l’agenda eedomus",
+        "description": "Exportez la configuration depuis [Import / Export eedomus](https://secure.eedomus.com/import_export), puis cliquez sur « Parcourir… » pour sélectionner le JSON enregistré sur votre ordinateur. Aucun fichier à déposer sous /config. Le JSON source est temporaire et effacé après lecture. Les objets ne sont enregistrés qu’après confirmation ; aucun nouveau fichier JSON n’est créé.\n\nBox eedomus **actives et chargées** : {box_count}. Si une seule box est active, elle est sélectionnée automatiquement : {selected_box}. Si plusieurs box sont actives, sélectionnez celle correspondant au JSON.\n\n{details}",
+        "data": {
+          "source_entry_id": "Intégration / box eedomus",
+          "json_upload": "Choisir le fichier JSON eedomus"
+        }
+      },
+      "import_eedomus_confirm": {
+        "title": "Confirmer la reprise eedomus",
+        "description": "**Résumé de la reprise :** {summary}\n\n**Reprise déjà présente :** {replacement}\n\n**Associations eedomus → Home Assistant** — {unsupported_count} commande(s) ignorée(s). Les moments et horaires sont conservés, même sans action compatible.\n\n| Périphérique eedomus (ID) | Entité Home Assistant | Statut / motif |\n| --- | --- | --- |\n{mappings}\n\n**{download_link}** — lien valable 15 minutes. En cas de difficulté, [utilisez ce lien alternatif]({download_url}) avec **Ctrl+clic**.\n\n**Copie vers Excel :** le champ ci-dessous contient toutes les associations séparées par des tabulations. Cliquez dedans, puis Ctrl+A et Ctrl+C ; collez dans Excel avec Ctrl+V. Le contenu de ce champ est informatif : toute modification sera ignorée par Day Planner.\n\n**Éléments non repris :** {limitations}\n\nLa confirmation met à jour Day Planner sans déclencher les appareils Home Assistant.",
+        "data": {
+          "confirm": "Importer cet agenda eedomus",
+          "replace_existing": "Remplacer la précédente reprise de cette box eedomus",
+          "associations_excel": "Associations pour Excel (sélectionner tout, puis Ctrl+C)"
+        }
       }
+    },
+    "abort": {
+      "eedomus_not_configured": "Aucune intégration eedomus n’est configurée.",
+      "eedomus_not_active": "Aucune box eedomus active et chargée dans Home Assistant. Activez une box et attendez sa connexion."
     }
   }
 }

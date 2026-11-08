@@ -1,14 +1,19 @@
 # Suite de tests de hass-day_planner
 
+> **État au 8 novembre 2026.** Base de développement : Day Planner 0.2.3, avec les modifications locales de reprise eedomus **v5.16**. Ces numéros `v5.x` sont ceux des correctifs de travail, pas des versions publiées de l’intégration. Le dernier rapport pytest **complet communiqué** (7 novembre) donne **517 tests réussis, 2 990 instructions, 243 non couvertes, 92 % de couverture**. Un complément de **55 tests** a été préparé et validé de façon ciblée ; **le 100 % global reste à confirmer par la prochaine exécution complète**.
+
+
 Ce répertoire contient les tests automatisés de l'intégration personnalisée **Day Planner** pour Home Assistant : domaine métier, configuration, calcul du planning, planification, actions, stockage, services, WebSocket, entités et panneau.
 
 Ce document est destiné à `scripts/tests/README.md`. Version publiée de référence : **0.2.0** ; documentation actualisée le **14 octobre 2026**. Il conserve la mise à jour automatique des statistiques par le workflow GitHub Actions **Run Tests**.
 
 ---
 
-## État actuel des tests
+## Dernière synthèse automatisée publiée (historique)
 
-Ce bloc est remplacé automatiquement après une exécution réussie. Les valeurs ci-dessous reprennent l'exécution GitHub Actions communiquée par l'utilisateur du 14 octobre 2026 à 12:15:34 Europe/Paris.
+Les trois blocs automatiques `TEST-STATS`, `COVERAGE-MODULES` et `TEST-ENV` sont **gérés par GitHub Actions**. Leur contenu ci-dessous demeure un instantané historique tant qu’une nouvelle exécution CI ne l’a pas remplacé. **Ne pas modifier manuellement les valeurs à l’intérieur des marqueurs.**
+
+La **dernière exécution complète transmise manuellement** le 7 novembre 2026 est plus récente : **517 tests réussis, 2 990 instructions, 243 manquantes, 92 %, 5 avertissements, Python 3.14.3**. Les chiffres anciens ne représentent pas le dernier état du développement v5.16.
 
 <!-- TEST-STATS-START -->
 - Tests réussis : **449**
@@ -261,7 +266,7 @@ La couverture est suivie sans seuil bloquant. L'objectif de 100 % ne nécessite 
 Les valeurs ci-dessous proviennent de l'exécution GitHub Actions réussie datée dans le tableau. Elles seront actualisées automatiquement lors d'une prochaine exécution.
 
 <!-- COVERAGE-MODULES-START -->
-Dernière mise à jour : **2026-10-29 13:02:32 Europe/Paris**
+Dernière mise à jour : **2026-10-28 15:15:03 Europe/Paris**
 
 | Package | Composant | Instructions | Non couvertes | Couverture |
 |---|---|---:|---:|---:|
@@ -386,22 +391,47 @@ Environnement de l'exécution GitHub Actions communiqué par l'utilisateur :
 
 <!-- TEST-ENV-START -->
 ```text
-Python 3.14.9
+Python 3.14.8
 pytest 9.0.3
 pytest-cov 7.1.0
 pytest-homeassistant-custom-component 0.13.375
 Tests exécutés : 449 
 Tests réussis : 449 
 Couverture totale : 100.00%
-Dernière exécution : 2026-10-29 13:02:32 Europe/Paris
+Dernière exécution : 2026-10-28 15:15:03 Europe/Paris
 ```
 <!-- TEST-ENV-END -->
 
 Les versions GitHub Actions peuvent différer de l'environnement local : le rapport local fourni utilisait Python 3.14.3. Le résultat GitHub Actions ci-dessus est un instantané antérieur au dernier nettoyage de version/changelog. Les futurs blocs générés font référence pour les nouveaux commits ; ne pas recalculer leurs chiffres manuellement.
 
 
-## Essais Home Assistant restant à confirmer — L1-06
+## Historique : essais Home Assistant L1-06 (depuis clôturés le 22/10)
 
 Les tests Python du calcul à minuit et des changements d'heure passent. Le comportement réel doit encore être confirmé : rafraîchissement des capteurs et du calendrier à minuit, rechargement et redémarrage près d'un déclenchement, absence de doublon et de rattrapage général après un arrêt.
 
-Les essais réels ne sont pas couverts par le chiffre de 100 % du code Python. Un rappel est prévu le 15 octobre 2026 vers 18 h (Europe/Paris). Voir [la documentation technique](../../docs/day_planner_technique.md) et [la roadmap](../../docs/ROADMAP.md).
+Ces essais historiques ont ensuite été confirmés par l’utilisateur le 22 octobre 2026. Les essais réels ne sont pas couverts par un pourcentage de couverture Python. Voir [la documentation technique](../../docs/day_planner_technique.md) et [la roadmap](../../docs/ROADMAP.md).
+
+## Complément de couverture pour la reprise eedomus v5.16 — 8 novembre 2026
+
+Le correctif `day_planner_v5_16_couverture_100_tests.zip` ne modifie **que les tests**, au nombre de **55 scénarios supplémentaires** répartis dans quatre fichiers :
+
+| Fichier | Périmètre couvert |
+| --- | --- |
+| `test_eedomus_agenda_extract.py` (nouveau) | 40 tests de décodage, structure JSON, journées, phases, horaires, paramètres internes et entrées invalides. |
+| `test_eedomus_import.py` | Registre, identité des box, correspondances, incompatibilités, sécurité des conversions et cas invalides. |
+| `test_eedomus_excel.py` | Chaînes particulières et construction des feuilles du classeur. |
+| `test_options_flow.py` | Chargement JSON, sélection de box active, prévalidation, confirmation, export et retour arrière. |
+
+**Résultat avant complément : 517 passed, 5 warnings, 92 % (2 990 / 243 manquantes).** Les 90 tests ciblés existants ou nouveaux ont été exécutés en simulation avec succès. Les trois modules extracteur, importeur et générateur Excel ont obtenu **100 % en mesure isolée** ; toutes les lignes auparavant manquantes d’Options Flow ont été exercées dans les tests ciblés. Ces résultats ne prouvent **pas encore** le taux global après fusion dans HA.
+
+**Résultat attendu, à confirmer** : 572 tests réussis et **100 %** sur le périmètre Python mesuré, sans ajuster les exclusions ni introduire un seuil bloquant. Le nombre réel et la couverture seront enregistrés à partir du prochain rapport de la suite complète, non estimés à partir des tests isolés.
+
+```bash
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest \
+  -p pytest_asyncio -p pytest_cov scripts/tests/ \
+  --cov=custom_components/day_planner --cov-report=term-missing -q
+```
+
+Les cinq avertissements du rapport précédent proviennent de dépréciations Home Assistant/backoff et n’invalident pas les tests ; leur évolution doit toutefois être surveillée. Conserver Black, `isort --profile black` et flake8 dans les contrôles habituels.
+
+Lire [qualification_couverture.md](../../docs/qualification_couverture.md) et [reprise_eedomus.md](../../docs/reprise_eedomus.md).

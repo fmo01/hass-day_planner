@@ -120,6 +120,13 @@ class PlannerEngine:
 
         self._configuration = configuration
 
+    def replace_configuration(self, configuration: PlannerConfiguration) -> None:
+        """Atomically validate and replace an imported full configuration."""
+        PlannerValidator.validate_configuration(
+            configuration, max_cycles=self._max_cycles
+        )
+        self._configuration = configuration
+
     @staticmethod
     def _create_audit(
         modified_by: str,
