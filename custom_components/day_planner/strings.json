@@ -334,7 +334,7 @@
       },
       "import_eedomus": {
         "title": "Import eedomus agenda once",
-        "description": "Export the configuration using [eedomus Import / Export](https://secure.eedomus.com/import_export), then use Browse to select the JSON file on your device. No /config upload is needed. The source JSON is temporary and is deleted after parsing. Day Planner objects are saved only after confirmation; no processed JSON file is produced.\n\nEnabled and loaded eedomus boxes: {box_count}. If there is only one, it is automatically selected: {selected_box}. If several are active, choose the one corresponding to this JSON.\n\n{details}",
+        "description": "Export the configuration using [eedomus Import / Export]({eedomus_export_url}), then use Browse to select the JSON file on your device. No /config upload is needed. The source JSON is temporary and is deleted after parsing. Day Planner objects are saved only after confirmation; no processed JSON file is produced.\n\nEnabled and loaded eedomus boxes: {box_count}. If there is only one, it is automatically selected: {selected_box}. If several are active, choose the one corresponding to this JSON.\n\n{details}",
         "data": {
           "source_entry_id": "eedomus integration / box",
           "json_upload": "Choose eedomus JSON file"

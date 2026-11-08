@@ -340,7 +340,7 @@
       },
       "import_eedomus": {
         "title": "Reprise ponctuelle de l’agenda eedomus",
-        "description": "Exportez la configuration depuis [Import / Export eedomus](https://secure.eedomus.com/import_export), puis cliquez sur « Parcourir… » pour sélectionner le JSON enregistré sur votre ordinateur. Aucun fichier à déposer sous /config. Le JSON source est temporaire et effacé après lecture. Les objets ne sont enregistrés qu’après confirmation ; aucun nouveau fichier JSON n’est créé.\n\nBox eedomus **actives et chargées** : {box_count}. Si une seule box est active, elle est sélectionnée automatiquement : {selected_box}. Si plusieurs box sont actives, sélectionnez celle correspondant au JSON.\n\n{details}",
+        "description": "Exportez la configuration depuis [Import / Export eedomus]({eedomus_export_url}), puis cliquez sur « Parcourir… » pour sélectionner le JSON enregistré sur votre ordinateur. Aucun fichier à déposer sous /config. Le JSON source est temporaire et effacé après lecture. Les objets ne sont enregistrés qu’après confirmation ; aucun nouveau fichier JSON n’est créé.\n\nBox eedomus **actives et chargées** : {box_count}. Si une seule box est active, elle est sélectionnée automatiquement : {selected_box}. Si plusieurs box sont actives, sélectionnez celle correspondant au JSON.\n\n{details}",
         "data": {
           "source_entry_id": "Intégration / box eedomus",
           "json_upload": "Choisir le fichier JSON eedomus"

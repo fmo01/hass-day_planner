@@ -236,6 +236,7 @@ class DayPlannerOptionsFlow(
             errors=errors,
             description_placeholders={
                 "details": details,
+                "eedomus_export_url": "https://secure.eedomus.com/import_export",
                 "box_count": str(len(entries)),
                 "selected_box": (
                     f"{entries[0].title} ({entries[0].entry_id})"
