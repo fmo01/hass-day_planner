@@ -16,9 +16,9 @@ Les trois blocs automatiques `TEST-STATS`, `COVERAGE-MODULES` et `TEST-ENV` sont
 La **dernière exécution complète transmise manuellement** le 7 novembre 2026 est plus récente : **517 tests réussis, 2 990 instructions, 243 manquantes, 92 %, 5 avertissements, Python 3.14.3**. Les chiffres anciens ne représentent pas le dernier état du développement v5.16.
 
 <!-- TEST-STATS-START -->
-- Tests réussis : **449**
-- Lignes mesurées : **2154**
-- Lignes couvertes : **2154**
+- Tests réussis : **572**
+- Lignes mesurées : **2990**
+- Lignes couvertes : **2990**
 - Lignes non couvertes : **0**
 - Couverture : **100.00%**
 <!-- TEST-STATS-END -->
@@ -266,20 +266,24 @@ La couverture est suivie sans seuil bloquant. L'objectif de 100 % ne nécessite 
 Les valeurs ci-dessous proviennent de l'exécution GitHub Actions réussie datée dans le tableau. Elles seront actualisées automatiquement lors d'une prochaine exécution.
 
 <!-- COVERAGE-MODULES-START -->
-Dernière mise à jour : **2026-11-02 12:51:28 Europe/Paris**
+Dernière mise à jour : **2026-11-08 18:09:35 Europe/Paris**
 
 | Package | Composant | Instructions | Non couvertes | Couverture |
 |---|---|---:|---:|---:|
-|  | `__init__.py` | 67 | 0 | 100.00% |
+|  | `__init__.py` | 70 | 0 | 100.00% |
 |  | `action_executor.py` | 131 | 0 | 100.00% |
 |  | `calendar.py` | 56 | 0 | 100.00% |
 |  | `config_flow.py` | 12 | 0 | 100.00% |
 |  | `const.py` | 40 | 0 | 100.00% |
+|  | `eedomus_agenda_extract.py` | 222 | 0 | 100.00% |
+|  | `eedomus_download.py` | 71 | 0 | 100.00% |
+|  | `eedomus_excel.py` | 171 | 0 | 100.00% |
+|  | `eedomus_import.py` | 204 | 0 | 100.00% |
 |  | `frontend.py` | 7 | 0 | 100.00% |
 |  | `ha_scheduler.py` | 50 | 0 | 100.00% |
 |  | `integration_info.py` | 9 | 0 | 100.00% |
 |  | `logbook.py` | 31 | 0 | 100.00% |
-|  | `options_flow.py` | 454 | 0 | 100.00% |
+|  | `options_flow.py` | 616 | 0 | 100.00% |
 |  | `panel.py` | 10 | 0 | 100.00% |
 |  | `runtime.py` | 18 | 0 | 100.00% |
 |  | `schemas.py` | 21 | 0 | 100.00% |
@@ -300,13 +304,13 @@ Dernière mise à jour : **2026-11-02 12:51:28 Europe/Paris**
 | `domain` | `scheduled_moment.py` | 9 | 0 | 100.00% |
 | `domain` | `time_definition.py` | 9 | 0 | 100.00% |
 | `domain` | `week_schedule.py` | 14 | 0 | 100.00% |
-| `planner` | `engine.py` | 153 | 0 | 100.00% |
+| `planner` | `engine.py` | 156 | 0 | 100.00% |
 | `planner` | `errors.py` | 3 | 0 | 100.00% |
 | `planner` | `protocols.py` | 2 | 0 | 100.00% |
 | `planner` | `resolver.py` | 45 | 0 | 100.00% |
 | `planner` | `scheduler.py` | 67 | 0 | 100.00% |
 | `planner` | `validator.py` | 106 | 0 | 100.00% |
-| **TOTAL** | | **2154** | **0** | **100.00%** |
+| **TOTAL** | | **2990** | **0** | **100.00%** |
 <!-- COVERAGE-MODULES-END -->
 
 ---
@@ -391,14 +395,14 @@ Environnement de l'exécution GitHub Actions communiqué par l'utilisateur :
 
 <!-- TEST-ENV-START -->
 ```text
-Python 3.14.8
+Python 3.14.10
 pytest 9.0.3
 pytest-cov 7.1.0
 pytest-homeassistant-custom-component 0.13.375
-Tests exécutés : 449 
-Tests réussis : 449 
+Tests exécutés : 572 
+Tests réussis : 572 
 Couverture totale : 100.00%
-Dernière exécution : 2026-11-02 12:51:28 Europe/Paris
+Dernière exécution : 2026-11-08 18:09:35 Europe/Paris
 ```
 <!-- TEST-ENV-END -->
 
