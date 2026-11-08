@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.1](https://github.com/fmo01/hass-day_planner/compare/0.3.0...0.3.1) (2026-11-08)
+
+### Bug Fixes
+
+* **eedomus:** mise en conformités HACS ([4109506](https://github.com/fmo01/hass-day_planner/commit/41095067cfc7ec0ffb7b9c672bb48257f387fb3b))
+
 ## [0.3.0](https://github.com/fmo01/hass-day_planner/compare/0.2.4...0.3.0) (2026-11-08)
 
 ### Features
