@@ -17,8 +17,8 @@ La **dernière exécution complète transmise manuellement** le 7 novembre 2026 
 
 <!-- TEST-STATS-START -->
 - Tests réussis : **572**
-- Lignes mesurées : **2990**
-- Lignes couvertes : **2990**
+- Lignes mesurées : **2992**
+- Lignes couvertes : **2992**
 - Lignes non couvertes : **0**
 - Couverture : **100.00%**
 <!-- TEST-STATS-END -->
@@ -266,11 +266,11 @@ La couverture est suivie sans seuil bloquant. L'objectif de 100 % ne nécessite 
 Les valeurs ci-dessous proviennent de l'exécution GitHub Actions réussie datée dans le tableau. Elles seront actualisées automatiquement lors d'une prochaine exécution.
 
 <!-- COVERAGE-MODULES-START -->
-Dernière mise à jour : **2026-11-08 18:09:35 Europe/Paris**
+Dernière mise à jour : **2026-11-08 18:28:49 Europe/Paris**
 
 | Package | Composant | Instructions | Non couvertes | Couverture |
 |---|---|---:|---:|---:|
-|  | `__init__.py` | 70 | 0 | 100.00% |
+|  | `__init__.py` | 72 | 0 | 100.00% |
 |  | `action_executor.py` | 131 | 0 | 100.00% |
 |  | `calendar.py` | 56 | 0 | 100.00% |
 |  | `config_flow.py` | 12 | 0 | 100.00% |
@@ -310,7 +310,7 @@ Dernière mise à jour : **2026-11-08 18:09:35 Europe/Paris**
 | `planner` | `resolver.py` | 45 | 0 | 100.00% |
 | `planner` | `scheduler.py` | 67 | 0 | 100.00% |
 | `planner` | `validator.py` | 106 | 0 | 100.00% |
-| **TOTAL** | | **2990** | **0** | **100.00%** |
+| **TOTAL** | | **2992** | **0** | **100.00%** |
 <!-- COVERAGE-MODULES-END -->
 
 ---
@@ -402,7 +402,7 @@ pytest-homeassistant-custom-component 0.13.375
 Tests exécutés : 572 
 Tests réussis : 572 
 Couverture totale : 100.00%
-Dernière exécution : 2026-11-08 18:09:35 Europe/Paris
+Dernière exécution : 2026-11-08 18:28:49 Europe/Paris
 ```
 <!-- TEST-ENV-END -->
 
