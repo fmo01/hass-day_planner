@@ -1,0 +1,85 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  hacs:
+    name: HACS
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: HACS validation
+        uses: "hacs/action@main"
+        with:
+          category: "integration"
+
+  hassfest:
+    name: Hassfest
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: "home-assistant/actions/hassfest@master"
+
+  #pytest:
+  #  name: Pytest (${{ matrix.label }})
+  #  runs-on: "ubuntu-latest"
+  #  strategy:
+  #    fail-fast: false
+  #    matrix:
+  #      include:
+  #        # The current Home Assistant, and the oldest one hacs.json claims.
+  #        # Both, because a floor nothing runs against is a number, not a
+  #        # promise - see requirements-floor.txt.
+  #        - label: current
+  #          requirements: requirements-dev.txt
+  #          args: ""
+  #        - label: floor
+  #          requirements: requirements-floor.txt
+  #          # Core's own suite, carried over under tests/components, is
+  #          # written against core's dev and uses helpers the floor does not
+  #          # have - see tests/components/README.md.
+  #          args: "--ignore=tests/components"
+  #  steps:
+  #    - uses: "actions/checkout@v4"
+  #    - uses: "actions/setup-python@v5"
+  #      with:
+  #        # pytest-homeassistant-custom-component pins an exact homeassistant
+  #        # version per release; on Python <3.14 pip resolves to an old
+  #        # release pinned way below our own floor - see requirements-dev.txt.
+  #        python-version: "3.14"
+  #    - name: Install dependencies
+  #      run: pip install -r ${{ matrix.requirements }}
+  #    - name: Run tests
+  #      run: pytest ${{ matrix.args }}
+  #
+  #ruff:
+  #  name: Ruff
+  #  runs-on: "ubuntu-latest"
+  #  steps:
+  #    - uses: "actions/checkout@v4"
+  #    - uses: "actions/setup-python@v5"
+  #      with:
+  #        python-version: "3.14"
+  #    - name: Install dependencies
+  #      run: pip install -r requirements-lint.txt
+  #    - name: Run ruff
+  #      run: ruff check .
+  #    - name: Check formatting
+  #      run: ruff format --check .
+  #
+  #mypy:
+  #  name: Mypy
+  #  runs-on: "ubuntu-latest"
+  #  steps:
+  #    - uses: "actions/checkout@v4"
+  #    - uses: "actions/setup-python@v5"
+  #      with:
+  #        python-version: "3.14"
+  #    - name: Install dependencies
+  #      run: pip install -r requirements-dev.txt
+  #    - name: Run mypy
+  #      run: mypy
