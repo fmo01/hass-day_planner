@@ -1,6 +1,10 @@
 {
   "domain": "day_planner",
   "name": "Day Planner",
+  "categories": [
+    "helpers",
+    "productivity_information.calendars_todos"
+  ],
   "codeowners": [
     "@fmo01"
   ],
