@@ -1,8 +1,22 @@
 # Day Planner — Documentation fonctionnelle
 
+## L7-08 — Validation finale et clôture du lot 7 (11 novembre 2026)
+
+**Lot 7 clôturé et validé fonctionnellement sur l’installation de l’utilisateur.** Après validation de L7-01 à L7-06, l’utilisateur a confirmé L7-07 (« Validé »), puis la recette finale (« j’ai testé ok »). Cette clôture documentaire consigne son retour ; elle ne constitue pas une nouvelle exécution de tests ni une nouvelle publication.
+
+La validation HA est un retour global de l’utilisateur. Aucun relevé détaillé supplémentaire par pays, navigateur, appareil ou scénario de panne n’a été fourni lors de cette confirmation ; ces détails ne sont pas inventés. Les résultats automatisés et les limites de couverture géographique restent distincts de la recette réelle.
+
+Bilan de référence L7-07 : **704 tests pytest réussis**, dont un lanceur de **26 tests JavaScript réussis**, **100 % de couverture Python (3 407 instructions)** et cinq avertissements de dépendances. Black, isort, flake8, syntaxe JavaScript et lecture des JSON ont été vérifiés ; Ruff n’a pas été exécuté dans l’environnement local. Le pourcentage de couverture concerne exclusivement le Python.
+
+Le périmètre livré comprend la localisation issue de HA avec Photon/OpenStreetMap, le capteur de diagnostic, la persistance de la dernière localisation résolue dans `/config/.storage/day_planner_location`, le calcul local des fêtes selon le pays et les subdivisions pris en charge, leur affichage informatif et la création assistée d’exceptions. La consultation d’un jour férié ne modifie jamais le planning : seule une exception enregistrée le fait. Le cache reste conservé, avec une validité de 30 jours et une reprise après une heure en cas d’échec réseau/HTTP, selon L7-03.
+
+Référence frontend de la livraison validée : carte **0.2.12**, `utils.js` **0.1.1**, `i18n.js` **0.1.1**. Cette livraison L7-08 modifie uniquement la roadmap et les documentations. Aucun fichier de production, aucune version d’intégration et aucune publication GitHub/HACS ne sont modifiés. Les autres lots, notamment l’étude mypy, conservent leur suivi propre.
+
+Les sections datées de cadrage et les résultats intermédiaires sont conservés pour la traçabilité. Le présent bilan et le tableau de suivi actualisé font référence pour le statut final ; les formulations anciennes « à réaliser » décrivent l’état à leur date.
+
 ## L7-07 — Qualification automatisée transversale (11 novembre 2026)
 
-L7-06 est validé sur HA par l’utilisateur. L7-07 complète les tests existants et les contrôles de qualité. Aucun code de production n’est modifié : carte 0.2.12, utils.js et i18n.js 0.1.1 inchangés. L7-08 reste à réaliser pour la recette finale et la clôture du lot 7.
+L7-06 est validé sur HA par l’utilisateur. L7-07 complète les tests existants et les contrôles de qualité. Aucun code de production n’est modifié : carte 0.2.12, utils.js et i18n.js 0.1.1 inchangés. L7-08 a ensuite été validé par l’utilisateur ; le lot 7 est clôturé.
 
 Deux tests transversaux supplémentaires ont été intégrés aux modules existants : consultation des années 2026, 2027 et 2028 après une seule résolution géographique, puis déplacement hors ligne sans réutilisation des jours fériés de l’ancien lieu ; et consultation des fêtes suivie de l’ajout, de la modification et de la suppression d’une exception, sur ces mêmes années. Le planning reste celui du cycle lors de la simple consultation. L’exception enregistrée est appliquée, son audit de création est conservé en modification et sa suppression restaure le cycle.
 

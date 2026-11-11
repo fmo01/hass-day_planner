@@ -1,8 +1,22 @@
 # Day Planner — Roadmap et suivi d’avancement
 
+## L7-08 — Validation finale et clôture du lot 7 (11 novembre 2026)
+
+**Lot 7 clôturé et validé fonctionnellement sur l’installation de l’utilisateur.** Après validation de L7-01 à L7-06, l’utilisateur a confirmé L7-07 (« Validé »), puis la recette finale (« j’ai testé ok »). Cette clôture documentaire consigne son retour ; elle ne constitue pas une nouvelle exécution de tests ni une nouvelle publication.
+
+La validation HA est un retour global de l’utilisateur. Aucun relevé détaillé supplémentaire par pays, navigateur, appareil ou scénario de panne n’a été fourni lors de cette confirmation ; ces détails ne sont pas inventés. Les résultats automatisés et les limites de couverture géographique restent distincts de la recette réelle.
+
+Bilan de référence L7-07 : **704 tests pytest réussis**, dont un lanceur de **26 tests JavaScript réussis**, **100 % de couverture Python (3 407 instructions)** et cinq avertissements de dépendances. Black, isort, flake8, syntaxe JavaScript et lecture des JSON ont été vérifiés ; Ruff n’a pas été exécuté dans l’environnement local. Le pourcentage de couverture concerne exclusivement le Python.
+
+Le périmètre livré comprend la localisation issue de HA avec Photon/OpenStreetMap, le capteur de diagnostic, la persistance de la dernière localisation résolue dans `/config/.storage/day_planner_location`, le calcul local des fêtes selon le pays et les subdivisions pris en charge, leur affichage informatif et la création assistée d’exceptions. La consultation d’un jour férié ne modifie jamais le planning : seule une exception enregistrée le fait. Le cache reste conservé, avec une validité de 30 jours et une reprise après une heure en cas d’échec réseau/HTTP, selon L7-03.
+
+Référence frontend de la livraison validée : carte **0.2.12**, `utils.js` **0.1.1**, `i18n.js` **0.1.1**. Cette livraison L7-08 modifie uniquement la roadmap et les documentations. Aucun fichier de production, aucune version d’intégration et aucune publication GitHub/HACS ne sont modifiés. Les autres lots, notamment l’étude mypy, conservent leur suivi propre.
+
+Les sections datées de cadrage et les résultats intermédiaires sont conservés pour la traçabilité. Le présent bilan et le tableau de suivi actualisé font référence pour le statut final ; les formulations anciennes « à réaliser » décrivent l’état à leur date.
+
 ## L7-07 — Qualification automatisée transversale (11 novembre 2026)
 
-L7-06 est validé sur HA par l’utilisateur. L7-07 complète les tests existants et les contrôles de qualité. Aucun code de production n’est modifié : carte 0.2.12, utils.js et i18n.js 0.1.1 inchangés. L7-08 reste à réaliser pour la recette finale et la clôture du lot 7.
+L7-06 est validé sur HA par l’utilisateur. L7-07 complète les tests existants et les contrôles de qualité. Aucun code de production n’est modifié : carte 0.2.12, utils.js et i18n.js 0.1.1 inchangés. L7-08 a ensuite été validé par l’utilisateur ; le lot 7 est clôturé.
 
 Deux tests transversaux supplémentaires ont été intégrés aux modules existants : consultation des années 2026, 2027 et 2028 après une seule résolution géographique, puis déplacement hors ligne sans réutilisation des jours fériés de l’ancien lieu ; et consultation des fêtes suivie de l’ajout, de la modification et de la suppression d’une exception, sur ces mêmes années. Le planning reste celui du cycle lors de la simple consultation. L’exception enregistrée est appliquée, son audit de création est conservé en modification et sa suppression restaure le cycle.
 
@@ -255,7 +269,7 @@ Les mentions d'i18n dans les blocs suivants décrivent donc des ajustements oppo
 | 4 | Ajouter les horaires avancés | 0.4.0 | À planifier ; périmètre à préciser. |
 | 5 | Ajouter une source de calendrier externe | 0.5.0 | À planifier ; règles de synchronisation à définir. |
 | 6 | Qualifier la première version stable | 1.0.0 | À préparer après consolidation du périmètre retenu. |
-| 7 | Jours fériés régionaux et création assistée d’exceptions | À définir | Cadrages L7-01 à L7-08 validés et documentés ; implémentation, tests et recette HA à réaliser. Points techniques ouverts conservés. Ancienne référence L3-14 conservée pour la traçabilité. |
+| 7 | Jours fériés régionaux et création assistée d’exceptions | Clôturé — validé sur HA | L7-01 à L7-08 validés ; 704 pytest, 26 JS et 100 % Python. Clôture documentaire le 11/11/2026, sans nouvelle publication. |
 | 8 | Typage progressif avec mypy | À définir | Étude initiale terminée. Corrections fichier par fichier à planifier, puis décision sur l’intégration à la CI. |
 
 
@@ -317,8 +331,8 @@ Statuts : **Terminé**, **Terminé et figé**, **Presque terminé**, **En cours*
 | L7-04 | 7 | Affichage dans le calendrier | Validé sur HA | Conserver les contrôles de non-régression. | 11/11 : pytest et tests IHM confirmés OK par l’utilisateur. | 11/11/2026 |
 | L7-05 | 7 | Gestion des exceptions existante et description proposée | Validé sur HA | Conserver les tests de non-régression. | 11/11 : lot validé par l’utilisateur, versions utils.js et i18n.js corrigées à 0.1.1. | 11/11/2026 |
 | L7-06 | 7 | Formulaire et enregistrement de l’exception | Validé sur HA | Conserver les tests de non-régression. | 11/11 : validation utilisateur de la carte 0.2.12. | 11/11/2026 |
-| L7-07 | 7 | Tests et contrôles de qualité | Contrôles automatisés réussis | Rejouer la suite sur le dépôt utilisateur puis recette finale L7-08. | 11/11 : 704 pytest, 26 JS, 100 % Python ; Black/isort/flake8 et syntaxe OK. Ruff non exécuté. | 11/11/2026 |
-| L7-08 | 7 | Validation HA et documentation | En cours — plan d’essais à étendre | Recette multi-pays sur instance de test, selon les sources supportées, avec libellés et changements de pays ; validation HA toujours à réaliser. | 09/11 : clarification utilisateur explicite, périmètre déterminé par le lieu HA, sans restriction FR ; réalisations internationales non validées. | 09/11/2026 |
+| L7-07 | 7 | Tests et contrôles de qualité | Validé par l’utilisateur | Conserver les contrôles de non-régression. | 11/11 : suite validée ; 704 pytest, 26 JS, 100 % Python. Ruff non exécuté localement. | 11/11/2026 |
+| L7-08 | 7 | Validation HA et documentation | Validé — clôturé | Maintenir la documentation lors des évolutions. | 11/11 : retour utilisateur « j’ai testé ok » ; recette finale acceptée et clôture consignée. | 11/11/2026 |
 | L8-01 | 8 | Étude mypy et mesure de départ | Terminé | Refaire la mesure sur la branche de travail incluant L7 avant les corrections. | 136 diagnostics dans 14 fichiers sur 40, dont 110 côté WebSocket et services. Avec `--check-untyped-defs` : 193 diagnostics dans 15 fichiers. | 11/11/2026 |
 | L8-02 | 8 | Corriger le typage du stockage, du journal et de l’exécution des actions | À planifier | Traiter `logbook.py`, `storage.py` et `action_executor.py` fichier par fichier. | 4 diagnostics dans l’étude initiale. | 11/11/2026 |
 | L8-03 | 8 | Corriger le typage des modèles, du moteur et des modules eedomus | À planifier | Préciser les types de sérialisation, les contraintes génériques et les structures d’import et d’export. | 22 diagnostics dans l’étude initiale. | 11/11/2026 |
@@ -576,7 +590,7 @@ Définir conflits, événements sur plusieurs jours, fuseaux horaires, origine d
 
 ## 11. Lot 7 — Jours fériés régionaux et création assistée d’exceptions
 
-**Statut : à planifier, cadrage fonctionnel validé le 9 novembre 2026.** Lot dédié demandé le même jour pour détailler les sous-lots ; reprend intégralement le périmètre de L3-14. Les cadrages L7-01 à L7-08 sont validés et documentés ; leur implémentation, leurs tests et la recette HA restent à réaliser. Les points techniques ouverts restent à préciser avant les modifications concernées. Évolution distincte de la 0.3.1 déjà validée en production ; aucune modification de code ni nouvelle version engagée par cette inscription.
+**Statut : clôturé le 11 novembre 2026, validation utilisateur sur HA.** Les huit sous-lots sont conservés. Le bilan de clôture en tête du document remplace le statut initial ; les cadrages ci-dessous restent la référence historique. Aucune nouvelle version publiée n’est attribuée à cette clôture.
 
 ### Sous-lots et ordre de travail proposé
 
@@ -936,7 +950,7 @@ Les critères des lots peuvent être précisés et de nouvelles tâches ajoutée
 4. **L6-07 terminé le 30/10 : quatre scénarios validés sur HAOS de test.** Installation vierge, mise à jour 0.2.2 vers état courant, retrait avec conservation et réinstallation, retrait avec suppression volontaire puis configuration vierge. Les validations proviennent des retours utilisateur ; aucun essai destructif en production.
 5. **L6-08 — terminé le 09/11 :** versions 0.3.0 et 0.3.1 publiées le 08/11 ; 0.3.1 installée en production le 09/11. Publication indépendante des contrôles détaillés post-installation.
 6. **L6-10 — terminé le 09/11 :** fonctionnement global de la 0.3.1, reprise eedomus et export XLSX validés en production selon retour utilisateur. Reprendre les contrôles si une nouvelle version modifie ces fonctionnalités.
-7. **Lot 7 — cadrages L7-01 à L7-08 validés (ancienne référence L3-14) :** méthode géographique, calcul local et cycle de vie des données retenus, documentés ; implémentation et tests à effectuer. Première brique L7-01 préparée et testée localement (résolveur géographique et raccordement au runtime). **L7-01 v2 reconstruit avec résolution internationale et capteur ; essais HA à faire. Prochaine réalisation : L7-02 avec pays/subdivision dynamiques.** Cache et déclenchement sous L7-03 ; préciser les points techniques encore ouverts. Tests L7-07 et recette L7-08 à réaliser ensuite selon les plans retenus. L7-05 retient les commandes existantes complétées par Modifier, sans bouton spécifique aux jours fériés.
+7. **Lot 7 — clôturé le 11 novembre 2026 :** localisation HA internationale, cache persistant, fêtes informatives et exceptions assistées validés. Conserver la non-régression ; aucune tâche de réalisation restante dans ce lot.
 8. **L3-11 et L2-02 :** conserver respectivement la création guidée des moments et l'éventuel affichage des métadonnées dans les écrans, sans les confondre avec L3-10.
 
 Les validations manuelles d’octobre, dont L6-03 le 29/10, ne comptaient pas comme de nouveaux tests automatisés. **Une nouvelle exécution complète Python a ensuite été communiquée par l’utilisateur le 29/10 : 449 tests réussis, 2 154 instructions, 100 % de couverture. Les quatre workflows CI ont ensuite été confirmés OK le même jour.**
@@ -945,3 +959,7 @@ Les vues Moments, Types de journée, Semaines types, Cycles et Calendrier / Exce
 
 Le ZIP de travail historique du 28/10 contenait un `manifest.json` en 0.2.3 ; il ne représente plus la publication courante. **Dernière publication vérifiée : 0.3.1 sur GitHub (08/11/2026) ; installation et fonctionnement en production confirmés (09/11/2026), notamment reprise eedomus et export XLSX.** Les jalons historiques 0.2.0–0.2.4 et 0.3.0 sont conservés. L’audit métier est implémenté et validé **après la publication 0.2.0**, sans être déclaré livré dans cette dernière. Le lot Metadata reste ouvert pour l’éventuel affichage détaillé ; horaires avancés et calendrier externe conservent leurs statuts. L’i18n reste non prioritaire ; les traductions existantes sont conservées.
 
+
+## Décision de clôture — 11 novembre 2026
+
+**Clôture du lot 7.** L7-07 confirmé « Validé », puis recette finale HA confirmée « j’ai testé ok ». Roadmap et documentations actualisées ; aucune nouvelle publication.
