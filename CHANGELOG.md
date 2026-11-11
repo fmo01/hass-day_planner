@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/fmo01/hass-day_planner/compare/0.3.1...0.4.0) (2026-11-11)
+
+### Features
+
+* **jour fériés:** ajouter la présentation des jours fériés ([66360f6](https://github.com/fmo01/hass-day_planner/commit/66360f603277cec7fbfaa1c0df61f40e265bdaef))
+* **jour fériés:** ajouter la présentation des jours fériés ([9d9fa23](https://github.com/fmo01/hass-day_planner/commit/9d9fa23df0c87a472c1d72b7a5c752249453d855))
+
 ## [0.3.1](https://github.com/fmo01/hass-day_planner/compare/0.3.0...0.3.1) (2026-11-08)
 
 ### Bug Fixes

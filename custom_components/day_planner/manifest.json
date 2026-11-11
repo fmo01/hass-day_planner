@@ -23,5 +23,5 @@
     "holidays>=0.108",
     "pycountry==26.2.16"
   ],
-  "version": "0.3.1"
+  "version": "0.4.0"
 }
