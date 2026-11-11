@@ -41,6 +41,8 @@ SERVICE_ADD_CALENDAR_EXCEPTION = "add_calendar_exception"
 SERVICE_UPDATE_CALENDAR_EXCEPTION = "update_calendar_exception"
 SERVICE_REMOVE_CALENDAR_EXCEPTION = "remove_calendar_exception"
 
+SERVICE_GET_PUBLIC_HOLIDAYS = "get_public_holidays"
+
 CONF_MAX_CYCLES = "max_cycles"
 
 DEFAULT_MAX_CYCLES = 3
@@ -93,5 +95,3 @@ EVENT_DAY_PLANNER_ACTION = "day_planner_action"
 
 # Emitted only when the action reports an anomaly (no success entry duplication).
 EVENT_DAY_PLANNER_ACTION_RESULT = "day_planner_action_result"
-
-SERVICE_GET_PUBLIC_HOLIDAYS = "get_public_holidays"
