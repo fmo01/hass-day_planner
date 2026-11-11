@@ -1,7 +1,6 @@
 {
   "name": "Day Planner",
-  "country": "FR",
   "render_readme": true,
   "content_in_root": false,
-  "homeassistant": "2026.4.0"
+  "homeassistant": "2026.10.4"
 }

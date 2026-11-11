@@ -24,7 +24,7 @@ Day Planner peut également être utilisé seul pour créer une planification di
 
 ### Prérequis
 
-- **Home Assistant 2026.4.0 ou version ultérieure**, conformément au fichier `hacs.json` du dépôt.
+- **Home Assistant 2026.10.4 ou version ultérieure**, conformément au fichier `hacs.json` du dépôt.
 - **HACS**, pour l'installation recommandée. Il n'est pas nécessaire pour une installation manuelle.
 
 Sur Home Assistant **2026.11 et versions ultérieures**, HACS est intégré au **Marketplace**. Pour les versions précédentes, consultez le [guide officiel HACS](https://www.hacs.xyz/docs/use/) afin de l'installer et le configurer.
