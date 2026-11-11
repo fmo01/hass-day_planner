@@ -123,8 +123,6 @@ class EedomusAssociationsExcelView(EedomusAssociationsDownloadView):
     async def get(self, request: web.Request) -> web.Response:
         """Preserve the signed-link token checks, with XLSX MIME type."""
         response = await super().get(request)
-        response.content_type = (
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+        response.content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         response.charset = None
         return response

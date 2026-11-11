@@ -21,6 +21,17 @@ export class DayPlannerApi {
     });
   }
 
+  async getPublicHolidays(year) {
+    const result = await this.hass.callWS({
+      type: 'call_service',
+      domain: 'day_planner',
+      service: 'get_public_holidays',
+      service_data: { year },
+      return_response: true,
+    });
+    return result.response;
+  }
+
   async updateScheduledMoment(dayTypeId, momentId, time) {
     return this.hass.callWS({
       type: 'day_planner/update_scheduled_moment',
@@ -237,7 +248,7 @@ async removeMoment(momentId) {
 }
 
 console.info(
-  '%c API  %c v0.1.0',
+  '%c API  %c v0.1.1',
   'color: orange; font-weight: bold; background: black',
   'color: white; font-weight: bold; background: dimgray'
 );

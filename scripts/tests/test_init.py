@@ -1,6 +1,8 @@
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+
 from custom_components.day_planner import (
     _async_migrate_entity_ids,
     _async_options_updated,
@@ -22,6 +24,14 @@ from custom_components.day_planner.frontend import (
     FRONTEND_URL,
     async_setup_frontend,
 )
+from custom_components.day_planner.location import DayPlannerLocation
+from custom_components.day_planner.public_holidays import DayPlannerPublicHolidays
+
+
+@pytest.fixture(autouse=True)
+def location_start():
+    with patch("custom_components.day_planner.DayPlannerLocation.start") as start:
+        yield start
 
 
 @patch("custom_components.day_planner.async_setup_panel", new_callable=AsyncMock)
@@ -40,12 +50,8 @@ def test_async_setup_entry_empty_configuration(setup_panel):
             patch("custom_components.day_planner.PlannerEngine") as engine_class,
             patch("custom_components.day_planner.PlannerResolver") as resolver_class,
             patch("custom_components.day_planner.PlannerScheduler") as scheduler_class,
-            patch(
-                "custom_components.day_planner.ActionExecutor"
-            ) as action_executor_class,
-            patch(
-                "custom_components.day_planner.HomeAssistantScheduler"
-            ) as ha_scheduler_class,
+            patch("custom_components.day_planner.ActionExecutor") as action_executor_class,
+            patch("custom_components.day_planner.HomeAssistantScheduler") as ha_scheduler_class,
             patch(
                 "custom_components.day_planner.async_setup_services",
                 new=AsyncMock(),
@@ -103,6 +109,9 @@ def test_async_setup_entry_empty_configuration(setup_panel):
             assert entry.runtime_data.scheduler is scheduler
             assert entry.runtime_data.action_executor is action_executor
             assert entry.runtime_data.ha_scheduler is ha_scheduler
+            assert isinstance(entry.runtime_data.location, DayPlannerLocation)
+            assert isinstance(entry.runtime_data.public_holidays, DayPlannerPublicHolidays)
+            assert entry.runtime_data.public_holidays.location is entry.runtime_data.location
 
             setup_services.assert_awaited_once_with(hass)
 
@@ -137,12 +146,8 @@ def test_async_setup_entry_existing_configuration(setup_panel):
             patch("custom_components.day_planner.PlannerEngine") as engine_class,
             patch("custom_components.day_planner.PlannerResolver") as resolver_class,
             patch("custom_components.day_planner.PlannerScheduler") as scheduler_class,
-            patch(
-                "custom_components.day_planner.ActionExecutor"
-            ) as action_executor_class,
-            patch(
-                "custom_components.day_planner.HomeAssistantScheduler"
-            ) as ha_scheduler_class,
+            patch("custom_components.day_planner.ActionExecutor") as action_executor_class,
+            patch("custom_components.day_planner.HomeAssistantScheduler") as ha_scheduler_class,
             patch(
                 "custom_components.day_planner.async_setup_services",
                 new=AsyncMock(),
@@ -346,7 +351,7 @@ def test_migrate_entity_ids():
                 return_value=registry,
             ),
             patch(
-                "custom_components.day_planner." "er.async_entries_for_config_entry",
+                "custom_components.day_planner.er.async_entries_for_config_entry",
                 return_value=entries,
             ) as entries_for_config_entry,
         ):
@@ -403,7 +408,7 @@ def test_migrate_entity_ids_already_migrated():
                 return_value=registry,
             ),
             patch(
-                "custom_components.day_planner." "er.async_entries_for_config_entry",
+                "custom_components.day_planner.er.async_entries_for_config_entry",
                 return_value=[entity],
             ),
         ):
@@ -505,9 +510,7 @@ def test_integration_setup_registers_websocket_and_frontend():
     async def run():
         hass = MagicMock()
         with (
-            patch(
-                "custom_components.day_planner.async_setup_websocket_api"
-            ) as register,
+            patch("custom_components.day_planner.async_setup_websocket_api") as register,
             patch(
                 "custom_components.day_planner.async_setup_frontend",
                 new_callable=AsyncMock,

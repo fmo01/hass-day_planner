@@ -53,12 +53,8 @@ def create_flow(
 
     flow.hass = hass
     flow.handler = config_entry.entry_id
-    flow._eedomus_csv_download_url = MagicMock(
-        return_value="/api/day_planner/eedomus_associations.csv?authSig=test"
-    )
-    flow._eedomus_xlsx_download_url = MagicMock(
-        return_value="/api/day_planner/eedomus_associations.xlsx?authSig=test"
-    )
+    flow._eedomus_csv_download_url = MagicMock(return_value="/api/day_planner/eedomus_associations.csv?authSig=test")
+    flow._eedomus_xlsx_download_url = MagicMock(return_value="/api/day_planner/eedomus_associations.xlsx?authSig=test")
 
     return flow
 
@@ -207,9 +203,7 @@ def test_options_flow_settings_form():
 
         result_schema = schema({})
 
-        assert (
-            result_schema[CONF_DELETE_DATA_ON_REMOVE] == DEFAULT_DELETE_DATA_ON_REMOVE
-        )
+        assert result_schema[CONF_DELETE_DATA_ON_REMOVE] == DEFAULT_DELETE_DATA_ON_REMOVE
 
         assert result == {
             "type": "form",
@@ -1029,9 +1023,7 @@ def test_options_flow_remove_day_type_select():
         runtime = MagicMock()
         flow = create_flow(runtime=runtime)
 
-        flow.async_step_remove_day_type_confirm = AsyncMock(
-            return_value={"type": "form"}
-        )
+        flow.async_step_remove_day_type_confirm = AsyncMock(return_value={"type": "form"})
 
         result = await flow.async_step_remove_day_type(
             {
@@ -1190,9 +1182,7 @@ def test_options_flow_scheduled_moments_select():
         runtime = MagicMock()
         flow = create_flow(runtime=runtime)
 
-        flow.async_step_scheduled_moments_menu = AsyncMock(
-            return_value={"type": "menu"}
-        )
+        flow.async_step_scheduled_moments_menu = AsyncMock(return_value={"type": "menu"})
 
         result = await flow.async_step_scheduled_moments(
             {
@@ -1374,9 +1364,7 @@ def test_options_flow_edit_scheduled_moment_select():
 
         runtime.engine.get_day_type.return_value = day_type
 
-        flow.async_step_edit_scheduled_moment_details = AsyncMock(
-            return_value={"type": "form"}
-        )
+        flow.async_step_edit_scheduled_moment_details = AsyncMock(return_value={"type": "form"})
 
         result = await flow.async_step_edit_scheduled_moment(
             {
@@ -1552,9 +1540,7 @@ def test_options_flow_remove_scheduled_moment_select():
 
         runtime.engine.get_day_type.return_value = day_type
 
-        flow.async_step_remove_scheduled_moment_confirm = AsyncMock(
-            return_value={"type": "form"}
-        )
+        flow.async_step_remove_scheduled_moment_confirm = AsyncMock(return_value={"type": "form"})
 
         result = await flow.async_step_remove_scheduled_moment(
             {
@@ -1689,9 +1675,7 @@ def test_options_flow_remove_day_type_in_use():
         )
 
         runtime.engine.get_day_type.return_value = day_type
-        runtime.engine.remove_day_type.side_effect = ValidationError(
-            "Cannot remove a day type used by a week schedule"
-        )
+        runtime.engine.remove_day_type.side_effect = ValidationError("Cannot remove a day type used by a week schedule")
 
         flow._selected_remove_day_type_id = "work"
 
@@ -1891,9 +1875,7 @@ def test_options_flow_edit_week_schedule_select():
         runtime = MagicMock()
         flow = create_flow(runtime=runtime)
 
-        flow.async_step_edit_week_schedule_details = AsyncMock(
-            return_value={"type": "form"}
-        )
+        flow.async_step_edit_week_schedule_details = AsyncMock(return_value={"type": "form"})
 
         result = await flow.async_step_edit_week_schedule(
             {
@@ -2068,9 +2050,7 @@ def test_options_flow_remove_week_schedule_select():
         runtime = MagicMock()
         flow = create_flow(runtime=runtime)
 
-        flow.async_step_remove_week_schedule_confirm = AsyncMock(
-            return_value={"type": "form"}
-        )
+        flow.async_step_remove_week_schedule_confirm = AsyncMock(return_value={"type": "form"})
 
         result = await flow.async_step_remove_week_schedule(
             {
@@ -2776,9 +2756,7 @@ def test_options_flow_add_cycle_maximum_reached():
 
         runtime.engine.configuration.week_schedules = ()
 
-        runtime.engine.add_cycle.side_effect = ValidationError(
-            "Maximum number of cycles exceeded: 1"
-        )
+        runtime.engine.add_cycle.side_effect = ValidationError("Maximum number of cycles exceeded: 1")
 
         flow = create_flow(
             runtime=runtime,
@@ -2951,9 +2929,7 @@ def test_options_flow_edit_calendar_exception_select():
         runtime = MagicMock()
         flow = create_flow(runtime=runtime)
 
-        flow.async_step_edit_calendar_exception_details = AsyncMock(
-            return_value={"type": "form"}
-        )
+        flow.async_step_edit_calendar_exception_details = AsyncMock(return_value={"type": "form"})
 
         result = await flow.async_step_edit_calendar_exception(
             {
@@ -3102,9 +3078,7 @@ def test_options_flow_remove_calendar_exception_select():
         runtime = MagicMock()
         flow = create_flow(runtime=runtime)
 
-        flow.async_step_remove_calendar_exception_confirm = AsyncMock(
-            return_value={"type": "form"}
-        )
+        flow.async_step_remove_calendar_exception_confirm = AsyncMock(return_value={"type": "form"})
 
         result = await flow.async_step_remove_calendar_exception(
             {
@@ -3529,9 +3503,7 @@ def test_options_flow_edit_moment_action_select():
         flow = create_flow(runtime=runtime)
         flow._selected_action_moment_id = "wake_up"
 
-        flow.async_step_edit_moment_action_details = AsyncMock(
-            return_value={"type": "form"}
-        )
+        flow.async_step_edit_moment_action_details = AsyncMock(return_value={"type": "form"})
 
         result = await flow.async_step_edit_moment_action(
             {
@@ -3763,9 +3735,7 @@ def test_options_flow_remove_moment_action_select():
         flow = create_flow(runtime=runtime)
         flow._selected_action_moment_id = "wake_up"
 
-        flow.async_step_remove_moment_action_confirm = AsyncMock(
-            return_value={"type": "form"}
-        )
+        flow.async_step_remove_moment_action_confirm = AsyncMock(return_value={"type": "form"})
 
         result = await flow.async_step_remove_moment_action({"id": "salon_on"})
 
@@ -4155,14 +4125,10 @@ def test_eedomus_import_confirmation_persists_once():
         plan.had_previous_import = False
         flow._eedomus_import_source = "01TEST"
         flow._eedomus_import_agenda = {"day_types": []}
-        flow._eedomus_configuration_digest = flow._eedomus_digest(
-            runtime.engine.configuration
-        )
+        flow._eedomus_configuration_digest = flow._eedomus_digest(runtime.engine.configuration)
         flow._eedomus_plan = AsyncMock(return_value=plan)
         flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
-        result = await flow.async_step_import_eedomus_confirm(
-            {"confirm": True, "replace_existing": False}
-        )
+        result = await flow.async_step_import_eedomus_confirm({"confirm": True, "replace_existing": False})
         assert result == {"type": "create_entry"}
         runtime.engine.replace_configuration.assert_called_once_with(plan.configuration)
         runtime.async_configuration_updated.assert_awaited_once()
@@ -4190,18 +4156,12 @@ def test_eedomus_import_confirmation_blocks_unapproved_replacement():
         plan.mapped_entities = ("3463520 → climate.thermostat_salle_a_manger",)
         flow._eedomus_import_source = "01TEST"
         flow._eedomus_import_agenda = {"day_types": []}
-        flow._eedomus_configuration_digest = flow._eedomus_digest(
-            runtime.engine.configuration
-        )
+        flow._eedomus_configuration_digest = flow._eedomus_digest(runtime.engine.configuration)
         flow._eedomus_plan = AsyncMock(return_value=plan)
         flow.async_show_form = MagicMock(return_value={"type": "form"})
-        result = await flow.async_step_import_eedomus_confirm(
-            {"confirm": True, "replace_existing": False}
-        )
+        result = await flow.async_step_import_eedomus_confirm({"confirm": True, "replace_existing": False})
         assert result == {"type": "form"}
-        assert flow.async_show_form.call_args.kwargs["errors"] == {
-            "base": "eedomus_replace_required"
-        }
+        assert flow.async_show_form.call_args.kwargs["errors"] == {"base": "eedomus_replace_required"}
         runtime.engine.replace_configuration.assert_not_called()
 
     asyncio.run(run())
@@ -4224,13 +4184,16 @@ def test_eedomus_import_browser_upload_consumed_from_ha_temp(tmp_path):
             assert file_id == "UPLOAD_TOKEN"
             yield uploaded
 
-        with patch(
-            "custom_components.day_planner.options_flow.process_uploaded_file",
-            fake_upload,
-        ), patch(
-            "custom_components.day_planner.options_flow.prepare_import",
-            return_value={"day_types": []},
-        ) as mock_prepare:
+        with (
+            patch(
+                "custom_components.day_planner.options_flow.process_uploaded_file",
+                fake_upload,
+            ),
+            patch(
+                "custom_components.day_planner.options_flow.prepare_import",
+                return_value={"day_types": []},
+            ) as mock_prepare,
+        ):
             result = await flow._eedomus_read_upload("UPLOAD_TOKEN", "01TEST")
         assert result == {"day_types": []}
         assert mock_prepare.call_args.args[1:] == ("01TEST", uploaded)
@@ -4260,13 +4223,9 @@ def test_eedomus_import_selected_browser_json_reaches_confirmation():
         agenda = {"day_types": []}
         flow._eedomus_read_upload = AsyncMock(return_value=agenda)
         flow._eedomus_plan = AsyncMock(return_value=MagicMock())
-        flow.async_step_import_eedomus_confirm = AsyncMock(
-            return_value={"type": "confirmation"}
-        )
+        flow.async_step_import_eedomus_confirm = AsyncMock(return_value={"type": "confirmation"})
 
-        result = await flow.async_step_import_eedomus(
-            {"source_entry_id": "01TEST", "json_upload": "UPLOAD_TOKEN"}
-        )
+        result = await flow.async_step_import_eedomus({"source_entry_id": "01TEST", "json_upload": "UPLOAD_TOKEN"})
         assert result == {"type": "confirmation"}
         flow._eedomus_read_upload.assert_awaited_once_with("UPLOAD_TOKEN", "01TEST")
         flow._eedomus_plan.assert_awaited_once_with("01TEST", agenda)
@@ -4300,12 +4259,7 @@ def test_eedomus_import_multiple_boxes_requires_selection():
         selectors = {key.schema: value for key, value in schema.schema.items()}
         assert "source_entry_id" in selectors
         assert "json_upload" in selectors
-        assert (
-            flow.async_show_form.call_args.kwargs["description_placeholders"][
-                "box_count"
-            ]
-            == "2"
-        )
+        assert flow.async_show_form.call_args.kwargs["description_placeholders"]["box_count"] == "2"
 
     asyncio.run(run())
 
@@ -4331,16 +4285,12 @@ def test_eedomus_import_single_box_uses_its_entry_id():
         agenda = {"day_types": []}
         flow._eedomus_read_upload = AsyncMock(return_value=agenda)
         flow._eedomus_plan = AsyncMock()
-        flow.async_step_import_eedomus_confirm = AsyncMock(
-            return_value={"type": "confirmation"}
-        )
+        flow.async_step_import_eedomus_confirm = AsyncMock(return_value={"type": "confirmation"})
         result = await flow.async_step_import_eedomus({"json_upload": "UPLOAD_TOKEN"})
         assert result == {"type": "confirmation"}
         flow._eedomus_read_upload.assert_awaited_once_with("UPLOAD_TOKEN", "ONEBOX")
         assert flow._eedomus_import_source == "ONEBOX"
-        assert flow._eedomus_configuration_digest == flow._eedomus_digest(
-            runtime.engine.configuration
-        )
+        assert flow._eedomus_configuration_digest == flow._eedomus_digest(runtime.engine.configuration)
 
     asyncio.run(run())
 
@@ -4391,9 +4341,7 @@ def test_eedomus_import_rejects_all_inactive_boxes():
     async def run():
         flow = create_flow()
         flow.hass.config_entries.async_entries.return_value = [
-            MagicMock(
-                domain="eedomus", disabled_by="user", state=ConfigEntryState.NOT_LOADED
-            )
+            MagicMock(domain="eedomus", disabled_by="user", state=ConfigEntryState.NOT_LOADED)
         ]
         flow.async_abort = MagicMock(return_value={"type": "abort"})
         result = await flow.async_step_import_eedomus()
@@ -4434,9 +4382,7 @@ def test_eedomus_import_filters_multiple_boxes_to_active_only():
         await flow.async_step_import_eedomus()
         kwargs = flow.async_show_form.call_args.kwargs
         assert kwargs["description_placeholders"]["box_count"] == "2"
-        selectors = {
-            key.schema: value for key, value in kwargs["data_schema"].schema.items()
-        }
+        selectors = {key.schema: value for key, value in kwargs["data_schema"].schema.items()}
         assert "source_entry_id" in selectors
         options = selectors["source_entry_id"].config["options"]
         assert {opt["value"] for opt in options} == {"ONE", "TWO"}
@@ -4458,9 +4404,7 @@ def test_eedomus_import_explains_failed_command_without_saving():
         flow.hass.config_entries.async_get_entry.return_value = box
         flow._eedomus_read_upload = AsyncMock(return_value={"day_types": []})
         flow._eedomus_plan = AsyncMock(
-            side_effect=EedomusImportError(
-                "Commande refusée pour [795317] sur switch.volet"
-            )
+            side_effect=EedomusImportError("Commande refusée pour [795317] sur switch.volet")
         )
         flow.async_show_form = MagicMock(return_value={"type": "form"})
         result = await flow.async_step_import_eedomus({"json_upload": "TOKEN"})
@@ -4491,13 +4435,16 @@ def test_eedomus_import_plan_uses_selected_box_host_as_week_name():
         )
         flow.hass.config_entries.async_get_entry.return_value = box
         flow._eedomus_actor = AsyncMock(return_value="Utilisateur Test")
-        with patch(
-            "custom_components.day_planner.options_flow.get_eedomus_entity_map",
-            return_value={},
-        ), patch(
-            "custom_components.day_planner.options_flow.create_import_plan",
-            return_value=MagicMock(),
-        ) as make_plan:
+        with (
+            patch(
+                "custom_components.day_planner.options_flow.get_eedomus_entity_map",
+                return_value={},
+            ),
+            patch(
+                "custom_components.day_planner.options_flow.create_import_plan",
+                return_value=MagicMock(),
+            ) as make_plan,
+        ):
             await flow._eedomus_plan("BOXID", {"day_types": []})
         assert make_plan.call_args.kwargs["week_name"] == "Eedomus (192.20.55.30)"
         assert make_plan.call_args.args[2] == "BOXID"
@@ -4522,9 +4469,7 @@ def test_eedomus_import_plan_rejects_missing_host():
         )
         flow.hass.config_entries.async_get_entry.return_value = box
         flow._eedomus_actor = AsyncMock(return_value="Utilisateur Test")
-        with patch(
-            "custom_components.day_planner.options_flow.create_import_plan"
-        ) as make_plan:
+        with patch("custom_components.day_planner.options_flow.create_import_plan") as make_plan:
             try:
                 await flow._eedomus_plan("BOXID", {"day_types": []})
             except EedomusImportError as exc:
@@ -4591,12 +4536,10 @@ def test_eedomus_confirmation_mappings_empty_and_escaped():
     """Empty or unusual entity mappings cannot corrupt the table."""
     flow = create_flow()
     assert flow._eedomus_mappings_table(()) == "| — | — | Aucune association |"
-    assert flow._eedomus_mappings_table(
-        ("Interrupteur | entrée [123] → switch.test",)
-    ) == (r"| Interrupteur \| entrée [123] | `switch.test` | Pris en charge |")
-    assert flow._eedomus_mappings_table(("Sans correspondance",)) == (
-        "| Sans correspondance | `—` | Pris en charge |"
+    assert flow._eedomus_mappings_table(("Interrupteur | entrée [123] → switch.test",)) == (
+        r"| Interrupteur \| entrée [123] | `switch.test` | Pris en charge |"
     )
+    assert flow._eedomus_mappings_table(("Sans correspondance",)) == ("| Sans correspondance | `—` | Pris en charge |")
 
 
 def test_eedomus_confirmation_mappings_includes_sensor_in_main_table():
@@ -4643,9 +4586,7 @@ def test_eedomus_confirmation_uses_mapping_table_in_form():
         plan.unsupported_associations = ()
         flow._eedomus_import_source = "01TEST"
         flow._eedomus_import_agenda = {"day_types": []}
-        flow._eedomus_configuration_digest = flow._eedomus_digest(
-            runtime.engine.configuration
-        )
+        flow._eedomus_configuration_digest = flow._eedomus_digest(runtime.engine.configuration)
         flow._eedomus_plan = AsyncMock(return_value=plan)
         flow.async_show_form = MagicMock(return_value={"type": "form"})
 
@@ -4694,15 +4635,11 @@ def test_eedomus_confirmation_unsupported_table_and_empty_moment_count():
         plan.unsupported_associations = rows
         active_flow._eedomus_import_source = "01TEST"
         active_flow._eedomus_import_agenda = {"day_types": []}
-        active_flow._eedomus_configuration_digest = active_flow._eedomus_digest(
-            runtime.engine.configuration
-        )
+        active_flow._eedomus_configuration_digest = active_flow._eedomus_digest(runtime.engine.configuration)
         active_flow._eedomus_plan = AsyncMock(return_value=plan)
         active_flow.async_show_form = MagicMock(return_value={"type": "form"})
         await active_flow.async_step_import_eedomus_confirm()
-        placeholders = active_flow.async_show_form.call_args.kwargs[
-            "description_placeholders"
-        ]
+        placeholders = active_flow.async_show_form.call_args.kwargs["description_placeholders"]
         assert placeholders["unsupported_count"] == "1"
         assert "sensor.cmd_1_volet" in placeholders["mappings"]
         assert "Ignoré : Domaine sensor non pris en charge" in placeholders["mappings"]
@@ -4764,9 +4701,7 @@ def test_eedomus_confirmation_copy_table_defensive_and_empty():
     assert rows[2][0] == "Macro A [2]"
     assert rows[2][1] == "'@malicious"
     assert rows[2][2].startswith("Ignoré : +danger")
-    assert flow._eedomus_copy_table(("Sans flèche",), ()).splitlines()[1] == (
-        "Sans flèche	—	Pris en charge"
-    )
+    assert flow._eedomus_copy_table(("Sans flèche",), ()).splitlines()[1] == ("Sans flèche	—	Pris en charge")
 
 
 def test_eedomus_confirmation_copy_field_selectable_and_ignored():
@@ -4789,14 +4724,10 @@ def test_eedomus_confirmation_copy_field_selectable_and_ignored():
         plan.conditional_rules_not_imported = 7
         plan.unresolved_embedded_parameters = 1
         plan.mapped_entities = ("Guirlande [746271] → light.guirlande",)
-        plan.unsupported_associations = (
-            ("Volet [795317]", "sensor.volet", "Domaine non pris en charge"),
-        )
+        plan.unsupported_associations = (("Volet [795317]", "sensor.volet", "Domaine non pris en charge"),)
         flow._eedomus_import_source = "BOX"
         flow._eedomus_import_agenda = {"day_types": []}
-        flow._eedomus_configuration_digest = flow._eedomus_digest(
-            runtime.engine.configuration
-        )
+        flow._eedomus_configuration_digest = flow._eedomus_digest(runtime.engine.configuration)
         flow._eedomus_plan = AsyncMock(return_value=plan)
         flow.async_show_form = MagicMock(return_value={"type": "form"})
         await flow.async_step_import_eedomus_confirm()
@@ -4817,9 +4748,7 @@ def test_eedomus_confirmation_copy_field_selectable_and_ignored():
             }
         )
         assert runtime.engine.replace_configuration.call_count == 0
-        assert flow.async_show_form.call_args.kwargs["errors"]["base"] == (
-            "eedomus_confirm_required"
-        )
+        assert flow.async_show_form.call_args.kwargs["errors"]["base"] == ("eedomus_confirm_required")
 
     asyncio.run(run())
 
@@ -4844,14 +4773,10 @@ def test_eedomus_confirmation_has_direct_xlsx_link_in_home_assistant():
         plan.conditional_rules_not_imported = 7
         plan.unresolved_embedded_parameters = 1
         plan.mapped_entities = ("Guirlande [746271] → light.guirlande_salle_a_manger",)
-        plan.unsupported_associations = (
-            ("Volet [795317]", "sensor.volet", "Domaine sensor non pris en charge"),
-        )
+        plan.unsupported_associations = (("Volet [795317]", "sensor.volet", "Domaine sensor non pris en charge"),)
         flow._eedomus_import_source = "BOX"
         flow._eedomus_import_agenda = {"day_types": []}
-        flow._eedomus_configuration_digest = flow._eedomus_digest(
-            runtime.engine.configuration
-        )
+        flow._eedomus_configuration_digest = flow._eedomus_digest(runtime.engine.configuration)
         flow._eedomus_plan = AsyncMock(return_value=plan)
         flow.async_show_form = MagicMock(return_value={"type": "form"})
         box = MagicMock()
@@ -4862,10 +4787,7 @@ def test_eedomus_confirmation_has_direct_xlsx_link_in_home_assistant():
         assert placeholders["download_url"].startswith("/api/day_planner/")
         assert placeholders["download_url"].endswith(".xlsx?authSig=test")
         assert 'target="_blank"' in placeholders["download_link"]
-        assert (
-            'href="/api/day_planner/eedomus_associations.xlsx'
-            in placeholders["download_link"]
-        )
+        assert 'href="/api/day_planner/eedomus_associations.xlsx' in placeholders["download_link"]
         flow._eedomus_xlsx_download_url.assert_called_once_with(
             flow.hass, plan, "192.20.55.30", flow._eedomus_import_agenda
         )
@@ -4897,13 +4819,9 @@ def test_eedomus_actor_uses_ha_user_name_and_id_fallbacks():
         flow.context = {}
         assert await flow._eedomus_actor() == "system"
         flow.context = {"user_id": "user-42"}
-        flow.hass.auth.async_get_user = AsyncMock(
-            return_value=type("User", (), {"name": "Alice", "id": "user-42"})()
-        )
+        flow.hass.auth.async_get_user = AsyncMock(return_value=type("User", (), {"name": "Alice", "id": "user-42"})())
         assert await flow._eedomus_actor() == "Alice"
-        flow.hass.auth.async_get_user = AsyncMock(
-            return_value=type("User", (), {"name": "", "id": "user-42"})()
-        )
+        flow.hass.auth.async_get_user = AsyncMock(return_value=type("User", (), {"name": "", "id": "user-42"})())
         assert await flow._eedomus_actor() == "user-42"
         flow.hass.auth.async_get_user = AsyncMock(return_value=None)
         assert await flow._eedomus_actor() == "user-42"
@@ -4933,9 +4851,7 @@ def test_eedomus_upload_rejects_wrong_extension_and_oversized_file():
             (oversized, "20 Mo"),
             (not_file, "introuvable"),
         ):
-            with patch.object(
-                options_module, "process_uploaded_file", return_value=nullcontext(path)
-            ):
+            with patch.object(options_module, "process_uploaded_file", return_value=nullcontext(path)):
                 with pytest.raises(EedomusImportError, match=expected_error):
                     await flow._eedomus_read_upload("UPLOAD_TOKEN", "BOX")
         valid = SimpleNamespace(
@@ -4943,14 +4859,11 @@ def test_eedomus_upload_rejects_wrong_extension_and_oversized_file():
             is_file=lambda: True,
             stat=lambda: SimpleNamespace(st_size=120),
         )
-        with patch.object(
-            options_module, "process_uploaded_file", return_value=nullcontext(valid)
-        ), patch.object(
-            options_module, "prepare_import", return_value={"phases": []}
-        ) as prepare:
-            assert await flow._eedomus_read_upload("UPLOAD_TOKEN", "BOX") == {
-                "phases": []
-            }
+        with (
+            patch.object(options_module, "process_uploaded_file", return_value=nullcontext(valid)),
+            patch.object(options_module, "prepare_import", return_value={"phases": []}) as prepare,
+        ):
+            assert await flow._eedomus_read_upload("UPLOAD_TOKEN", "BOX") == {"phases": []}
         prepare.assert_called_once_with(flow.hass, "BOX", valid)
 
     import pytest
@@ -4965,9 +4878,7 @@ def test_eedomus_plan_rejects_inactive_or_absent_selected_box():
         with pytest.raises(EedomusImportError, match="désactivée ou non chargée"):
             await flow._eedomus_plan("BOX", {})
 
-        box = MagicMock(
-            domain="eedomus", disabled_by="user", state=ConfigEntryState.NOT_LOADED
-        )
+        box = MagicMock(domain="eedomus", disabled_by="user", state=ConfigEntryState.NOT_LOADED)
         flow.hass.config_entries.async_get_entry.return_value = box
         with pytest.raises(EedomusImportError, match="désactivée ou non chargée"):
             await flow._eedomus_plan("BOX", {})
@@ -4996,9 +4907,7 @@ def test_eedomus_plan_blocks_duplicate_active_host_without_mapping():
         )
         flow.hass.config_entries.async_get_entry.return_value = box
         flow.hass.config_entries.async_entries.return_value = [box, duplicate]
-        with pytest.raises(
-            EedomusImportError, match="Plusieurs intégrations eedomus actives"
-        ):
+        with pytest.raises(EedomusImportError, match="Plusieurs intégrations eedomus actives"):
             await flow._eedomus_plan("ONE", {})
 
     import pytest
@@ -5039,10 +4948,7 @@ def test_eedomus_preflight_rejects_unlisted_and_disabled_box_selection():
                 }
             )
             assert result == {"type": "form"}
-            assert (
-                flow.async_show_form.call_args.kwargs["errors"]["base"]
-                == "eedomus_import_invalid"
-            )
+            assert flow.async_show_form.call_args.kwargs["errors"]["base"] == "eedomus_import_invalid"
         flow._eedomus_read_upload = AsyncMock()
         flow._eedomus_read_upload.assert_not_awaited()
 
@@ -5052,22 +4958,12 @@ def test_eedomus_preflight_rejects_unlisted_and_disabled_box_selection():
 def test_eedomus_download_static_methods_use_download_module():
     from custom_components.day_planner import options_flow as options_module
 
-    with patch.object(
-        options_module, "create_eedomus_csv_link", return_value="signed.csv"
-    ) as csv_link:
-        assert (
-            DayPlannerOptionsFlow._eedomus_csv_download_url("HA", "TSV", "HOST")
-            == "signed.csv"
-        )
+    with patch.object(options_module, "create_eedomus_csv_link", return_value="signed.csv") as csv_link:
+        assert DayPlannerOptionsFlow._eedomus_csv_download_url("HA", "TSV", "HOST") == "signed.csv"
         csv_link.assert_called_once_with("HA", "TSV", "HOST")
-    with patch.object(
-        options_module, "create_eedomus_xlsx_link", return_value="signed.xlsx"
-    ) as xlsx_link:
+    with patch.object(options_module, "create_eedomus_xlsx_link", return_value="signed.xlsx") as xlsx_link:
         assert (
-            DayPlannerOptionsFlow._eedomus_xlsx_download_url(
-                "HA", "PLAN", "HOST", {"day_types": []}
-            )
-            == "signed.xlsx"
+            DayPlannerOptionsFlow._eedomus_xlsx_download_url("HA", "PLAN", "HOST", {"day_types": []}) == "signed.xlsx"
         )
         xlsx_link.assert_called_once_with("HA", "PLAN", "HOST", {"day_types": []})
 
@@ -5098,9 +4994,7 @@ def test_eedomus_confirmation_concurrent_change_is_rejected_before_write():
         flow.async_show_form = MagicMock(return_value={"type": "form"})
         result = await flow.async_step_import_eedomus_confirm({"confirm": True})
         assert result == {"type": "form"}
-        assert flow.async_show_form.call_args.kwargs["errors"] == {
-            "base": "eedomus_import_changed"
-        }
+        assert flow.async_show_form.call_args.kwargs["errors"] == {"base": "eedomus_import_changed"}
         runtime.engine.replace_configuration.assert_not_called()
 
     asyncio.run(run())
@@ -5115,9 +5009,7 @@ def test_eedomus_confirmation_handles_failed_save_and_failed_rollback():
         runtime = MagicMock()
         previous = PlannerConfiguration.empty()
         runtime.engine.configuration = previous
-        runtime.async_configuration_updated = AsyncMock(
-            side_effect=[RuntimeError("persist"), RuntimeError("rollback")]
-        )
+        runtime.async_configuration_updated = AsyncMock(side_effect=[RuntimeError("persist"), RuntimeError("rollback")])
         flow = create_flow(runtime=runtime)
         flow._eedomus_import_source = "BOX"
         flow._eedomus_import_agenda = {"day_types": []}
@@ -5138,10 +5030,7 @@ def test_eedomus_confirmation_handles_failed_save_and_failed_rollback():
         flow.async_show_form = MagicMock(return_value={"type": "form"})
         result = await flow.async_step_import_eedomus_confirm({"confirm": True})
         assert result == {"type": "form"}
-        assert (
-            flow.async_show_form.call_args.kwargs["errors"]["base"]
-            == "eedomus_import_failed"
-        )
+        assert flow.async_show_form.call_args.kwargs["errors"]["base"] == "eedomus_import_failed"
         assert runtime.engine.replace_configuration.call_count == 2
         assert runtime.engine.replace_configuration.call_args.args == (previous,)
         assert runtime.async_configuration_updated.await_count == 2

@@ -20,6 +20,16 @@ export function getLanguage(hass) {
   return hass?.language || hass?.locale?.language || 'en';
 }
 
+export function getPlannerLocation(hass) {
+  // The entity may have been renamed in HA's entity registry.
+  return Object.entries(hass?.states || {}).find(
+    ([id, state]) =>
+      id.startsWith('binary_sensor.') &&
+      state.attributes?.integration === 'Day Planner' &&
+      Object.hasOwn(state.attributes, 'from_cache')
+  )?.[1];
+}
+
 export function formatLongDate(dateValue, hass) {
   if (!dateValue) {
     return '';
@@ -144,4 +154,4 @@ export function getDayTypeDependencies(configuration, dayTypeId) {
   };
 }
 
-console.info('utils.js v0.1.0');
+console.info('utils.js v0.1.1');

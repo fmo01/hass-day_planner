@@ -20,10 +20,12 @@ from .eedomus_download import (
 )
 from .frontend import async_setup_frontend
 from .ha_scheduler import HomeAssistantScheduler
+from .location import DayPlannerLocation
 from .panel import async_setup_panel, async_unload_panel
 from .planner.engine import PlannerEngine
 from .planner.resolver import PlannerResolver
 from .planner.scheduler import PlannerScheduler
+from .public_holidays import DayPlannerPublicHolidays
 from .runtime import DayPlannerRuntimeData
 from .services import async_setup_services
 from .storage import DayPlannerStorage
@@ -65,9 +67,7 @@ async def _async_migrate_entity_ids(
             entity.entity_id,
             new_entity_id=new_entity_id,
         )
-        _LOGGER.debug(
-            "Migration entité Day Planner : %s -> %s", entity.entity_id, new_entity_id
-        )
+        _LOGGER.debug("Migration entité Day Planner : %s -> %s", entity.entity_id, new_entity_id)
 
 
 async def _async_options_updated(
@@ -129,6 +129,8 @@ async def async_setup_entry(
         action_executor=action_executor,
     )
 
+    location = DayPlannerLocation(hass)
+
     entry.runtime_data = DayPlannerRuntimeData(
         hass=hass,
         storage=storage,
@@ -137,6 +139,8 @@ async def async_setup_entry(
         scheduler=scheduler,
         action_executor=action_executor,
         ha_scheduler=ha_scheduler,
+        location=location,
+        public_holidays=DayPlannerPublicHolidays(hass, location),
     )
 
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
@@ -154,6 +158,7 @@ async def async_setup_entry(
     await ha_scheduler.async_schedule_next()
 
     await async_setup_panel(hass, entry)
+    entry.runtime_data.location.start(entry)
     _LOGGER.info("Day Planner prêt, planification initialisée")
 
     return True

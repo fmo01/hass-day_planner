@@ -122,9 +122,7 @@ class PlannerEngine:
 
     def replace_configuration(self, configuration: PlannerConfiguration) -> None:
         """Atomically validate and replace an imported full configuration."""
-        PlannerValidator.validate_configuration(
-            configuration, max_cycles=self._max_cycles
-        )
+        PlannerValidator.validate_configuration(configuration, max_cycles=self._max_cycles)
         self._configuration = configuration
 
     @staticmethod
@@ -264,10 +262,7 @@ class PlannerEngine:
             moment_id,
         )
         for day_type in self._configuration.day_types:
-            if any(
-                scheduled.moment_id == moment_id
-                for scheduled in day_type.scheduled_moments
-            ):
+            if any(scheduled.moment_id == moment_id for scheduled in day_type.scheduled_moments):
                 raise ValidationError("Cannot remove a moment used by a day type")
 
         self._replace_configuration(
@@ -356,15 +351,11 @@ class PlannerEngine:
                 week_schedule.saturday,
                 week_schedule.sunday,
             ):
-                raise ValidationError(
-                    "Cannot remove a day type " "used by a week schedule"
-                )
+                raise ValidationError("Cannot remove a day type used by a week schedule")
 
         for calendar_exception in self._configuration.calendar_exceptions:
             if calendar_exception.day_type_id == day_type_id:
-                raise ValidationError(
-                    "Cannot remove a day type used by a calendar exception"
-                )
+                raise ValidationError("Cannot remove a day type used by a calendar exception")
 
         self._replace_configuration(
             day_types=self._remove_by_id(
@@ -653,9 +644,7 @@ class PlannerEngine:
                 scheduled_moments.append(item)
 
         if not found:
-            raise NotFoundError(
-                "Scheduled moment not found: " f"{scheduled_moment.moment_id}"
-            )
+            raise NotFoundError(f"Scheduled moment not found: {scheduled_moment.moment_id}")
 
         updated_day_type = replace(
             day_type,
@@ -677,12 +666,10 @@ class PlannerEngine:
 
         day_type = self.get_day_type(day_type_id)
 
-        scheduled_moments = tuple(
-            item for item in day_type.scheduled_moments if item.moment_id != moment_id
-        )
+        scheduled_moments = tuple(item for item in day_type.scheduled_moments if item.moment_id != moment_id)
 
         if len(scheduled_moments) == len(day_type.scheduled_moments):
-            raise NotFoundError("Scheduled moment not found: " f"{moment_id}")
+            raise NotFoundError(f"Scheduled moment not found: {moment_id}")
 
         updated_day_type = replace(
             day_type,

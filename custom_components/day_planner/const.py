@@ -7,6 +7,7 @@ INTEGRATION_NAME = NAME
 RELEASE_URL = "https://github.com/fmo01/hass-day_planner/releases"
 
 SIGNAL_PLANNER_UPDATED = "day_planner_updated"
+SIGNAL_LOCATION_UPDATED = "day_planner_location_updated"
 
 STORAGE_VERSION = 1
 STORAGE_KEY = "day_planner.storage"
@@ -16,6 +17,7 @@ CONF_DELETE_DATA_ON_REMOVE = "delete_data_on_remove"
 DEFAULT_DELETE_DATA_ON_REMOVE = False
 
 PLATFORMS = [
+    "binary_sensor",
     "sensor",
     "calendar",
 ]
@@ -91,3 +93,5 @@ EVENT_DAY_PLANNER_ACTION = "day_planner_action"
 
 # Emitted only when the action reports an anomaly (no success entry duplication).
 EVENT_DAY_PLANNER_ACTION_RESULT = "day_planner_action_result"
+
+SERVICE_GET_PUBLIC_HOLIDAYS = "get_public_holidays"

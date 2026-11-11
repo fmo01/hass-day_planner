@@ -131,17 +131,13 @@ class DayPlannerOptionsFlow(
         """Validate imported data and HA entity mapping, without saving."""
         source = self.hass.config_entries.async_get_entry(source_entry_id)
         if source is None or not self._eedomus_entry_active(source):
-            raise EedomusImportError(
-                "La box eedomus sélectionnée est désactivée ou non chargée dans Home Assistant"
-            )
+            raise EedomusImportError("La box eedomus sélectionnée est désactivée ou non chargée dans Home Assistant")
         runtime = self.config_entry.runtime_data
         # Use api_host for all imported names AND Day Planner IDs. HA's own
         # entity unique_ids still require source_entry_id for registry lookup.
         host = source.data.get("api_host")
         if not isinstance(host, str) or not host.strip():
-            raise EedomusImportError(
-                "Adresse de la box eedomus absente (api_host) : reprise impossible"
-            )
+            raise EedomusImportError("Adresse de la box eedomus absente (api_host) : reprise impossible")
         week_name = f"Eedomus ({host.strip()})"
         # Without the config entry ID in imported object IDs, two active HA
         # entries pointing at the same host would have identical IDs.
@@ -184,10 +180,7 @@ class DayPlannerOptionsFlow(
             fields[vol.Required("source_entry_id")] = selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=[
-                        selector.SelectOptionDict(
-                            value=e.entry_id, label=f"{e.title} ({e.entry_id})"
-                        )
-                        for e in entries
+                        selector.SelectOptionDict(value=e.entry_id, label=f"{e.title} ({e.entry_id})") for e in entries
                     ],
                     mode=selector.SelectSelectorMode.DROPDOWN,
                 )
@@ -200,29 +193,18 @@ class DayPlannerOptionsFlow(
         details = ""
         if user_input is not None:
             try:
-                source_id = (
-                    entries[0].entry_id
-                    if len(entries) == 1
-                    else user_input["source_entry_id"]
-                )
+                source_id = entries[0].entry_id if len(entries) == 1 else user_input["source_entry_id"]
                 if not any(entry.entry_id == source_id for entry in entries):
                     raise EedomusImportError("Box eedomus sélectionnée introuvable")
                 source = self.hass.config_entries.async_get_entry(source_id)
                 if source is None or not self._eedomus_entry_active(source):
-                    raise EedomusImportError(
-                        "Box eedomus sélectionnée désactivée ou non chargée dans Home Assistant"
-                    )
-                agenda = await self._eedomus_read_upload(
-                    user_input["json_upload"], source_id
-                )
+                    raise EedomusImportError("Box eedomus sélectionnée désactivée ou non chargée dans Home Assistant")
+                agenda = await self._eedomus_read_upload(user_input["json_upload"], source_id)
                 await self._eedomus_plan(source_id, agenda)
             except (OSError, ValueError, KeyError, TypeError) as exc:
                 _LOGGER.warning("eedomus import preflight rejected: %s", exc)
                 errors["base"] = "eedomus_import_invalid"
-                details = (
-                    f"ÉCHEC DU CONTRÔLE — {exc}. "
-                    "Aucune donnée n'a été importée dans Day Planner."
-                )
+                details = f"ÉCHEC DU CONTRÔLE — {exc}. Aucune donnée n'a été importée dans Day Planner."
             else:
                 self._eedomus_import_source = source_id
                 self._eedomus_import_agenda = agenda
@@ -238,11 +220,7 @@ class DayPlannerOptionsFlow(
                 "details": details,
                 "eedomus_export_url": "https://secure.eedomus.com/import_export",
                 "box_count": str(len(entries)),
-                "selected_box": (
-                    f"{entries[0].title} ({entries[0].entry_id})"
-                    if len(entries) == 1
-                    else ""
-                ),
+                "selected_box": (f"{entries[0].title} ({entries[0].entry_id})" if len(entries) == 1 else ""),
             },
         )
 
@@ -271,15 +249,10 @@ class DayPlannerOptionsFlow(
             eedomus, separator, entity_id = association.rpartition(" → ")
             if not separator:
                 eedomus, entity_id = association, "—"
-            rows.append(
-                f"| {escape_cell(eedomus)} | `{escape_cell(entity_id)}` | Pris en charge |"
-            )
+            rows.append(f"| {escape_cell(eedomus)} | `{escape_cell(entity_id)}` | Pris en charge |")
 
         for peripheral, entity_id, reason in unsupported_associations:
-            rows.append(
-                f"| {escape_cell(peripheral)} | `{escape_cell(entity_id)}` | "
-                f"Ignoré : {escape_cell(reason)} |"
-            )
+            rows.append(f"| {escape_cell(peripheral)} | `{escape_cell(entity_id)}` | Ignoré : {escape_cell(reason)} |")
         return "\n".join(rows) if rows else "| — | — | Aucune association |"
 
     @staticmethod
@@ -348,17 +321,10 @@ class DayPlannerOptionsFlow(
             return await self.async_step_import_eedomus()
         errors = {}
         try:
-            plan = await self._eedomus_plan(
-                self._eedomus_import_source, self._eedomus_import_agenda
-            )
+            plan = await self._eedomus_plan(self._eedomus_import_source, self._eedomus_import_agenda)
             runtime = self.config_entry.runtime_data
-            if (
-                self._eedomus_digest(runtime.engine.configuration)
-                != self._eedomus_configuration_digest
-            ):
-                raise EedomusImportError(
-                    "Configuration Day Planner modifiée pendant la confirmation"
-                )
+            if self._eedomus_digest(runtime.engine.configuration) != self._eedomus_configuration_digest:
+                raise EedomusImportError("Configuration Day Planner modifiée pendant la confirmation")
         except (OSError, ValueError, KeyError, TypeError) as exc:
             _LOGGER.warning("eedomus confirmation rejected: %s", exc)
             return self.async_show_form(
@@ -371,14 +337,12 @@ class DayPlannerOptionsFlow(
         # disabled field (no selection/copy, forbidden cursor).  Keep this
         # optional textarea enabled for selection/clipboard access instead.
         # Its submitted value is NEVER read or used to build the import plan.
-        copy_table = self._eedomus_copy_table(
-            plan.mapped_entities, plan.unsupported_associations
-        )
+        copy_table = self._eedomus_copy_table(plan.mapped_entities, plan.unsupported_associations)
         schema = vol.Schema(
             {
-                vol.Optional(
-                    "associations_excel", default=copy_table
-                ): selector.TextSelector(selector.TextSelectorConfig(multiline=True)),
+                vol.Optional("associations_excel", default=copy_table): selector.TextSelector(
+                    selector.TextSelectorConfig(multiline=True)
+                ),
                 vol.Required("confirm", default=False): bool,
                 vol.Optional("replace_existing", default=False): bool,
             }
@@ -412,9 +376,7 @@ class DayPlannerOptionsFlow(
         host = source.data.get("api_host", "box") if source else "box"
         if not isinstance(host, str):
             host = "box"
-        download_url = self._eedomus_xlsx_download_url(
-            self.hass, plan, host, self._eedomus_import_agenda
-        )
+        download_url = self._eedomus_xlsx_download_url(self.hass, plan, host, self._eedomus_import_agenda)
         # Keep markup out of translation strings: ICU rejects literal <a> tags.
         # The frontend Markdown sanitizer permits target=_blank on anchors,
         # preventing the HA SPA router from intercepting a normal click.
@@ -440,12 +402,8 @@ class DayPlannerOptionsFlow(
                 "limitations": limitations,
                 "download_url": download_url,
                 "download_link": download_link,
-                "mappings": self._eedomus_mappings_table(
-                    plan.mapped_entities, plan.unsupported_associations
-                ),
-                "unsupported": self._eedomus_unsupported_table(
-                    plan.unsupported_associations
-                ),
+                "mappings": self._eedomus_mappings_table(plan.mapped_entities, plan.unsupported_associations),
+                "unsupported": self._eedomus_unsupported_table(plan.unsupported_associations),
                 "unsupported_count": str(len(plan.unsupported_associations)),
                 "replacement": ("Oui" if plan.had_previous_import else "Non"),
             },
@@ -483,9 +441,7 @@ class DayPlannerOptionsFlow(
     ):
         """Manage Day Planner settings."""
 
-        current_cycle_count = len(
-            self.config_entry.runtime_data.engine.configuration.cycles
-        )
+        current_cycle_count = len(self.config_entry.runtime_data.engine.configuration.cycles)
 
         schema = vol.Schema(
             {
@@ -1197,9 +1153,7 @@ class DayPlannerOptionsFlow(
 
             return await self.async_step_edit_scheduled_moment_details()
 
-        moment_names = {
-            moment.id: moment.name for moment in runtime.engine.configuration.moments
-        }
+        moment_names = {moment.id: moment.name for moment in runtime.engine.configuration.moments}
 
         options = [
             selector.SelectOptionDict(
@@ -1239,9 +1193,7 @@ class DayPlannerOptionsFlow(
         day_type = runtime.engine.get_day_type(self._selected_scheduled_day_type_id)
 
         scheduled_moment = next(
-            item
-            for item in day_type.scheduled_moments
-            if item.moment_id == self._selected_scheduled_moment_id
+            item for item in day_type.scheduled_moments if item.moment_id == self._selected_scheduled_moment_id
         )
 
         moment = runtime.engine.get_moment(scheduled_moment.moment_id)
@@ -1299,9 +1251,7 @@ class DayPlannerOptionsFlow(
 
             return await self.async_step_remove_scheduled_moment_confirm()
 
-        moment_names = {
-            moment.id: moment.name for moment in runtime.engine.configuration.moments
-        }
+        moment_names = {moment.id: moment.name for moment in runtime.engine.configuration.moments}
 
         options = [
             selector.SelectOptionDict(
@@ -1492,9 +1442,7 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        week_schedule = runtime.engine.get_week_schedule(
-            self._selected_week_schedule_id
-        )
+        week_schedule = runtime.engine.get_week_schedule(self._selected_week_schedule_id)
 
         if user_input is not None:
             updated = WeekSchedule(
@@ -1624,9 +1572,7 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        week_schedule = runtime.engine.get_week_schedule(
-            self._selected_remove_week_schedule_id
-        )
+        week_schedule = runtime.engine.get_week_schedule(self._selected_remove_week_schedule_id)
 
         schema = vol.Schema(
             {
@@ -2020,10 +1966,7 @@ class DayPlannerOptionsFlow(
         options = [
             selector.SelectOptionDict(
                 value=calendar_exception.id,
-                label=(
-                    calendar_exception.description
-                    or calendar_exception.date.isoformat()
-                ),
+                label=(calendar_exception.description or calendar_exception.date.isoformat()),
             )
             for calendar_exception in runtime.engine.configuration.calendar_exceptions
         ]
@@ -2052,9 +1995,7 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        calendar_exception = runtime.engine.get_calendar_exception(
-            self._selected_calendar_exception_id
-        )
+        calendar_exception = runtime.engine.get_calendar_exception(self._selected_calendar_exception_id)
 
         if user_input is not None:
             updated = CalendarException(
@@ -2127,10 +2068,7 @@ class DayPlannerOptionsFlow(
         options = [
             selector.SelectOptionDict(
                 value=calendar_exception.id,
-                label=(
-                    calendar_exception.description
-                    or calendar_exception.date.isoformat()
-                ),
+                label=(calendar_exception.description or calendar_exception.date.isoformat()),
             )
             for calendar_exception in runtime.engine.configuration.calendar_exceptions
         ]
@@ -2159,9 +2097,7 @@ class DayPlannerOptionsFlow(
 
         runtime = self.config_entry.runtime_data
 
-        calendar_exception = runtime.engine.get_calendar_exception(
-            self._selected_remove_calendar_exception_id
-        )
+        calendar_exception = runtime.engine.get_calendar_exception(self._selected_remove_calendar_exception_id)
 
         schema = vol.Schema(
             {
@@ -2178,10 +2114,7 @@ class DayPlannerOptionsFlow(
                     step_id="remove_calendar_exception_confirm",
                     data_schema=schema,
                     description_placeholders={
-                        "name": (
-                            calendar_exception.description
-                            or calendar_exception.date.isoformat()
-                        ),
+                        "name": (calendar_exception.description or calendar_exception.date.isoformat()),
                     },
                 )
 
@@ -2198,10 +2131,7 @@ class DayPlannerOptionsFlow(
             step_id="remove_calendar_exception_confirm",
             data_schema=schema,
             description_placeholders={
-                "name": (
-                    calendar_exception.description
-                    or calendar_exception.date.isoformat()
-                ),
+                "name": (calendar_exception.description or calendar_exception.date.isoformat()),
             },
         )
 
@@ -2369,9 +2299,7 @@ class DayPlannerOptionsFlow(
 
         moment = runtime.engine.get_moment(self._selected_action_moment_id)
 
-        action = next(
-            item for item in moment.actions if item.id == self._selected_action_id
-        )
+        action = next(item for item in moment.actions if item.id == self._selected_action_id)
 
         schema = vol.Schema(
             {
@@ -2402,10 +2330,7 @@ class DayPlannerOptionsFlow(
                 sequence=list(user_input["sequence"]),
             )
 
-            actions = tuple(
-                updated_action if current.id == action.id else current
-                for current in moment.actions
-            )
+            actions = tuple(updated_action if current.id == action.id else current for current in moment.actions)
 
             updated_moment = Moment(
                 id=moment.id,
@@ -2480,11 +2405,7 @@ class DayPlannerOptionsFlow(
 
         moment = runtime.engine.get_moment(self._selected_action_moment_id)
 
-        action = next(
-            item
-            for item in moment.actions
-            if item.id == self._selected_remove_action_id
-        )
+        action = next(item for item in moment.actions if item.id == self._selected_remove_action_id)
 
         schema = vol.Schema(
             {
@@ -2505,9 +2426,7 @@ class DayPlannerOptionsFlow(
                     },
                 )
 
-            actions = tuple(
-                current for current in moment.actions if current.id != action.id
-            )
+            actions = tuple(current for current in moment.actions if current.id != action.id)
 
             updated_moment = Moment(
                 id=moment.id,

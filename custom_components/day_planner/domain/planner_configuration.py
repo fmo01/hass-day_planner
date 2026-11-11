@@ -25,9 +25,7 @@ class PlannerConfiguration:
             "day_types": [item.to_dict() for item in self.day_types],
             "week_schedules": [item.to_dict() for item in self.week_schedules],
             "cycles": [item.to_dict() for item in self.cycles],
-            "calendar_exceptions": [
-                item.to_dict() for item in self.calendar_exceptions
-            ],
+            "calendar_exceptions": [item.to_dict() for item in self.calendar_exceptions],
         }
 
     @classmethod

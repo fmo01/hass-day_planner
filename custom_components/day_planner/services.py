@@ -6,8 +6,8 @@ from dataclasses import replace
 from datetime import date, datetime, time
 from typing import Any
 
-from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 
 from .const import (
     DOMAIN,
@@ -17,6 +17,7 @@ from .const import (
     SERVICE_ADD_MOMENT,
     SERVICE_ADD_SCHEDULED_MOMENT,
     SERVICE_ADD_WEEK_SCHEDULE,
+    SERVICE_GET_PUBLIC_HOLIDAYS,
     SERVICE_REMOVE_CALENDAR_EXCEPTION,
     SERVICE_REMOVE_CYCLE,
     SERVICE_REMOVE_DAY_TYPE,
@@ -47,6 +48,7 @@ from .schemas import (
     ADD_MOMENT_SCHEMA,
     ADD_SCHEDULED_MOMENT_SCHEMA,
     ADD_WEEK_SCHEDULE_SCHEMA,
+    GET_PUBLIC_HOLIDAYS_SCHEMA,
     REMOVE_CALENDAR_EXCEPTION_SCHEMA,
     REMOVE_CYCLE_SCHEMA,
     REMOVE_DAY_TYPE_SCHEMA,
@@ -129,6 +131,30 @@ async def async_setup_services(
     hass: HomeAssistant,
 ) -> None:
     """Register Day Planner services."""
+
+    async def get_public_holidays(call: ServiceCall) -> dict:
+        """Return holiday data without changing the configuration or schedule."""
+        try:
+            runtime = _get_runtime(call.hass)
+        except (HomeAssistantError, AttributeError) as err:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="public_holidays_planner_not_ready",
+            ) from err
+        if runtime is None or getattr(runtime, "public_holidays", None) is None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="public_holidays_planner_not_ready",
+            )
+        return await runtime.public_holidays.async_get_year(call.data["year"])
+
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_GET_PUBLIC_HOLIDAYS,
+        get_public_holidays,
+        schema=GET_PUBLIC_HOLIDAYS_SCHEMA,
+        supports_response=SupportsResponse.ONLY,
+    )
 
     async def add_moment(
         call: ServiceCall,
@@ -217,7 +243,7 @@ async def async_setup_services(
         await _execute(
             lambda: runtime.engine.remove_moment(call.data["id"]),
             runtime=runtime,
-            description=(f"Unable to remove moment " f"'{call.data['id']}'"),
+            description=(f"Unable to remove moment '{call.data['id']}'"),
         )
 
     #
@@ -332,9 +358,7 @@ async def async_setup_services(
             ),
             runtime=runtime,
             description=(
-                "Unable to add scheduled moment "
-                f"'{call.data['moment_id']}' "
-                f"to day type '{call.data['day_type_id']}'"
+                f"Unable to add scheduled moment '{call.data['moment_id']}' to day type '{call.data['day_type_id']}'"
             ),
         )
 
@@ -364,9 +388,7 @@ async def async_setup_services(
             ),
             runtime=runtime,
             description=(
-                "Unable to update scheduled moment "
-                f"'{call.data['moment_id']}' "
-                f"in day type '{call.data['day_type_id']}'"
+                f"Unable to update scheduled moment '{call.data['moment_id']}' in day type '{call.data['day_type_id']}'"
             ),
         )
 
@@ -477,7 +499,7 @@ async def async_setup_services(
                 call.data["id"],
             ),
             runtime=runtime,
-            description=(f"Unable to remove week schedule " f"'{call.data['id']}'"),
+            description=(f"Unable to remove week schedule '{call.data['id']}'"),
         )
 
     #

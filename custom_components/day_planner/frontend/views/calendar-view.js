@@ -1,6 +1,58 @@
 import { renderTimeline } from '../components/timeline.js';
 
-import { dayTypeColor, escapeHtml, formatLongDate, formatTime, getLanguage } from '../utils.js';
+import { dayTypeColor, escapeHtml, formatLongDate, formatTime, getLanguage, getPlannerLocation } from '../utils.js';
+
+function holidayForDay(card, date) {
+  return card._currentPublicHolidays()?.days.find((day) => day.date === date);
+}
+
+function holidayDescription(card, holiday) {
+  const t = (key) => card._i18n.t(`public_holidays.${key}`, '');
+  return [
+    holiday.names.join(' / '),
+    t(`scope.${holiday.scope}`),
+    ...(holiday.warnings || []).map((code) => t(`reasons.${code}`)),
+  ].join('\n');
+}
+
+export function renderPublicHolidayStatus(card) {
+  const t = (key) => card._i18n?.t(`public_holidays.${key}`, '') || '';
+  const data = card._currentPublicHolidays();
+  let message = '';
+  if (card._publicHolidaysLoading) message = t('loading');
+  else if (card._publicHolidaysError) message = t('request_failed');
+  else if (!data) message = t('unavailable');
+  else if (data.reason) message = card._i18n.t(`public_holidays.reasons.${data.reason}`, t('unavailable'));
+
+  const location = getPlannerLocation(card._hass)?.attributes;
+  const sameCountry = data?.country_code && location?.country_code === data.country_code;
+  const area = [
+    sameCountry ? location.country_name || data.country_code : data?.country_code,
+    sameCountry ? location.subdivision_name : data?.subdivision,
+  ].filter(Boolean).join(' · ');
+
+  return `
+    <div class="public-holiday-status" role="status">
+      <span><ha-icon icon="mdi:calendar-star" aria-hidden="true"></ha-icon>
+        ${escapeHtml(t('title'))}${area ? ` — ${escapeHtml(area)}` : ''}
+      </span>
+      ${data && ['ready', 'partial'].includes(data.status) ? `<span>${escapeHtml(t(`coverage.${data.scope}`))}${data.subdivision ? ` · ${escapeHtml(data.subdivision)}` : ''}</span>` : ''}
+      ${message ? `<span class="public-holiday-message">${escapeHtml(message)}</span>` : ''}
+      ${card._publicHolidaysError ? `<button type="button" id="retry-public-holidays">${escapeHtml(t('retry'))}</button>` : ''}
+    </div>
+  `;
+}
+
+function renderPublicHolidayDetails(card, date) {
+  const holiday = holidayForDay(card, date);
+  if (!holiday) return '';
+  return `
+    <div class="public-holiday-details">
+      <ha-icon icon="mdi:calendar-star" aria-hidden="true"></ha-icon>
+      <span>${escapeHtml(holidayDescription(card, holiday))}</span>
+    </div>
+  `;
+}
 
 function getWeekdayLabels(language) {
   // Un lundi connu
@@ -75,6 +127,7 @@ export function renderCalendar(card) {
   const leadingEmpty = (firstDay.getDay() + 6) % 7;
 
   const cells = [];
+  const holidays = new Map((card._currentPublicHolidays()?.days || []).map((day) => [day.date, day]));
 
   const language = getLanguage(card._hass);
 
@@ -141,6 +194,11 @@ if (calendarException) {
 
 
 
+    const holiday = holidays.get(day.date);
+    if (holiday) {
+      tooltip = [tooltip, holidayDescription(card, holiday)].filter(Boolean).join('\n');
+    }
+    const accessibleLabel = [formatLongDate(day.date, card._hass), tooltip].filter(Boolean).join('\n');
     const color = dayTypeColor(day.day_type);
 
     cells.push(`
@@ -148,6 +206,8 @@ if (calendarException) {
         class="day${selected ? ' selected' : ''}${exception}"
         data-date="${day.date}"
         data-tooltip="${escapeHtml(tooltip)}"
+        aria-label="${escapeHtml(accessibleLabel)}"
+        aria-pressed="${selected}"
         type="button"
         style="
           --day-type-color:
@@ -180,6 +240,12 @@ if (calendarException) {
             `
             : ''
         }
+        ${holiday ? `
+          <span class="public-holiday-marker">
+            <ha-icon icon="mdi:calendar-star" aria-hidden="true"></ha-icon>
+            <span>${escapeHtml(holiday.names.join(' / '))}</span>
+          </span>
+        ` : ''}
       </button>
     `);
   }
@@ -239,6 +305,7 @@ export function renderSelectedDay(card) {
         }
       </div>
 
+      ${renderPublicHolidayDetails(card, day.date)}
       ${renderTimeline(day.scheduled_moments)}
 
 <div class="calendar-exception-actions">
@@ -328,6 +395,7 @@ export function renderSelectedDay(card) {
 
 export function renderCalendarView(card) {
   return `
+    ${renderPublicHolidayStatus(card)}
     ${renderLegend(card)}
     ${renderCalendar(card)}
     ${renderSelectedDay(card)}
@@ -335,7 +403,7 @@ export function renderCalendarView(card) {
 }
 
 console.info(
-  '%c CALENDAR-VIEW %c v0.1.0',
+  '%c CALENDAR-VIEW %c v0.1.1',
   'color: orange; font-weight: bold; background: black',
   'color: white; font-weight: bold; background: dimgray'
 );

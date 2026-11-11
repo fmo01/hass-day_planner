@@ -1,2 +1,14 @@
 [tool.isort]
 profile = "black"
+
+[tool.ruff]
+target-version = "py314"
+line-length = 120
+
+[tool.ruff.lint]
+# Contrôles proches de flake8, complétés par le tri des imports.
+select = ["E4", "E7", "E9", "E501", "F", "W", "I"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["custom_components"]
+

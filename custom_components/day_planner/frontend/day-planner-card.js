@@ -4,6 +4,7 @@ import {
   formatDate,
   formatLongDate,
   getLanguage,
+  getPlannerLocation,
   countActionSequenceTargets,
   getDayTypeDependencies,
 } from './utils.js';
@@ -61,6 +62,12 @@ class DayPlannerCard extends HTMLElement {
     this._selectedDate = formatDate(now);
 
     this._calendar = null;
+    this._calendarRequest = 0;
+    this._publicHolidays = null;
+    this._publicHolidaysKey = null;
+    this._publicHolidaysLoading = false;
+    this._publicHolidaysError = false;
+    this._publicHolidaysRequest = 0;
     this._configuration = null;
 
     this._loading = false;
@@ -160,13 +167,6 @@ class DayPlannerCard extends HTMLElement {
         });
     }
 
-    const monthKey = `${this._displayYear}-${String(this._displayMonth + 1).padStart(2, '0')}`;
-
-    if (this._activeTab === 'calendar' && !this._loading && this._loadedMonthKey !== monthKey) {
-      this._loadCalendar();
-      return;
-    }
-
     if (!this._i18n) {
       this._i18n = new DayPlannerI18n(hass);
 
@@ -180,6 +180,12 @@ class DayPlannerCard extends HTMLElement {
         });
     } else {
       this._i18n.setHass(hass);
+    }
+
+    const monthKey = `${this._displayYear}-${String(this._displayMonth + 1).padStart(2, '0')}`;
+    if (this._activeTab === 'calendar' && !this._loading && this._loadedMonthKey !== monthKey) {
+      this._loadCalendar();
+      return;
     }
 
     /*
@@ -213,7 +219,59 @@ class DayPlannerCard extends HTMLElement {
       return;
     }
 
+    if (this._activeTab === 'calendar') {
+      this._loadPublicHolidays();
+    }
     this.render();
+  }
+
+  _publicHolidaysContext() {
+    const location = getPlannerLocation(this._hass);
+    return JSON.stringify([
+      this._displayYear,
+      getLanguage(this._hass),
+      this._hass?.config?.language,
+      this._hass?.config?.country,
+      this._hass?.config?.latitude,
+      this._hass?.config?.longitude,
+      this._hass?.states?.['zone.home']?.attributes?.latitude,
+      this._hass?.states?.['zone.home']?.attributes?.longitude,
+      location?.state,
+      location?.attributes,
+    ]);
+  }
+
+  _currentPublicHolidays() {
+    return this._publicHolidaysKey === this._publicHolidaysContext() ? this._publicHolidays : null;
+  }
+
+  async _loadPublicHolidays(force = false) {
+    if (!this._api) return;
+    const key = this._publicHolidaysContext();
+    if (!force && this._publicHolidaysKey === key) return;
+    const request = ++this._publicHolidaysRequest;
+    const year = this._displayYear;
+    this._publicHolidaysKey = key;
+    this._publicHolidays = null;
+    this._publicHolidaysError = false;
+    this._publicHolidaysLoading = true;
+    try {
+      await this._i18n.load();
+      const result = await this._api.getPublicHolidays(year);
+      if (request !== this._publicHolidaysRequest || key !== this._publicHolidaysContext()) return;
+      if (result?.year !== year || !Array.isArray(result.days)) throw new Error('Invalid public holiday response');
+      this._publicHolidays = result;
+    } catch (error) {
+      if (request !== this._publicHolidaysRequest || key !== this._publicHolidaysContext()) return;
+      this._publicHolidaysError = true;
+      console.error('Day Planner public holidays error', error);
+    } finally {
+      if (request === this._publicHolidaysRequest) {
+        this._publicHolidaysLoading = false;
+        if (this._activeTab === 'calendar' && !this._creatingCalendarException &&
+            !this._editingCalendarExceptionId && !this._deletingCalendarExceptionId) this.render();
+      }
+    }
   }
 
   getCardSize() {
@@ -236,11 +294,13 @@ class DayPlannerCard extends HTMLElement {
   }
 
   async _loadCalendar() {
+    const request = ++this._calendarRequest;
+    this._loadPublicHolidays();
     if (this._configuration === null) {
       await this._loadConfiguration();
     }
 
-    if (!this._hass) {
+    if (!this._hass || request !== this._calendarRequest) {
       return;
     }
 
@@ -254,12 +314,10 @@ class DayPlannerCard extends HTMLElement {
 
       const endDate = formatDate(this._monthEnd());
 
-      this._calendar = await this._api.getCalendar(startDate, endDate);
-
-      this._loadedMonthKey = `${this._displayYear}-${String(this._displayMonth + 1).padStart(
-        2,
-        '0'
-      )}`;
+      const calendar = await this._api.getCalendar(startDate, endDate);
+      if (request !== this._calendarRequest) return;
+      this._calendar = calendar;
+      this._loadedMonthKey = startDate.slice(0, 7);
 
       const exists = this._calendar.days.some((day) => day.date === this._selectedDate);
 
@@ -267,12 +325,15 @@ class DayPlannerCard extends HTMLElement {
         this._selectedDate = this._calendar.days[0]?.date ?? null;
       }
     } catch (error) {
+      if (request !== this._calendarRequest) return;
       console.error('Day Planner calendar error', error);
 
       this._error = error?.message || 'Impossible de charger le calendrier.';
     } finally {
-      this._loading = false;
-      this.render();
+      if (request === this._calendarRequest) {
+        this._loading = false;
+        this.render();
+      }
     }
   }
 
@@ -305,6 +366,7 @@ class DayPlannerCard extends HTMLElement {
   _selectDate(date) {
     this._selectedDate = date;
     this.render();
+    this.shadowRoot.querySelector(`.day[data-date="${CSS.escape(date)}"]`)?.focus({ preventScroll: true });
   }
 
   _selectedDay() {
@@ -447,6 +509,11 @@ class DayPlannerCard extends HTMLElement {
     this.shadowRoot
       .querySelector('#next-month')
       ?.addEventListener('click', () => this._nextMonth());
+
+    this.shadowRoot.querySelector('#retry-public-holidays')?.addEventListener('click', () => {
+      this._loadPublicHolidays(true);
+      this.render();
+    });
 
     this.shadowRoot.querySelectorAll('.day[data-date]').forEach((element) => {
       element.addEventListener('click', () => {
@@ -789,13 +856,7 @@ class DayPlannerCard extends HTMLElement {
     this.shadowRoot.querySelector('.add-calendar-exception')?.addEventListener('click', (event) => {
       event.stopPropagation();
 
-      this._creatingCalendarExceptionDate = event.currentTarget.dataset.date;
-      this._duplicatingCalendarExceptionSourceId = null;
-
-      this._creatingCalendarException = true;
-      this._error = null;
-      this._creatingCalendarExceptionDraft = null;
-      this.render();
+      this._openCreateCalendarExceptionDialog(event.currentTarget.dataset.date);
     });
 
     this.shadowRoot
@@ -827,6 +888,7 @@ class DayPlannerCard extends HTMLElement {
     this.shadowRoot
       .querySelector('#cancel-create-calendar-exception')
       ?.addEventListener('click', () => {
+        if (this._loading) return;
         this._creatingCalendarException = false;
         this._creatingCalendarExceptionDate = null;
         this._duplicatingCalendarExceptionSourceId = null;
@@ -844,6 +906,7 @@ class DayPlannerCard extends HTMLElement {
     this.shadowRoot
       .querySelector('#cancel-edit-calendar-exception')
       ?.addEventListener('click', () => {
+        if (this._loading) return;
         this._editingCalendarExceptionId = null;
         this._error = null;
         this._editingCalendarExceptionDraft = null;
@@ -4953,6 +5016,20 @@ ${
   `;
   }
 
+  _openCreateCalendarExceptionDialog(date) {
+    const holiday = this._currentPublicHolidays()?.days?.find((item) => item.date === date);
+    this._creatingCalendarExceptionDate = date;
+    this._duplicatingCalendarExceptionSourceId = null;
+    // Snapshot once: later holiday responses must not overwrite the user's input.
+    this._creatingCalendarExceptionDraft = {
+      day_type_id: '',
+      description: (holiday?.names ?? []).join(' / '),
+    };
+    this._creatingCalendarException = true;
+    this._error = null;
+    this.render();
+  }
+
   _openDuplicateCalendarExceptionDialog(sourceId) {
     const source = this._configuration?.calendar_exceptions?.find((item) => item.id === sourceId);
     if (!source) {
@@ -5088,6 +5165,7 @@ ${
             id="cancel-create-calendar-exception"
             class="editor-button"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             ${escapeHtml(t('common.cancel', 'Annuler'))}
           </button>
@@ -5203,6 +5281,7 @@ ${
           <button
             id="cancel-edit-calendar-exception"
             type="button"
+            ${this._loading ? 'disabled' : ''}
           >
             ${escapeHtml(t('common.cancel', 'Annuler'))}
           </button>
@@ -5260,26 +5339,17 @@ ${
       description: description ?? '',
     };
 
-    if (isDuplication) {
-      // La nouvelle date est une clé métier unique ; l'ID suit la création habituelle.
-      const parsed = /^\d{4}-\d{2}-\d{2}$/.test(date)
-        ? new Date(`${date}T12:00:00`)
-        : null;
-      if (!parsed || Number.isNaN(parsed.getTime()) || formatDate(parsed) !== date) {
-        this._error = this._i18n?.t('errors.invalid_date', 'Veuillez choisir une date valide.')
-          ?? 'Veuillez choisir une date valide.';
-        this.render();
-        return;
-      }
-      if ((this._configuration?.calendar_exceptions || []).some((item) => item.date === date)) {
-        this._error = this._i18n?.t(
-          'errors.duplicate_calendar_exception_date',
-          'Une exception existe déjà pour cette date.'
-        ) ?? 'Une exception existe déjà pour cette date.';
-        this.render();
-        return;
-      }
-    } else if (!date) {
+    const parsed = /^\d{4}-\d{2}-\d{2}$/.test(date)
+      ? new Date(`${date}T12:00:00`)
+      : null;
+    if (!parsed || Number.isNaN(parsed.getTime()) || formatDate(parsed) !== date) {
+      this._error = this._i18n.t('errors.invalid_date');
+      this.render();
+      return;
+    }
+    if ((this._configuration?.calendar_exceptions || []).some((item) => item.date === date)) {
+      this._error = this._i18n.t('errors.duplicate_calendar_exception_date');
+      this.render();
       return;
     }
 
@@ -5295,6 +5365,12 @@ ${
     }
 
     const calendarExceptionId = `exception-${date}`;
+
+    if (!(this._configuration?.day_types || []).some((item) => item.id === dayTypeId)) {
+      this._error = this._i18n.t('errors.calendar_exception_day_type_unknown');
+      this.render();
+      return;
+    }
 
     this._loading = true;
     this._error = null;
@@ -5604,6 +5680,12 @@ ${
       return;
     }
 
+    if (!(this._configuration?.day_types || []).some((item) => item.id === dayTypeId)) {
+      this._error = this._i18n.t('errors.calendar_exception_day_type_unknown');
+      this.render();
+      return;
+    }
+
     this._loading = true;
     this._error = null;
     this.render();
@@ -5747,7 +5829,7 @@ if (!customElements.get('day-planner-card')) {
 }
 
 console.info(
-  '%c DAY-PLANNER-CARD %c v0.2.9',
+  '%c DAY-PLANNER-CARD %c v0.2.12',
   'color: orange; font-weight: bold; background: black',
   'color: white; font-weight: bold; background: dimgray'
 );

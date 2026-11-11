@@ -86,9 +86,7 @@ class PlannerValidator:
                     raise ValidationError("Action id cannot be empty")
 
                 if action.id in action_ids:
-                    raise ValidationError(
-                        f"Duplicate action id in moment " f"'{moment.id}': {action.id}"
-                    )
+                    raise ValidationError(f"Duplicate action id in moment '{moment.id}': {action.id}")
 
                 action_ids.add(action.id)
 
@@ -126,12 +124,10 @@ class PlannerValidator:
 
         for scheduled in day_type.scheduled_moments:
             if scheduled.moment_id not in moment_ids:
-                raise ValidationError(f"Unknown moment: " f"{scheduled.moment_id}")
+                raise ValidationError(f"Unknown moment: {scheduled.moment_id}")
 
             if scheduled.moment_id in used_moments:
-                raise ValidationError(
-                    f"Duplicate moment in " f"day type: {day_type.name}"
-                )
+                raise ValidationError(f"Duplicate moment in day type: {day_type.name}")
 
             used_moments.add(scheduled.moment_id)
 
@@ -159,9 +155,7 @@ class PlannerValidator:
 
                 if day_type_id not in day_type_ids:
                     raise ValidationError(
-                        f"Unknown day type: {day_type_id} "
-                        f"in week schedule '{week_schedule.id}' "
-                        f"for {weekday}"
+                        f"Unknown day type: {day_type_id} in week schedule '{week_schedule.id}' for {weekday}"
                     )
 
     @staticmethod
@@ -176,9 +170,7 @@ class PlannerValidator:
 
         for cycle in configuration.cycles:
             if cycle.start_date in used_start_dates:
-                raise ValidationError(
-                    "Duplicate cycle start date: " f"{cycle.start_date.isoformat()}"
-                )
+                raise ValidationError(f"Duplicate cycle start date: {cycle.start_date.isoformat()}")
 
             used_start_dates.add(cycle.start_date)
 
@@ -228,10 +220,7 @@ class PlannerValidator:
 
         for calendar_exception in configuration.calendar_exceptions:
             if calendar_exception.date in used_dates:
-                raise ValidationError(
-                    "Duplicate calendar exception date: "
-                    f"{calendar_exception.date.isoformat()}"
-                )
+                raise ValidationError(f"Duplicate calendar exception date: {calendar_exception.date.isoformat()}")
 
             used_dates.add(calendar_exception.date)
 
@@ -248,6 +237,4 @@ class PlannerValidator:
         """Validate one calendar exception."""
 
         if calendar_exception.day_type_id not in day_type_ids:
-            raise ValidationError(
-                f"Unknown day type: " f"{calendar_exception.day_type_id}"
-            )
+            raise ValidationError(f"Unknown day type: {calendar_exception.day_type_id}")

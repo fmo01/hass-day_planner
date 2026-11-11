@@ -691,11 +691,80 @@ def test_resolver_returns_no_cycle_before_first_cycle_start():
 
 def test_resolver_base_context_without_configuration():
     target = date(2026, 10, 11)
-    result = PlannerResolver(PlannerConfiguration.empty()).resolve_base_day_context(
-        target
-    )
+    result = PlannerResolver(PlannerConfiguration.empty()).resolve_base_day_context(target)
     assert result.date == target
     assert result.day_type is None
     assert result.cycle_id is None
     assert result.week_schedule_id is None
     assert result.calendar_exception_id is None
+
+
+def test_public_holiday_consultation_and_exception_lifecycle():
+    """Only a saved exception changes the cycle, including after holiday lookup."""
+    from dataclasses import replace
+
+    from custom_components.day_planner.location import LocationResult, LocationStatus
+    from custom_components.day_planner.planner.engine import PlannerEngine
+    from custom_components.day_planner.public_holidays import calculate_public_holidays
+
+    normal = DayType(id="normal", name="Travail", scheduled_moments=())
+    rest = DayType(id="rest", name="Repos", scheduled_moments=())
+    week = WeekSchedule(
+        id="week",
+        name="Semaine",
+        monday="normal",
+        tuesday="normal",
+        wednesday="normal",
+        thursday="normal",
+        friday="normal",
+        saturday="normal",
+        sunday="normal",
+    )
+    cycle = Cycle(
+        id="cycle",
+        name="Cycle",
+        start_date=date(2026, 1, 5),
+        week_schedule_ids=(week.id,),
+    )
+    engine = PlannerEngine(
+        replace(
+            PlannerConfiguration.empty(),
+            day_types=(normal, rest),
+            week_schedules=(week,),
+            cycles=(cycle,),
+        )
+    )
+    resolver = PlannerResolver(engine.configuration)
+    location = LocationResult(LocationStatus.RESOLVED, country_code="FR")
+    for year in (2026, 2027, 2028):
+        target = date(year, 12, 25)
+        original = engine.configuration
+        assert resolver.resolve_day_type(target).id == "normal"
+        holidays = calculate_public_holidays(year, location, "fr")
+        assert target in {day.date for day in holidays.days}
+        assert engine.configuration is original
+        assert resolver.resolve_day_type(target).id == "normal"
+        exception = CalendarException(
+            id=f"exception-{year}",
+            date=target,
+            day_type_id="rest",
+            description="",
+        )
+        engine.add_calendar_exception(exception, modified_by="Utilisateur Test")
+        resolver.update_configuration(engine.configuration)
+        assert resolver.resolve_day_type(target).id == "rest"
+        created = engine.get_calendar_exception(exception.id)
+        engine.update_calendar_exception(
+            replace(created, day_type_id="normal", description="Travail exceptionnel"),
+            modified_by="Utilisateur Secondaire",
+        )
+        resolver.update_configuration(engine.configuration)
+        assert resolver.resolve_day_type(target).id == "normal"
+        updated = engine.get_calendar_exception(exception.id)
+        assert updated.audit.created_at == created.audit.created_at
+        assert updated.audit.created_by == "Utilisateur Test"
+        engine.remove_calendar_exception(exception.id)
+        resolver.update_configuration(engine.configuration)
+        assert resolver.resolve_day_type(target).id == "normal"
+        assert not engine.configuration.calendar_exceptions
+        assert engine.configuration.cycles == original.cycles

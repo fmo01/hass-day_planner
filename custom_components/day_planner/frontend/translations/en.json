@@ -135,6 +135,9 @@
     "add_action_group_error": "Unable to add the action group."
   },
   "errors": {
+    "invalid_date": "Please select a valid date.",
+    "duplicate_calendar_exception_date": "An exception already exists for this date.",
+    "calendar_exception_day_type_unknown": "This day type no longer exists. Please select another one.",
     "cycle_not_found": "This cycle no longer exists.",
     "invalid_start_date": "The start date is invalid.",
     "invalid_week_count": "A cycle must contain between 1 and 4 week schedules.",
@@ -147,5 +150,34 @@
     "cycle_name_required": "The cycle name is required.",
     "cycle_start_date_required": "The cycle start date is required.",
     "max_cycles_reached": "Cannot create another cycle, maximum number of cycles reached"
+  },
+  "public_holidays": {
+    "title": "Public holidays",
+    "loading": "Loading public holidays…",
+    "request_failed": "Unable to load public holidays.",
+    "unavailable": "Public holiday location is unresolved.",
+    "retry": "Retry",
+    "coverage": {
+      "national": "National calendar",
+      "subdivision": "Local calendar"
+    },
+    "scope": {
+      "national": "National scope",
+      "regional": "Local scope",
+      "mixed": "National and local scope"
+    },
+    "reasons": {
+      "location_unresolved": "The installation location is not yet usable. Check the Day Planner location entity.",
+      "invalid_year": "The year must be an integer between 1 and 9999.",
+      "country_not_supported": "This country is not supported by the installed holidays library.",
+      "year_not_supported": "This year is outside the supported range for this country.",
+      "subdivision_missing": "Only the national calendar is available: the regional subdivision has not been determined.",
+      "subdivision_not_supported": "Only the national calendar is available: the geographical subdivision cannot be matched to a supported holiday calendar.",
+      "ambiguous_subdivision": "Only the national calendar is available: several regional calendars match the location.",
+      "calculation_failed": "The public holiday calendar could not be calculated for this request.",
+      "location_changed": "The installation location changed during calculation. Request the calendar again.",
+      "local_applicability_unverified": "Local applicability must be checked for this holiday.",
+      "planner_not_ready": "Day Planner is not ready to provide the public holiday calendar."
+    }
   }
 }

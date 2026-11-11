@@ -8,9 +8,11 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 from .action_executor import ActionExecutor
 from .const import SIGNAL_PLANNER_UPDATED
 from .ha_scheduler import HomeAssistantScheduler
+from .location import DayPlannerLocation
 from .planner.engine import PlannerEngine
 from .planner.resolver import PlannerResolver
 from .planner.scheduler import PlannerScheduler
+from .public_holidays import DayPlannerPublicHolidays
 from .storage import DayPlannerStorage
 
 
@@ -25,6 +27,8 @@ class DayPlannerRuntimeData:
     scheduler: PlannerScheduler
     action_executor: ActionExecutor
     ha_scheduler: HomeAssistantScheduler
+    location: DayPlannerLocation | None = None
+    public_holidays: DayPlannerPublicHolidays | None = None
 
     async def async_configuration_updated(self) -> None:
         """Synchronize runtime after a configuration change."""

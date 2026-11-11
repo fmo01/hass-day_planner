@@ -64,9 +64,7 @@ def hhmmss(raw: str) -> str:
 
 
 def find_module(modules: list[dict], name: str, purpose: str) -> dict:
-    exact = [
-        m for m in modules if m.get("custom_name", "").casefold() == name.casefold()
-    ]
+    exact = [m for m in modules if m.get("custom_name", "").casefold() == name.casefold()]
     if not exact:
         exact = [m for m in modules if m.get("utilisation_id") == purpose]
     if len(exact) != 1:
@@ -108,11 +106,7 @@ def extract(export: dict) -> dict:
         module = modules.get(mid)
         kind = str(action["action_type"])
         raw_value = str(action["action"])
-        name = (
-            (module.get("custom_name") or module.get("full_name") or mid)
-            if module
-            else f"Inconnu ({mid})"
-        )
+        name = (module.get("custom_name") or module.get("full_name") or mid) if module else f"Inconnu ({mid})"
         resolved = None
         if module is not None and kind == "direct":
             try:
@@ -182,17 +176,13 @@ def extract(export: dict) -> dict:
         ):
             phase = str(criteria[0]["target"])
             if phase in phase_rules:
-                raise ExportFormatError(
-                    f"Plusieurs règles directes pour la phase {phase}"
-                )
+                raise ExportFormatError(f"Plusieurs règles directes pour la phase {phase}")
             phase_rules[phase] = rule
             continue
 
         # Règles supplémentaires impliquant phase ou type de journée : leur
         # logique ET/OU et d'autres critères doivent être conservés intacts.
-        if not any(
-            str(c["controller_module_id"]) in (day_mid, phase_mid) for c in criteria
-        ):
+        if not any(str(c["controller_module_id"]) in (day_mid, phase_mid) for c in criteria):
             continue
         decoded_criteria = []
         for c in sorted(criteria, key=lambda x: int(x.get("criteria_order", 0))):
@@ -215,9 +205,7 @@ def extract(export: dict) -> dict:
                     "ordre": int(c.get("criteria_order", 0)),
                     "peripherique_id": mid,
                     "peripherique": (
-                        (module.get("custom_name") or module.get("full_name") or mid)
-                        if module
-                        else f"Inconnu ({mid})"
+                        (module.get("custom_name") or module.get("full_name") or mid) if module else f"Inconnu ({mid})"
                     ),
                     "operateur": c["criteria"],
                     "valeur": target,
@@ -255,9 +243,7 @@ def extract(export: dict) -> dict:
         phase_id = str(scheduled["phase_id"])
         at = hhmmss(scheduled["start_time"])
         if day_id not in days or phase_id not in phase_states:
-            raise ExportFormatError(
-                f"Type de journée / phase inconnu : {day_id}/{phase_id}"
-            )
+            raise ExportFormatError(f"Type de journée / phase inconnu : {day_id}/{phase_id}")
         key = (day_id, phase_id, at)
         rule = timed_rules.get(key)
         if rule is None:
@@ -265,14 +251,9 @@ def extract(export: dict) -> dict:
         used_timed_rules.add(key)
         phase_rule = phase_rules.get(phase_id)
         if phase_rule is None:
-            raise ExportFormatError(
-                f"Règle d'actions introuvable pour la phase {phase_id}"
-            )
+            raise ExportFormatError(f"Règle d'actions introuvable pour la phase {phase_id}")
         phase_actions = (
-            [
-                action_details(a)
-                for a in ordered_rows(subtable(phase_rule, "zb_rule_action"))
-            ]
+            [action_details(a) for a in ordered_rows(subtable(phase_rule, "zb_rule_action"))]
             if phase_rule["active"] == "1"
             else []
         )
@@ -311,9 +292,7 @@ def extract(export: dict) -> dict:
         index = int(row["day_of_week"])
         day_id = str(row["day_type_id"])
         if index not in range(1, 8) or index in seen or day_id not in days:
-            raise ExportFormatError(
-                f"Jour de la semaine ou type invalide : {index}/{day_id}"
-            )
+            raise ExportFormatError(f"Jour de la semaine ou type invalide : {index}/{day_id}")
         seen.add(index)
         week.append(
             {
@@ -361,15 +340,10 @@ def extract(export: dict) -> dict:
     return {
         "schema": "eedomus-agenda-extract-v2",
         "export_time": export.get("export_time"),
-        "phases": [
-            {"id": int(k), "name": v}
-            for k, v in sorted(phase_states.items(), key=lambda x: int(x[0]))
-        ],
+        "phases": [{"id": int(k), "name": v} for k, v in sorted(phase_states.items(), key=lambda x: int(x[0]))],
         "day_types": list(days.values()),
         "week": week,
-        "regles_conditionnelles_liees_agenda": sorted(
-            conditional_rules, key=lambda x: x["nom"].casefold()
-        ),
+        "regles_conditionnelles_liees_agenda": sorted(conditional_rules, key=lambda x: x["nom"].casefold()),
         "parametres_embarques_non_resolus": unknown_embedded,
         "notes": [
             "Extraction ponctuelle en lecture seule, sans automatisation ni synchronisation",
@@ -398,9 +372,7 @@ def make_csv(agenda: dict) -> str:
         )
     )
     for day in agenda["day_types"]:
-        used = ", ".join(
-            row["jour"] for row in agenda["week"] if row["type_journee_id"] == day["id"]
-        )
+        used = ", ".join(row["jour"] for row in agenda["week"] if row["type_journee_id"] == day["id"])
         for moment in day["moments"]:
             writer.writerow(
                 (
@@ -429,12 +401,8 @@ def write_if_changed(destination: Path, content: str) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
-    )
-    parser.add_argument(
-        "export", type=Path, help="Export eedomus JSON (UTF-8 ou Windows-1252)"
-    )
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("export", type=Path, help="Export eedomus JSON (UTF-8 ou Windows-1252)")
     parser.add_argument(
         "-o",
         "--output",
@@ -442,9 +410,7 @@ def main() -> int:
         default=Path("agenda_eedomus.json"),
         help="JSON de sortie",
     )
-    parser.add_argument(
-        "--csv", type=Path, default=Path("agenda_eedomus.csv"), help="CSV de sortie"
-    )
+    parser.add_argument("--csv", type=Path, default=Path("agenda_eedomus.csv"), help="CSV de sortie")
     args = parser.parse_args()
     if args.output.resolve() == args.csv.resolve() or args.export.resolve() in (
         args.output.resolve(),
@@ -453,9 +419,7 @@ def main() -> int:
         parser.error("Les fichiers d'entrée et de sortie doivent être différents")
     try:
         agenda = extract(load_export(args.export))
-        write_if_changed(
-            args.output, json.dumps(agenda, ensure_ascii=False, indent=2) + "\n"
-        )
+        write_if_changed(args.output, json.dumps(agenda, ensure_ascii=False, indent=2) + "\n")
         write_if_changed(args.csv, make_csv(agenda))
     except (OSError, UnicodeError, ValueError, TypeError, KeyError) as exc:
         parser.exit(1, f"Erreur : {exc}\n")

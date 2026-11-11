@@ -71,7 +71,7 @@ def test_ha_scheduler_schedules_event():
     with (
         patch("custom_components.day_planner.ha_scheduler.dt_util.now") as now,
         patch(
-            "custom_components.day_planner.ha_scheduler." "async_track_point_in_time",
+            "custom_components.day_planner.ha_scheduler.async_track_point_in_time",
             return_value=cancel,
         ) as track,
     ):
@@ -134,7 +134,7 @@ def test_ha_scheduler_executes_event_and_reschedules():
     async def run():
         with (
             patch(
-                "custom_components.day_planner.ha_scheduler." "dt_util.now",
+                "custom_components.day_planner.ha_scheduler.dt_util.now",
                 return_value=datetime(
                     2026,
                     8,
@@ -144,8 +144,7 @@ def test_ha_scheduler_executes_event_and_reschedules():
                 ),
             ),
             patch(
-                "custom_components.day_planner.ha_scheduler."
-                "async_track_point_in_time",
+                "custom_components.day_planner.ha_scheduler.async_track_point_in_time",
                 return_value=cancel,
             ) as track,
         ):
@@ -241,7 +240,7 @@ def test_ha_scheduler_reschedule_cancels_previous():
     async def run():
         with (
             patch(
-                "custom_components.day_planner.ha_scheduler." "dt_util.now",
+                "custom_components.day_planner.ha_scheduler.dt_util.now",
                 return_value=datetime(
                     2026,
                     8,
@@ -251,8 +250,7 @@ def test_ha_scheduler_reschedule_cancels_previous():
                 ),
             ),
             patch(
-                "custom_components.day_planner.ha_scheduler."
-                "async_track_point_in_time",
+                "custom_components.day_planner.ha_scheduler.async_track_point_in_time",
                 return_value=new_cancel,
             ),
         ):
@@ -315,7 +313,7 @@ def test_ha_scheduler_converts_naive_event_to_timezone():
             return_value=now,
         ),
         patch(
-            "custom_components.day_planner.ha_scheduler." "async_track_point_in_time",
+            "custom_components.day_planner.ha_scheduler.async_track_point_in_time",
             return_value=cancel,
         ) as track,
     ):
@@ -357,9 +355,7 @@ def test_ha_scheduler_reschedules_after_action_error():
     scheduler.events_at.return_value = (event,)
 
     action_executor = MagicMock()
-    action_executor.async_execute_moment = AsyncMock(
-        side_effect=RuntimeError("Action failed")
-    )
+    action_executor.async_execute_moment = AsyncMock(side_effect=RuntimeError("Action failed"))
 
     cancel = MagicMock()
 
@@ -382,8 +378,7 @@ def test_ha_scheduler_reschedules_after_action_error():
                 ),
             ),
             patch(
-                "custom_components.day_planner.ha_scheduler."
-                "async_track_point_in_time",
+                "custom_components.day_planner.ha_scheduler.async_track_point_in_time",
                 return_value=cancel,
             ) as track,
         ):
@@ -523,8 +518,7 @@ def test_ha_scheduler_cancels_when_no_next_event():
                 ),
             ),
             patch(
-                "custom_components.day_planner.ha_scheduler."
-                "async_track_point_in_time",
+                "custom_components.day_planner.ha_scheduler.async_track_point_in_time",
                 return_value=old_cancel,
             ) as track,
         ):
@@ -597,8 +591,7 @@ def test_ha_scheduler_does_not_execute_same_callback_twice():
                 ),
             ),
             patch(
-                "custom_components.day_planner.ha_scheduler."
-                "async_track_point_in_time",
+                "custom_components.day_planner.ha_scheduler.async_track_point_in_time",
                 return_value=cancel,
             ) as track,
         ):

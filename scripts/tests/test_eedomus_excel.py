@@ -48,9 +48,7 @@ def test_eedomus_excel_is_valid_xlsx_with_seven_sheets_and_filters():
             if path.endswith((".xml", ".rels")) or path == "[Content_Types].xml":
                 ET.fromstring(archive.read(path))
         workbook = ET.fromstring(archive.read("xl/workbook.xml"))
-        tabs = [
-            entry.attrib["name"] for entry in workbook.findall(f".//{{{_MAIN}}}sheet")
-        ]
+        tabs = [entry.attrib["name"] for entry in workbook.findall(f".//{{{_MAIN}}}sheet")]
         assert tabs == [
             "Résumé",
             "Toutes associations",
@@ -127,13 +125,9 @@ def test_eedomus_excel_reports_real_objects_and_unimported_details():
             ),
         ),
     )
-    other_day = SimpleNamespace(
-        id="manual_day", name="Journée manuelle", scheduled_moments=()
-    )
+    other_day = SimpleNamespace(id="manual_day", name="Journée manuelle", scheduled_moments=())
     plan = _plan()
-    plan.configuration = SimpleNamespace(
-        moments=(first, empty, manual), day_types=(day, other_day)
-    )
+    plan.configuration = SimpleNamespace(moments=(first, empty, manual), day_types=(day, other_day))
     agenda = {
         "regles_conditionnelles_liees_agenda": [
             {
@@ -214,9 +208,7 @@ def test_eedomus_excel_handles_empty_sequences_and_days_without_schedules():
         name="Soirée",
         actions=(sequence_less_action, action_with_multiple_targets),
     )
-    empty_day = SimpleNamespace(
-        id=prefix + "day_3", name="Journée libre", scheduled_moments=()
-    )
+    empty_day = SimpleNamespace(id=prefix + "day_3", name="Journée libre", scheduled_moments=())
     unspecified = SimpleNamespace(
         moment_id=moment.id,
         time_definition=SimpleNamespace(fixed_time=None),
@@ -227,9 +219,7 @@ def test_eedomus_excel_handles_empty_sequences_and_days_without_schedules():
         scheduled_moments=(unspecified,),
     )
     plan = _plan()
-    plan.configuration = SimpleNamespace(
-        moments=(moment,), day_types=(empty_day, other_day)
-    )
+    plan.configuration = SimpleNamespace(moments=(moment,), day_types=(empty_day, other_day))
     report = xlsx_bytes(
         plan,
         host,

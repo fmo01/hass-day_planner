@@ -135,6 +135,9 @@
     "add_action_group_error": "Impossible d'ajouter le groupe d'actions."
   },
   "errors": {
+    "invalid_date": "Veuillez choisir une date valide.",
+    "duplicate_calendar_exception_date": "Une exception existe déjà pour cette date.",
+    "calendar_exception_day_type_unknown": "Ce type de journée n’existe plus. Veuillez en sélectionner un autre.",
     "cycle_not_found": "Ce cycle n'existe plus.",
     "invalid_start_date": "La date de début est invalide.",
     "invalid_week_count": "Un cycle doit contenir entre 1 et 4 semaines types.",
@@ -147,5 +150,34 @@
     "cycle_name_required": "Le libellé du cycle est obligatoire.",
     "cycle_start_date_required": "La date de début du cycle est obligatoire.",
     "max_cycles_reached": "Impossible de créer un nouveau cycle, nombre maximal de cycles atteint"
+  },
+  "public_holidays": {
+    "title": "Jours fériés",
+    "loading": "Chargement des jours fériés…",
+    "request_failed": "Impossible de charger les jours fériés.",
+    "unavailable": "Localisation des jours fériés non déterminée.",
+    "retry": "Réessayer",
+    "coverage": {
+      "national": "Calendrier national",
+      "subdivision": "Calendrier local"
+    },
+    "scope": {
+      "national": "Portée nationale",
+      "regional": "Portée locale",
+      "mixed": "Portée nationale et locale"
+    },
+    "reasons": {
+      "location_unresolved": "La localisation de l’installation n’est pas encore exploitable. Consultez l’entité de localisation Day Planner.",
+      "invalid_year": "L’année doit être un entier compris entre 1 et 9999.",
+      "country_not_supported": "Ce pays n’est pas pris en charge par la bibliothèque de jours fériés installée.",
+      "year_not_supported": "Cette année est hors de la plage prise en charge pour ce pays.",
+      "subdivision_missing": "Seul le calendrier national est disponible : la subdivision régionale n’a pas été déterminée.",
+      "subdivision_not_supported": "Seul le calendrier national est disponible : la subdivision géographique ne correspond pas à un calendrier régional pris en charge.",
+      "ambiguous_subdivision": "Seul le calendrier national est disponible : plusieurs calendriers régionaux correspondent à la localisation.",
+      "calculation_failed": "Le calendrier des jours fériés n’a pas pu être calculé pour cette demande.",
+      "location_changed": "La localisation de l’installation a changé pendant le calcul. Relancez la consultation.",
+      "local_applicability_unverified": "L’application locale de ce jour férié est à vérifier.",
+      "planner_not_ready": "Day Planner n’est pas prêt à fournir le calendrier des jours fériés."
+    }
   }
 }

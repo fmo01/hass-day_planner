@@ -187,3 +187,13 @@ REMOVE_SCHEDULED_MOMENT_SCHEMA = vol.Schema(
         vol.Required("moment_id"): cv.string,
     }
 )
+
+
+def _public_holiday_year(value):
+    """Validate the year without accepting booleans as integers."""
+    if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 9999:
+        raise vol.Invalid("invalid_year")
+    return value
+
+
+GET_PUBLIC_HOLIDAYS_SCHEMA = vol.Schema({vol.Required("year"): _public_holiday_year})

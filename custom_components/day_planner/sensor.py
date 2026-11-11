@@ -187,9 +187,7 @@ class DayPlannerCurrentDayTypeSensor(SensorEntity):
             "cycle_id": context.cycle_id,
             "week_schedule_id": context.week_schedule_id,
             "calendar_exception_id": context.calendar_exception_id,
-            "day_type_id": (
-                context.day_type.id if context.day_type is not None else None
-            ),
+            "day_type_id": (context.day_type.id if context.day_type is not None else None),
         }
 
         return attributes

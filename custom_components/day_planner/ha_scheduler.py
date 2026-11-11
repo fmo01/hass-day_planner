@@ -80,9 +80,7 @@ class HomeAssistantScheduler:
                         scheduled_event.moment.id,
                         scheduled_at.isoformat(),
                     )
-                    await self._action_executor.async_execute_moment(
-                        scheduled_event.moment
-                    )
+                    await self._action_executor.async_execute_moment(scheduled_event.moment)
             except Exception:
                 _LOGGER.exception(
                     "Échec inattendu du déclenchement Day Planner à %s",

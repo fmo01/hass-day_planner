@@ -50,8 +50,6 @@ def test_setup_panel_visibility(options, sidebar_title):
 
 def test_unload_panel():
     hass = MagicMock()
-    with patch(
-        "custom_components.day_planner.panel.frontend.async_remove_panel"
-    ) as remove:
+    with patch("custom_components.day_planner.panel.frontend.async_remove_panel") as remove:
         async_unload_panel(hass)
         remove.assert_called_once_with(hass, PANEL_URL_PATH)

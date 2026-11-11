@@ -1,1 +1,3 @@
+holidays==0.108
+pycountry==26.2.16
 

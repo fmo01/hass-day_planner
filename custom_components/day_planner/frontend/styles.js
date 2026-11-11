@@ -1,5 +1,70 @@
-console.info('style v0.7');
+console.info('style v0.8');
 export const styles = `
+  .public-holiday-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin-bottom: 12px;
+    color: var(--secondary-text-color);
+    font-size: 13px;
+  }
+  .public-holiday-status ha-icon,
+  .public-holiday-marker ha-icon,
+  .public-holiday-details ha-icon {
+    --mdc-icon-size: 16px;
+    flex: 0 0 auto;
+  }
+  .public-holiday-status > span:first-child,
+  .public-holiday-marker,
+  .public-holiday-details {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .public-holiday-message {
+    flex-basis: 100%;
+  }
+  .public-holiday-marker {
+    width: 100%;
+    min-width: 0;
+    font-size: 11px;
+    color: var(--primary-text-color);
+  }
+  .public-holiday-marker > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .public-holiday-details {
+    align-items: flex-start;
+    margin: 10px 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+  .day:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+    z-index: 21;
+  }
+  .day[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+  }
+  .calendar-grid .day:nth-child(7n + 1)::after {
+    left: 0;
+    transform: none;
+  }
+  .calendar-grid .day:nth-child(7n)::after {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+  @media (hover: none), (max-width: 480px) {
+    .day[data-tooltip]::after {
+      display: none;
+    }
+  }
   :host {
     display: block;
     width: 100%;

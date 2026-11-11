@@ -10,6 +10,10 @@ homeassistant>=2026.10.4
 black==26.10.1
 flake8==7.5.0
 isort==9.0.2
+
+# Development dependencies
+-r requirements-lint.txt
+
 vulture==2.16
 #
 pytest

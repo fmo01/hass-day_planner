@@ -558,7 +558,7 @@ def test_validator_rejects_duplicate_action_id():
 
     with pytest.raises(
         ValidationError,
-        match=("Duplicate action id in moment " "'wake_up': salon"),
+        match=("Duplicate action id in moment 'wake_up': salon"),
     ):
         PlannerValidator.validate_configuration(configuration)
 
@@ -594,7 +594,7 @@ def test_cycles_cannot_have_same_start_date(
 
     with pytest.raises(
         ValidationError,
-        match=("Duplicate cycle start date: " "2026-09-07"),
+        match=("Duplicate cycle start date: 2026-09-07"),
     ):
         PlannerValidator.validate_configuration(configuration)
 
@@ -629,7 +629,7 @@ def test_calendar_exceptions_cannot_have_same_date(
 
     with pytest.raises(
         ValidationError,
-        match=("Duplicate calendar exception date: " "2026-09-15"),
+        match=("Duplicate calendar exception date: 2026-09-15"),
     ):
         PlannerValidator.validate_configuration(configuration)
 

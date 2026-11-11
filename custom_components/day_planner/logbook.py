@@ -37,14 +37,10 @@ def async_describe_events(
 
         action_name, label, suffix = _action_identity(event.data)
         requested_service = event.data.get("requested_service")
-        service_detail = (
-            f" ; service demandé : {requested_service}" if requested_service else ""
-        )
+        service_detail = f" ; service demandé : {requested_service}" if requested_service else ""
         return {
             LOGBOOK_ENTRY_NAME: f"Day Planner — action {action_name}",
-            LOGBOOK_ENTRY_MESSAGE: (
-                f"a déclenché l'action '{label}'{suffix}{service_detail}"
-            ),
+            LOGBOOK_ENTRY_MESSAGE: (f"a déclenché l'action '{label}'{suffix}{service_detail}"),
             LOGBOOK_ENTRY_SOURCE: f"Day Planner — action {action_name}",
         }
 
@@ -59,15 +55,11 @@ def async_describe_events(
         else:
             missing = ", ".join(event.data.get("missing_entities") or [])
             detail = missing or "cible(s) signalée(s) par Home Assistant"
-            message = (
-                f"action '{label}' avec cible(s) indisponible(s) : " f"{detail}{suffix}"
-            )
+            message = f"action '{label}' avec cible(s) indisponible(s) : {detail}{suffix}"
         return {
             LOGBOOK_ENTRY_NAME: f"Day Planner — action {action_name}",
             LOGBOOK_ENTRY_MESSAGE: message,
         }
 
     async_describe_event(DOMAIN, EVENT_DAY_PLANNER_ACTION, describe_action_started)
-    async_describe_event(
-        DOMAIN, EVENT_DAY_PLANNER_ACTION_RESULT, describe_action_result
-    )
+    async_describe_event(DOMAIN, EVENT_DAY_PLANNER_ACTION_RESULT, describe_action_result)

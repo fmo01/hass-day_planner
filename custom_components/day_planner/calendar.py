@@ -97,15 +97,11 @@ class DayPlannerCalendar(CalendarEntity):
         current_date = start_date.date()
 
         while current_date <= end_date.date():
-            for scheduled_event in self._runtime.scheduler.events_for_date(
-                current_date
-            ):
+            for scheduled_event in self._runtime.scheduler.events_for_date(current_date):
                 scheduled_at = scheduled_event.scheduled_at
 
                 if scheduled_at.tzinfo is None:
-                    scheduled_at = dt_util.as_local(
-                        scheduled_at.replace(tzinfo=dt_util.DEFAULT_TIME_ZONE)
-                    )
+                    scheduled_at = dt_util.as_local(scheduled_at.replace(tzinfo=dt_util.DEFAULT_TIME_ZONE))
 
                 event_end = scheduled_at + timedelta(minutes=1)
 

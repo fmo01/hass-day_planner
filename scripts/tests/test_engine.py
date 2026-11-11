@@ -909,7 +909,7 @@ def test_engine_remove_calendar_exception(
 
     with pytest.raises(
         NotFoundError,
-        match=f"Calendar exception not found: " f"{calendar_exception.id}",
+        match=f"Calendar exception not found: {calendar_exception.id}",
     ):
         engine.get_calendar_exception(calendar_exception.id)
 
@@ -1613,9 +1613,7 @@ def test_calendar_exception_audit_update_preserves_creation(
 
 def test_engine_replace_configuration_validates_all_objects():
     engine = PlannerEngine(PlannerConfiguration.empty())
-    valid = PlannerConfiguration(
-        moments=(), day_types=(), week_schedules=(), cycles=(), calendar_exceptions=()
-    )
+    valid = PlannerConfiguration(moments=(), day_types=(), week_schedules=(), cycles=(), calendar_exceptions=())
     engine.replace_configuration(valid)
     assert engine.configuration is valid
     invalid = replace(
@@ -1637,3 +1635,38 @@ def test_engine_replace_configuration_validates_all_objects():
     with pytest.raises(ValidationError):
         engine.replace_configuration(invalid)
     assert engine.configuration is valid
+
+
+@pytest.mark.parametrize(
+    "operation", ["duplicate_date", "unknown_type_add", "unknown_type_update"]
+)
+def test_calendar_exception_rejected_write_preserves_configuration_and_audit(
+    calendar_exception, day_type, operation
+):
+    """A rejected write must not replace the original exception or its audit."""
+    engine = PlannerEngine(replace(PlannerConfiguration.empty(), day_types=(day_type,)))
+    engine.add_calendar_exception(calendar_exception, modified_by="Utilisateur Initial")
+    original_configuration = engine.configuration
+    original = engine.get_calendar_exception(calendar_exception.id)
+    candidate = replace(original, description="Ne doit pas être enregistré")
+    if operation == "duplicate_date":
+        candidate = replace(candidate, id="another_exception")
+        expected = "Duplicate calendar exception date"
+    else:
+        candidate = replace(candidate, day_type_id="removed_type")
+        expected = "Unknown day type"
+        if operation == "unknown_type_add":
+            candidate = replace(
+                candidate, id="another_exception", date=date(2030, 1, 1)
+            )
+    save = (
+        engine.update_calendar_exception
+        if operation == "unknown_type_update"
+        else engine.add_calendar_exception
+    )
+    with pytest.raises(ValidationError, match=expected):
+        save(candidate, modified_by="Utilisateur Secondaire")
+    assert engine.configuration is original_configuration
+    assert engine.get_calendar_exception(original.id) is original
+    assert original.audit.created_by == "Utilisateur Initial"
+    assert original.audit.modified_by == "Utilisateur Initial"

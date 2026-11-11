@@ -12,11 +12,11 @@ from custom_components.day_planner.domain.planner_configuration import (
 )
 from custom_components.day_planner.eedomus_import import (
     EedomusImportError,
+    get_eedomus_entity_map,
 )
 from custom_components.day_planner.eedomus_import import (
     create_import_plan as _create_import_plan,
 )
-from custom_components.day_planner.eedomus_import import get_eedomus_entity_map
 
 BOX = "01KWFVW58SZD6W6WHB5YRHNDY9"
 BOX_NAME = "Eedomus (192.20.55.30)"
@@ -68,13 +68,7 @@ def make_agenda():
 
 
 def mappings():
-    return {
-        "3463520": [
-            SimpleNamespace(
-                entity_id="climate.thermostat_salle_a_manger", disabled_by=None
-            )
-        ]
-    }
+    return {"3463520": [SimpleNamespace(entity_id="climate.thermostat_salle_a_manger", disabled_by=None)]}
 
 
 def test_create_one_time_import_with_repeated_phase():
@@ -107,13 +101,9 @@ def test_create_one_time_import_with_repeated_phase():
 
 
 def test_replace_requires_explicit_approval_and_preserves_unrelated_data():
-    first = create_import_plan(
-        make_agenda(), PlannerConfiguration.empty(), BOX, mappings()
-    )
+    first = create_import_plan(make_agenda(), PlannerConfiguration.empty(), BOX, mappings())
     unrelated = DayType(id="manual", name="Manuelle", scheduled_moments=())
-    current = replace(
-        first.configuration, day_types=(*first.configuration.day_types, unrelated)
-    )
+    current = replace(first.configuration, day_types=(*first.configuration.day_types, unrelated))
     with pytest.raises(EedomusImportError, match="confirmation"):
         create_import_plan(make_agenda(), current, BOX, mappings())
     updated = create_import_plan(
@@ -140,9 +130,7 @@ def test_missing_mapping_blocks_all_changes():
 
 def test_ambiguous_mapping_blocks_all_changes():
     mapping = mappings()
-    mapping["3463520"].append(
-        SimpleNamespace(entity_id="climate.second", disabled_by=None)
-    )
+    mapping["3463520"].append(SimpleNamespace(entity_id="climate.second", disabled_by=None))
     with pytest.raises(EedomusImportError, match="2 entité"):
         create_import_plan(make_agenda(), PlannerConfiguration.empty(), BOX, mapping)
 
@@ -163,9 +151,7 @@ def test_incoherent_phase_actions_block_import():
 
 def test_unsupported_sensor_preserves_repeated_moments_and_all_schedules():
     """Only a sensor exists: skip the command, but create every moment/time."""
-    mapping = {
-        "3463520": [SimpleNamespace(entity_id="sensor.unknown", disabled_by=None)]
-    }
+    mapping = {"3463520": [SimpleNamespace(entity_id="sensor.unknown", disabled_by=None)]}
     plan = create_import_plan(make_agenda(), PlannerConfiguration.empty(), BOX, mapping)
     assert plan.actions == 0
     assert plan.moments == plan.scheduled == 3
@@ -183,9 +169,7 @@ def test_unsupported_sensor_preserves_repeated_moments_and_all_schedules():
 
 def test_other_unsupported_domains_are_skipped_without_blocking():
     """All non-command domains are informative, including binary_sensor."""
-    mapping = {
-        "3463520": [SimpleNamespace(entity_id="binary_sensor.motion", disabled_by=None)]
-    }
+    mapping = {"3463520": [SimpleNamespace(entity_id="binary_sensor.motion", disabled_by=None)]}
     plan = create_import_plan(make_agenda(), PlannerConfiguration.empty(), BOX, mapping)
     assert plan.moments == 3 and plan.actions == 0
     assert plan.unsupported_associations[0][1] == "binary_sensor.motion"
@@ -194,9 +178,7 @@ def test_other_unsupported_domains_are_skipped_without_blocking():
 
 def test_supported_target_wins_without_hiding_unsupported_association():
     mapping = mappings()
-    mapping["3463520"].append(
-        SimpleNamespace(entity_id="sensor.thermostat_status", disabled_by=None)
-    )
+    mapping["3463520"].append(SimpleNamespace(entity_id="sensor.thermostat_status", disabled_by=None))
     plan = create_import_plan(make_agenda(), PlannerConfiguration.empty(), BOX, mapping)
     assert plan.actions == 3
     assert len(plan.unsupported_associations) == 1
@@ -256,10 +238,7 @@ def test_partial_unsupported_commands_preserve_compatible_action():
     assert plan.actions == 3
     assert plan.moments_without_actions == 0
     assert all(len(m.actions) == 1 for m in plan.configuration.moments)
-    assert all(
-        m.actions[0].sequence[0]["action"] == "cover.open_cover"
-        for m in plan.configuration.moments
-    )
+    assert all(m.actions[0].sequence[0]["action"] == "cover.open_cover" for m in plan.configuration.moments)
     assert len(plan.unsupported_associations) == 1
 
 
@@ -298,9 +277,7 @@ def test_action_cover_and_light_conversions():
         "11": [SimpleNamespace(entity_id="light.guirlande", disabled_by=None)],
     }
     plan = create_import_plan(agenda, PlannerConfiguration.empty(), BOX, mapping)
-    seq = [
-        action.sequence[0]["action"] for action in plan.configuration.moments[0].actions
-    ]
+    seq = [action.sequence[0]["action"] for action in plan.configuration.moments[0].actions]
     assert seq == ["cover.open_cover", "light.turn_off"]
 
 
@@ -348,12 +325,13 @@ def test_entity_registry_accepts_unique_id_with_and_without_domain_suffix():
             entity_id="sensor.another_battery_level",
         ),
     ]
-    with patch(
-        "homeassistant.helpers.entity_registry.async_get", return_value=MagicMock()
-    ), patch(
-        "homeassistant.helpers.entity_registry.async_entries_for_config_entry",
-        return_value=entries,
-    ) as lookup:
+    with (
+        patch("homeassistant.helpers.entity_registry.async_get", return_value=MagicMock()),
+        patch(
+            "homeassistant.helpers.entity_registry.async_entries_for_config_entry",
+            return_value=entries,
+        ) as lookup,
+    ):
         mapped = get_eedomus_entity_map(MagicMock(), BOX)
     assert sorted(mapped) == ["3463520", "34635201", "795317"]
     assert mapped["795317"][0].entity_id == "cover.volet_sejour"
@@ -417,16 +395,15 @@ def test_registry_accepts_optional_eedomus_prefix_with_optional_type_suffix():
             entity_id="sensor.switch_battery",
         ),
     ]
-    with patch(
-        "homeassistant.helpers.entity_registry.async_get", return_value=MagicMock()
-    ), patch(
-        "homeassistant.helpers.entity_registry.async_entries_for_config_entry",
-        return_value=entries,
-    ) as lookup:
+    with (
+        patch("homeassistant.helpers.entity_registry.async_get", return_value=MagicMock()),
+        patch(
+            "homeassistant.helpers.entity_registry.async_entries_for_config_entry",
+            return_value=entries,
+        ) as lookup,
+    ):
         mapped = get_eedomus_entity_map(MagicMock(), BOX)
-    assert {
-        key: [entity.entity_id for entity in value] for key, value in mapped.items()
-    } == {
+    assert {key: [entity.entity_id for entity in value] for key, value in mapped.items()} == {
         "10001": ["climate.with_prefix_and_suffix"],
         "10002": ["switch.with_prefix_only"],
         "10003": ["cover.without_prefix_with_suffix"],
@@ -455,17 +432,18 @@ def test_active_box_sensor_without_eedomus_prefix_is_reported_not_imported():
             disabled_by=None,
         ),
     ]
-    with patch(
-        "homeassistant.helpers.entity_registry.async_get",
-        return_value=MagicMock(),
-    ), patch(
-        "homeassistant.helpers.entity_registry.async_entries_for_config_entry",
-        return_value=entities,
+    with (
+        patch(
+            "homeassistant.helpers.entity_registry.async_get",
+            return_value=MagicMock(),
+        ),
+        patch(
+            "homeassistant.helpers.entity_registry.async_entries_for_config_entry",
+            return_value=entities,
+        ),
     ):
         mapped = get_eedomus_entity_map(MagicMock(), active)
-    assert [entry.entity_id for entry in mapped["795317"]] == [
-        "sensor.cmd_1_volet_sejour_salle_a_manger"
-    ]
+    assert [entry.entity_id for entry in mapped["795317"]] == ["sensor.cmd_1_volet_sejour_salle_a_manger"]
     agenda = make_agenda()
     for moment in agenda["day_types"][0]["moments"]:
         moment["actions"][0].update(
@@ -511,11 +489,12 @@ def test_registry_mixed_prefixes_do_not_hide_ambiguous_entities():
             disabled_by=None,
         ),
     ]
-    with patch(
-        "homeassistant.helpers.entity_registry.async_get", return_value=MagicMock()
-    ), patch(
-        "homeassistant.helpers.entity_registry.async_entries_for_config_entry",
-        return_value=entries,
+    with (
+        patch("homeassistant.helpers.entity_registry.async_get", return_value=MagicMock()),
+        patch(
+            "homeassistant.helpers.entity_registry.async_entries_for_config_entry",
+            return_value=entries,
+        ),
     ):
         mapping = get_eedomus_entity_map(MagicMock(), BOX)
     assert len(mapping["3463520"]) == 2
@@ -549,11 +528,12 @@ def test_registry_excludes_battery_without_losing_valid_device():
             disabled_by=None,
         ),
     ]
-    with patch(
-        "homeassistant.helpers.entity_registry.async_get", return_value=MagicMock()
-    ), patch(
-        "homeassistant.helpers.entity_registry.async_entries_for_config_entry",
-        return_value=entries,
+    with (
+        patch("homeassistant.helpers.entity_registry.async_get", return_value=MagicMock()),
+        patch(
+            "homeassistant.helpers.entity_registry.async_entries_for_config_entry",
+            return_value=entries,
+        ),
     ):
         mapped = get_eedomus_entity_map(MagicMock(), BOX)
     assert sorted(mapped) == ["12345", "77777"]
@@ -607,10 +587,7 @@ def test_binary_light_accepts_eedomus_roller_shutter_labels():
         "etat": "Ouvert",
     }
     assert _convert_service(raw, target)["action"] == "light.turn_on"
-    assert (
-        _convert_service({**raw, "valeur": "0", "etat": "Fermée"}, target)["action"]
-        == "light.turn_off"
-    )
+    assert _convert_service({**raw, "valeur": "0", "etat": "Fermée"}, target)["action"] == "light.turn_off"
 
 
 def test_unknown_binary_state_reports_entity_device_and_expected_values():
@@ -691,18 +668,12 @@ def test_all_created_display_names_use_selected_box_name():
     imported = (*config.moments, *config.day_types, *config.week_schedules)
     assert all(item.id.startswith(ID_PREFIX) for item in imported)
     assert all(BOX not in item.id for item in imported)
-    assert all(
-        action.id.startswith(ID_PREFIX)
-        for moment in config.moments
-        for action in moment.actions
-    )
+    assert all(action.id.startswith(ID_PREFIX) for moment in config.moments for action in moment.actions)
 
 
 def test_reimport_same_box_name_preserves_ids_and_audit():
     """A replacement of the same box retains IDs and creation metadata."""
-    original = create_import_plan(
-        make_agenda(), PlannerConfiguration.empty(), BOX, mappings()
-    )
+    original = create_import_plan(make_agenda(), PlannerConfiguration.empty(), BOX, mappings())
     revised = create_import_plan(
         make_agenda(),
         original.configuration,
@@ -718,21 +689,14 @@ def test_reimport_same_box_name_preserves_ids_and_audit():
         ]
     assert all(
         old.audit.created_at == new.audit.created_at
-        for old, new in zip(
-            original.configuration.moments, revised.configuration.moments
-        )
+        for old, new in zip(original.configuration.moments, revised.configuration.moments)
     )
-    assert all(
-        item.audit.modified_by == "Autre utilisateur"
-        for item in revised.configuration.moments
-    )
+    assert all(item.audit.modified_by == "Autre utilisateur" for item in revised.configuration.moments)
 
 
 def test_replaces_legacy_entry_id_import_after_confirmation():
     """An old v5.x import is removed when migrated to IP-based IDs."""
-    original = create_import_plan(
-        make_agenda(), PlannerConfiguration.empty(), BOX, mappings()
-    )
+    original = create_import_plan(make_agenda(), PlannerConfiguration.empty(), BOX, mappings())
     legacy_prefix = f"eedomus_{BOX}_"
 
     def legacy_id(value):
@@ -744,9 +708,7 @@ def test_replaces_legacy_entry_id_import_after_confirmation():
         replace(
             item,
             id=legacy_id(item.id),
-            actions=tuple(
-                replace(action, id=legacy_id(action.id)) for action in item.actions
-            ),
+            actions=tuple(replace(action, id=legacy_id(action.id)) for action in item.actions),
         )
         for item in cfg.moments
     )
@@ -755,8 +717,7 @@ def test_replaces_legacy_entry_id_import_after_confirmation():
             item,
             id=legacy_id(item.id),
             scheduled_moments=tuple(
-                replace(scheduled, moment_id=legacy_id(scheduled.moment_id))
-                for scheduled in item.scheduled_moments
+                replace(scheduled, moment_id=legacy_id(scheduled.moment_id)) for scheduled in item.scheduled_moments
             ),
         )
         for item in cfg.day_types
@@ -847,19 +808,13 @@ def test_remaining_service_conversion_paths_and_invalid_source_ids():
         impl._convert_service(raw, SimpleNamespace(entity_id="cover.test"))
 
     raw["type_action"] = "direct"
-    assert (
-        impl._convert_service(raw, SimpleNamespace(entity_id="cover.volet"))["action"]
-        == "cover.close_cover"
-    )
+    assert impl._convert_service(raw, SimpleNamespace(entity_id="cover.volet"))["action"] == "cover.close_cover"
     raw.update(valeur="99", etat="intermédiaire")
     with pytest.raises(EedomusImportError, match="Commande volet non reconnue"):
         impl._convert_service(raw, SimpleNamespace(entity_id="cover.volet"))
 
     raw.update(valeur="100", etat="On")
-    assert (
-        impl._convert_service(raw, SimpleNamespace(entity_id="light.guide"))["action"]
-        == "light.turn_on"
-    )
+    assert impl._convert_service(raw, SimpleNamespace(entity_id="light.guide"))["action"] == "light.turn_on"
     with pytest.raises(EedomusImportError, match="non prise en charge"):
         impl._convert_service(raw, SimpleNamespace(entity_id="sensor.guide"))
 
@@ -883,8 +838,9 @@ def test_registry_ignores_nonnumeric_device_unique_ids():
             entity_id="switch.other",
         ),
     ]
-    with patch.object(er, "async_get", return_value=MagicMock()), patch.object(
-        er, "async_entries_for_config_entry", return_value=entries
+    with (
+        patch.object(er, "async_get", return_value=MagicMock()),
+        patch.object(er, "async_entries_for_config_entry", return_value=entries),
     ):
         assert get_eedomus_entity_map(MagicMock(), BOX) == {}
 
@@ -907,9 +863,7 @@ def test_validation_of_week_and_planner_raises_explicit_import_errors():
             EedomusImportError,
             match="Configuration Day Planner incompatible : cycle invalide",
         ):
-            create_import_plan(
-                make_agenda(), PlannerConfiguration.empty(), BOX, mappings()
-            )
+            create_import_plan(make_agenda(), PlannerConfiguration.empty(), BOX, mappings())
 
 
 def test_merging_without_explicit_confirmation_preserves_unrelated_objects():
@@ -918,12 +872,8 @@ def test_merging_without_explicit_confirmation_preserves_unrelated_objects():
     manual = SimpleNamespace(id="manual")
     previous = SimpleNamespace(id="eedomus_old_week")
     with pytest.raises(EedomusImportError, match="confirmation"):
-        impl._merged(
-            (manual, previous), [SimpleNamespace(id="new")], ("eedomus_old_",), False
-        )
-    merged = impl._merged(
-        (manual, previous), [SimpleNamespace(id="new")], ("eedomus_old_",), True
-    )
+        impl._merged((manual, previous), [SimpleNamespace(id="new")], ("eedomus_old_",), False)
+    merged = impl._merged((manual, previous), [SimpleNamespace(id="new")], ("eedomus_old_",), True)
     assert [item.id for item in merged] == ["manual", "new"]
 
 

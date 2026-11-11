@@ -155,9 +155,7 @@ def _styles() -> bytes:
             "applyAlignment": "1",
         },
     )
-    ET.SubElement(
-        header, f"{{{_MAIN}}}alignment", {"wrapText": "1", "vertical": "center"}
-    )
+    ET.SubElement(header, f"{{{_MAIN}}}alignment", {"wrapText": "1", "vertical": "center"})
     cell_styles = ET.SubElement(stylesheet, f"{{{_MAIN}}}cellStyles", {"count": "1"})
     ET.SubElement(
         cell_styles,
@@ -269,9 +267,7 @@ def _moment_actions(plan, host: str) -> list[tuple]:
     ]
     for moment in _imported_moments(plan, host):
         if not moment.actions:
-            rows.append(
-                (moment.id, moment.name, "", "", "", "", "Sans action compatible")
-            )
+            rows.append((moment.id, moment.name, "", "", "", "", "Sans action compatible"))
             continue
         for action in moment.actions:
             sequences = action.sequence or []
@@ -308,9 +304,7 @@ def _moment_actions(plan, host: str) -> list[tuple]:
 
 def _day_type_schedules(plan, host: str) -> list[tuple]:
     """List all scheduled occurrences, not just distinct moments."""
-    rows = [
-        ("Type de journée (ID)", "Type de journée", "Horaire", "Moment", "Moment (ID)")
-    ]
+    rows = [("Type de journée (ID)", "Type de journée", "Horaire", "Moment", "Moment (ID)")]
     prefix = f"eedomus_Eedomus ({host})_day_"
     names = {item.id: item.name for item in _imported_moments(plan, host)}
     configuration = getattr(plan, "configuration", None)
@@ -372,10 +366,7 @@ def _not_imported(plan, agenda: dict | None) -> list[tuple]:
     for rule in agenda.get("regles_conditionnelles_liees_agenda", ()):
         if not rule.get("active"):
             continue
-        details = (
-            f"{len(rule.get('conditions') or [])} condition(s), "
-            f"{len(rule.get('actions') or [])} action(s)"
-        )
+        details = f"{len(rule.get('conditions') or [])} condition(s), {len(rule.get('actions') or [])} action(s)"
         rows.append(
             (
                 "Règle conditionnelle",
@@ -408,8 +399,7 @@ def xlsx_bytes(plan, host: str, agenda: dict | None = None) -> bytes:
             peripheral, entity = association, ""
         supported.append((peripheral, entity, "Pris en charge", ""))
     unsupported = [
-        (peripheral, entity, "Ignoré", reason)
-        for peripheral, entity, reason in plan.unsupported_associations
+        (peripheral, entity, "Ignoré", reason) for peripheral, entity, reason in plan.unsupported_associations
     ]
     summary = [
         ("Indicateur", "Valeur"),
@@ -470,10 +460,7 @@ def xlsx_bytes(plan, host: str, agenda: dict | None = None) -> bytes:
         archive.writestr(
             "xl/_rels/workbook.xml.rels",
             _relationships(
-                [
-                    (f"rId{i}", "worksheet", f"worksheets/sheet{i}.xml")
-                    for i in range(1, len(tabs) + 1)
-                ]
+                [(f"rId{i}", "worksheet", f"worksheets/sheet{i}.xml") for i in range(1, len(tabs) + 1)]
                 + [(f"rId{len(tabs) + 1}", "styles", "styles.xml")]
             ),
         )

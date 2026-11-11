@@ -512,3 +512,15 @@ remove_calendar_exception:
       example: reveil
       selector:
         text:
+
+get_public_holidays:
+  fields:
+    year:
+      required: true
+      example: 2027
+      selector:
+        number:
+          min: 1
+          max: 9999
+          step: 1
+          mode: box

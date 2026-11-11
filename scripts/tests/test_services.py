@@ -95,11 +95,7 @@ def get_registered_service(
 ):
     """Return a registered service handler by name."""
 
-    return next(
-        call.args[2]
-        for call in hass.services.async_register.call_args_list
-        if call.args[1] == service_name
-    )
+    return next(call.args[2] for call in hass.services.async_register.call_args_list if call.args[1] == service_name)
 
 
 def test_execute_success():
@@ -1337,9 +1333,7 @@ def test_get_runtime_not_configured():
 
 def test_execute_configuration_update_error():
     runtime = MagicMock()
-    runtime.async_configuration_updated = AsyncMock(
-        side_effect=RuntimeError("Configuration update failure")
-    )
+    runtime.async_configuration_updated = AsyncMock(side_effect=RuntimeError("Configuration update failure"))
 
     def operation():
         pass
@@ -1548,9 +1542,7 @@ def test_async_configuration_updated():
             ha_scheduler=ha_scheduler,
         )
 
-        with patch(
-            "custom_components.day_planner.runtime.async_dispatcher_send"
-        ) as dispatcher_send:
+        with patch("custom_components.day_planner.runtime.async_dispatcher_send") as dispatcher_send:
             await runtime.async_configuration_updated()
 
             storage.async_save.assert_awaited_once_with(configuration)
@@ -1612,3 +1604,115 @@ def test_actor_name_without_display_name():
     result = asyncio.run(_async_get_actor_name(call))
 
     assert result == "test_user_123"
+
+
+def test_service_get_public_holidays_read_only():
+    from homeassistant.core import SupportsResponse
+
+    from custom_components.day_planner.const import SERVICE_GET_PUBLIC_HOLIDAYS
+    from custom_components.day_planner.schemas import GET_PUBLIC_HOLIDAYS_SCHEMA
+
+    async def run():
+        hass = MagicMock()
+        result = {"year": 2027, "status": "ready", "days": []}
+        runtime = MagicMock()
+        runtime.public_holidays.async_get_year = AsyncMock(return_value=result)
+        hass.config_entries.async_entries.return_value = [SimpleNamespace(runtime_data=runtime)]
+        await async_setup_services(hass)
+        registered = next(
+            call for call in hass.services.async_register.call_args_list if call.args[1] == SERVICE_GET_PUBLIC_HOLIDAYS
+        )
+        assert registered.kwargs["supports_response"] == SupportsResponse.ONLY
+        assert registered.kwargs["schema"] is GET_PUBLIC_HOLIDAYS_SCHEMA
+        call = SimpleNamespace(hass=hass, data={"year": 2027})
+        assert await registered.args[2](call) == result
+        runtime.public_holidays.async_get_year.assert_awaited_once_with(2027)
+        runtime.async_configuration_updated.assert_not_called()
+        runtime.engine.assert_not_called()
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("configured", [False, True, "unloaded"])
+def test_service_get_public_holidays_not_ready(configured):
+    from homeassistant.exceptions import ServiceValidationError
+
+    from custom_components.day_planner.const import SERVICE_GET_PUBLIC_HOLIDAYS
+
+    async def run():
+        hass = MagicMock()
+        hass.config_entries.async_entries.return_value = (
+            [SimpleNamespace(runtime_data=SimpleNamespace(public_holidays=None))] if configured else []
+        )
+        if configured == "unloaded":
+            hass.config_entries.async_entries.return_value = [SimpleNamespace(runtime_data=None)]
+        await async_setup_services(hass)
+        handler = get_registered_service(hass, SERVICE_GET_PUBLIC_HOLIDAYS)
+        with pytest.raises(ServiceValidationError) as err:
+            await handler(SimpleNamespace(hass=hass, data={"year": 2027}))
+        assert err.value.translation_key == "public_holidays_planner_not_ready"
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("year", [True, False, 0, 10000, None, "2027", 2027.5])
+def test_public_holidays_service_schema_rejects_invalid_year(year):
+    import voluptuous as vol
+
+    from custom_components.day_planner.schemas import GET_PUBLIC_HOLIDAYS_SCHEMA
+
+    with pytest.raises(vol.Invalid):
+        GET_PUBLIC_HOLIDAYS_SCHEMA({"year": year})
+
+
+def test_public_holidays_service_schema_and_translations():
+    import json
+    from pathlib import Path
+
+    from custom_components.day_planner.schemas import GET_PUBLIC_HOLIDAYS_SCHEMA
+
+    assert GET_PUBLIC_HOLIDAYS_SCHEMA({"year": 2027}) == {"year": 2027}
+    root = Path(__file__).resolve().parents[2] / "custom_components/day_planner"
+    catalogs = [
+        json.loads((root / name).read_text())
+        for name in ["strings.json", "translations/en.json", "translations/fr.json"]
+    ]
+    for section in ["services", "exceptions"]:
+        assert catalogs[0][section] == catalogs[1][section]
+    for catalog in catalogs:
+        service = catalog["services"]["get_public_holidays"]
+        assert service["name"] and service["description"] and service["fields"]["year"]["name"]
+        assert catalog["exceptions"]["public_holidays_local_applicability_unverified"]["message"]
+        assert catalog["exceptions"]["public_holidays_subdivision_missing"]["message"]
+
+
+def test_public_holidays_native_ha_service_response(tmp_path):
+    """Exercise the response-only action through HA's real service registry."""
+    from homeassistant.core import SupportsResponse
+
+    from custom_components.day_planner.const import SERVICE_GET_PUBLIC_HOLIDAYS
+
+    async def run():
+        hass = HomeAssistant(str(tmp_path))
+        runtime = SimpleNamespace(
+            public_holidays=SimpleNamespace(
+                async_get_year=AsyncMock(return_value={"year": 2027, "status": "ready", "days": []})
+            )
+        )
+        with patch.object(hass, "config_entries", create=True) as entries:
+            entries.async_entries.return_value = [SimpleNamespace(runtime_data=runtime)]
+            try:
+                await async_setup_services(hass)
+                assert hass.services.supports_response(DOMAIN, SERVICE_GET_PUBLIC_HOLIDAYS) == SupportsResponse.ONLY
+                result = await hass.services.async_call(
+                    DOMAIN,
+                    SERVICE_GET_PUBLIC_HOLIDAYS,
+                    {"year": 2027},
+                    blocking=True,
+                    return_response=True,
+                )
+                assert result == {"year": 2027, "status": "ready", "days": []}
+            finally:
+                await hass.async_stop()
+
+    asyncio.run(run())

@@ -1,5 +1,9 @@
 # Suite de tests de hass-day_planner
 
+> **L7-07 — 11 novembre 2026 : 704 tests pytest réussis, dont le lanceur de 26 tests JavaScript ; couverture Python 100 % (3 407 instructions), 5 avertissements de dépendances.** Les blocs automatiques ci-dessous ont été régénérés depuis les rapports. Les états antérieurs sont conservés comme historique.
+
+> **Contrôle local L7-01 v3 : 622 tests réussis, 3 203 instructions couvertes, 100 %, 5 avertissements ; Python 3.14.10, HA 2026.10.4.** Les blocs automatiques ci-dessous ont été régénérés avec le code du workflow Run Tests ; les mentions antérieures restent des états historiques.
+
 > **État au 8 novembre 2026.** Base de développement : Day Planner 0.2.3, avec les modifications locales de reprise eedomus **v5.16**. Ces numéros `v5.x` sont ceux des correctifs de travail, pas des versions publiées de l’intégration. Le dernier rapport pytest **complet communiqué** (7 novembre) donne **517 tests réussis, 2 990 instructions, 243 non couvertes, 92 % de couverture**. Un complément de **55 tests** a été préparé et validé de façon ciblée ; **le 100 % global reste à confirmer par la prochaine exécution complète**.
 
 
@@ -16,9 +20,9 @@ Les trois blocs automatiques `TEST-STATS`, `COVERAGE-MODULES` et `TEST-ENV` sont
 La **dernière exécution complète transmise manuellement** le 7 novembre 2026 est plus récente : **517 tests réussis, 2 990 instructions, 243 manquantes, 92 %, 5 avertissements, Python 3.14.3**. Les chiffres anciens ne représentent pas le dernier état du développement v5.16.
 
 <!-- TEST-STATS-START -->
-- Tests réussis : **572**
-- Lignes mesurées : **2992**
-- Lignes couvertes : **2992**
+- Tests réussis : **704**
+- Lignes mesurées : **3407**
+- Lignes couvertes : **3407**
 - Lignes non couvertes : **0**
 - Couverture : **100.00%**
 <!-- TEST-STATS-END -->
@@ -266,15 +270,16 @@ La couverture est suivie sans seuil bloquant. L'objectif de 100 % ne nécessite 
 Les valeurs ci-dessous proviennent de l'exécution GitHub Actions réussie datée dans le tableau. Elles seront actualisées automatiquement lors d'une prochaine exécution.
 
 <!-- COVERAGE-MODULES-START -->
-Dernière mise à jour : **2026-11-09 15:32:15 Europe/Paris**
+Dernière mise à jour : **2026-11-11 18:51:29 Europe/Paris**
 
 | Package | Composant | Instructions | Non couvertes | Couverture |
 |---|---|---:|---:|---:|
-|  | `__init__.py` | 72 | 0 | 100.00% |
+|  | `__init__.py` | 76 | 0 | 100.00% |
 |  | `action_executor.py` | 131 | 0 | 100.00% |
+|  | `binary_sensor.py` | 43 | 0 | 100.00% |
 |  | `calendar.py` | 56 | 0 | 100.00% |
 |  | `config_flow.py` | 12 | 0 | 100.00% |
-|  | `const.py` | 40 | 0 | 100.00% |
+|  | `const.py` | 42 | 0 | 100.00% |
 |  | `eedomus_agenda_extract.py` | 222 | 0 | 100.00% |
 |  | `eedomus_download.py` | 71 | 0 | 100.00% |
 |  | `eedomus_excel.py` | 171 | 0 | 100.00% |
@@ -282,13 +287,15 @@ Dernière mise à jour : **2026-11-09 15:32:15 Europe/Paris**
 |  | `frontend.py` | 7 | 0 | 100.00% |
 |  | `ha_scheduler.py` | 50 | 0 | 100.00% |
 |  | `integration_info.py` | 9 | 0 | 100.00% |
+|  | `location.py` | 228 | 0 | 100.00% |
 |  | `logbook.py` | 31 | 0 | 100.00% |
 |  | `options_flow.py` | 616 | 0 | 100.00% |
 |  | `panel.py` | 10 | 0 | 100.00% |
-|  | `runtime.py` | 18 | 0 | 100.00% |
-|  | `schemas.py` | 21 | 0 | 100.00% |
+|  | `public_holidays.py` | 120 | 0 | 100.00% |
+|  | `runtime.py` | 22 | 0 | 100.00% |
+|  | `schemas.py` | 26 | 0 | 100.00% |
 |  | `sensor.py` | 99 | 0 | 100.00% |
-|  | `services.py` | 152 | 0 | 100.00% |
+|  | `services.py` | 161 | 0 | 100.00% |
 |  | `storage.py` | 16 | 0 | 100.00% |
 |  | `websocket_api.py` | 449 | 0 | 100.00% |
 | `domain` | `__init__.py` | 11 | 0 | 100.00% |
@@ -310,7 +317,7 @@ Dernière mise à jour : **2026-11-09 15:32:15 Europe/Paris**
 | `planner` | `resolver.py` | 45 | 0 | 100.00% |
 | `planner` | `scheduler.py` | 67 | 0 | 100.00% |
 | `planner` | `validator.py` | 106 | 0 | 100.00% |
-| **TOTAL** | | **2992** | **0** | **100.00%** |
+| **TOTAL** | | **3407** | **0** | **100.00%** |
 <!-- COVERAGE-MODULES-END -->
 
 ---
@@ -399,10 +406,10 @@ Python 3.14.10
 pytest 9.0.3
 pytest-cov 7.1.0
 pytest-homeassistant-custom-component 0.13.375
-Tests exécutés : 572 
-Tests réussis : 572 
+Tests exécutés : 704
+Tests réussis : 704
 Couverture totale : 100.00%
-Dernière exécution : 2026-11-09 15:32:15 Europe/Paris
+Dernière exécution : 2026-11-11 18:51:29 Europe/Paris
 ```
 <!-- TEST-ENV-END -->
 
@@ -439,3 +446,28 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest \
 Les cinq avertissements du rapport précédent proviennent de dépréciations Home Assistant/backoff et n’invalident pas les tests ; leur évolution doit toutefois être surveillée. Conserver Black, `isort --profile black` et flake8 dans les contrôles habituels.
 
 Lire [qualification_couverture.md](../../docs/qualification_couverture.md) et [reprise_eedomus.md](../../docs/reprise_eedomus.md).
+
+
+## Résolution géographique L7-01
+
+44 nouveaux cas dans `test_runtime.py` : commune/département, Corse et territoires non couverts, pays et coordonnées invalides, réponses ambiguës/mal formées, erreurs HTTP/réseau/JSON et annulation. `test_init.py` vérifie le raccordement au runtime. Le réseau est simulé ; les essais HA réels restent à faire.
+
+
+## Reconstruction L7-01 v2
+
+Résolution internationale et cycle de vie dans `test_runtime.py`, entité binaire dans `test_sensor.py`, raccordement dans `test_init.py`. Cas France/Allemagne/Suisse/États-Unis/Belgique/Australie/Canada/Japon/Vatican ; requêtes simulées, ambiguïtés et erreurs explicites. Le capteur et la résolution sont implémentés ; essais HTTP réels et recette HA restent à faire. Le résultat v2 en tête remplace le bilan du prototype FR ci-dessus.
+
+
+## Correctif L7-01 v3 — traductions
+
+`test_sensor.py` utilise le chargeur natif HA pour vérifier les JSON livrés en français et anglais, le repli anglais, le nom de l’entité via translation_key et les motifs lisibles. La parité des catalogues et la couverture des motifs émis par location.py sont vérifiées. Aucun nouveau module de tests n’est créé.
+
+## Régressions du calendrier frontend — L7-04
+
+Les 15 contrôles JavaScript se lancent avec Node.js 22 ou supérieur.
+
+```bash
+node --test scripts/tests/frontend/calendar.test.mjs
+```
+
+La suite Python les lance également depuis `test_calendar_frontend` dans `test_calendar.py`. Si Node.js 22+ est absent, ce contrôle est signalé comme ignoré. Les statistiques de couverture Python portent sur `custom_components/day_planner`. La couverture JavaScript n’est pas mesurée. Les assertions portent sur les réponses annuelles, les changements de lieu et de langue, les erreurs et reprises, les repères et détails rendus, la coexistence avec les exceptions et l’échappement HTML. La recette visuelle desktop/mobile et clavier reste à réaliser dans HA.

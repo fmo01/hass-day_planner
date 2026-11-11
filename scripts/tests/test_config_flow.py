@@ -9,16 +9,20 @@ def test_config_flow_user():
     async def run():
         flow = DayPlannerConfigFlow()
 
-        with patch.object(
-            flow,
-            "async_set_unique_id",
-        ) as set_unique_id, patch.object(
-            flow,
-            "_abort_if_unique_id_configured",
-        ) as abort_if_configured, patch.object(
-            flow,
-            "async_create_entry",
-        ) as create_entry:
+        with (
+            patch.object(
+                flow,
+                "async_set_unique_id",
+            ) as set_unique_id,
+            patch.object(
+                flow,
+                "_abort_if_unique_id_configured",
+            ) as abort_if_configured,
+            patch.object(
+                flow,
+                "async_create_entry",
+            ) as create_entry,
+        ):
             create_entry.return_value = {
                 "type": "create_entry",
             }

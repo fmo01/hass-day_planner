@@ -682,8 +682,7 @@ def test_ha_scheduler_replans_after_configuration_change():
                 ),
             ),
             patch(
-                "custom_components.day_planner.ha_scheduler."
-                "async_track_point_in_time",
+                "custom_components.day_planner.ha_scheduler.async_track_point_in_time",
                 side_effect=[
                     old_cancel,
                     new_cancel,
@@ -995,7 +994,4 @@ def test_scheduler_dst_spring_groups_missing_and_regular_moments():
         "m2",
     ]
 
-    assert all(
-        event.scheduled_at.isoformat() == "2026-03-29T03:00:00+02:00"
-        for event in events
-    )
+    assert all(event.scheduled_at.isoformat() == "2026-03-29T03:00:00+02:00" for event in events)

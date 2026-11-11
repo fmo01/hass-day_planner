@@ -73,9 +73,10 @@ def test_storage_load_configuration():
     configuration = PlannerConfiguration.empty()
 
     async def run():
-        with patch("custom_components.day_planner.storage.Store") as store_class, patch(
-            "custom_components.day_planner.storage.PlannerConfiguration.from_dict"
-        ) as from_dict:
+        with (
+            patch("custom_components.day_planner.storage.Store") as store_class,
+            patch("custom_components.day_planner.storage.PlannerConfiguration.from_dict") as from_dict,
+        ):
             store = store_class.return_value
             store.async_load = AsyncMock(return_value={"test": "data"})
 

@@ -9,6 +9,7 @@ on:
       - "custom_components/**"
       - "scripts/tests/**"
       - "requirements-dev.txt"
+      - "requirements-lint.txt"
       - "pyproject.toml"
       - ".github/workflows/tests.yml"
 
@@ -20,6 +21,7 @@ on:
       - "custom_components/**"
       - "scripts/tests/**"
       - "requirements-dev.txt"
+      - "requirements-lint.txt"
       - "pyproject.toml"
       - ".github/workflows/tests.yml"
 

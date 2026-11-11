@@ -15,9 +15,7 @@ from .domain.moment import Moment
 
 _LOGGER = logging.getLogger(__name__)
 _SERVICE_LOGGER = logging.getLogger("homeassistant.helpers.service")
-_ACTIVE_ACTION: ContextVar[object | None] = ContextVar(
-    "day_planner_active_action", default=None
-)
+_ACTIVE_ACTION: ContextVar[object | None] = ContextVar("day_planner_active_action", default=None)
 
 
 class _HAServiceWarningHandler(logging.Handler):
@@ -42,16 +40,12 @@ class _HAServiceWarningHandler(logging.Handler):
         if record.name != "homeassistant.helpers.service":
             return
         message = record.getMessage()
-        if (
-            "Referenced entities " not in message
-            or "are missing or not currently available" not in message
-        ):
+        if "Referenced entities " not in message or "are missing or not currently available" not in message:
             return
 
         self.messages.append(message)
         _LOGGER.error(
-            "Avertissement Home Assistant repris en ERROR Day Planner : "
-            "action='%s', moment='%s' : %s",
+            "Avertissement Home Assistant repris en ERROR Day Planner : action='%s', moment='%s' : %s",
             self.action_id,
             self.moment_name,
             message,
@@ -71,10 +65,7 @@ def _static_entity_ids(value: Any) -> tuple[str, ...]:
     return tuple(
         entity_id.strip()
         for entity_id in values
-        if isinstance(entity_id, str)
-        and entity_id.strip()
-        and "{{" not in entity_id
-        and "{%" not in entity_id
+        if isinstance(entity_id, str) and entity_id.strip() and "{{" not in entity_id and "{%" not in entity_id
     )
 
 
@@ -119,9 +110,7 @@ class ActionExecutor:
 
         self._hass = hass
 
-    def _check_static_targets(
-        self, action: Action, moment: Moment | None
-    ) -> tuple[str, ...]:
+    def _check_static_targets(self, action: Action, moment: Moment | None) -> tuple[str, ...]:
         """Report unavailable targets of direct service steps only.
 
         HA may log a warning without raising when a target is unavailable.
@@ -156,8 +145,7 @@ class ActionExecutor:
                     missing.add(entity_id)
                     reason = "absente" if state is None else "indisponible"
                     _LOGGER.error(
-                        "Cible %s (%s) : action='%s', moment='%s', "
-                        "service='%s', étape=%s, entity_id='%s'",
+                        "Cible %s (%s) : action='%s', moment='%s', service='%s', étape=%s, entity_id='%s'",
                         reason,
                         "Home Assistant signale normalement un WARNING",
                         action.id,
@@ -168,8 +156,7 @@ class ActionExecutor:
                     )
                 else:
                     _LOGGER.debug(
-                        "Cible vérifiée : action='%s', service='%s', "
-                        "entity_id='%s', état='%s'",
+                        "Cible vérifiée : action='%s', service='%s', entity_id='%s', état='%s'",
                         action.id,
                         service,
                         entity_id,
@@ -195,9 +182,7 @@ class ActionExecutor:
             action.label,
             moment_name or "exécution directe",
         )
-        _LOGGER.debug(
-            "Action '%s' : %d étape(s) à exécuter", action.id, len(action.sequence)
-        )
+        _LOGGER.debug("Action '%s' : %d étape(s) à exécuter", action.id, len(action.sequence))
 
         missing = self._check_static_targets(action, moment)
         context = Context()
@@ -285,8 +270,7 @@ class ActionExecutor:
             except Exception:
                 errors += 1
                 _LOGGER.exception(
-                    "Échec de l'action Day Planner '%s' pour le moment '%s' "
-                    "(id='%s') ; poursuite des autres actions",
+                    "Échec de l'action Day Planner '%s' pour le moment '%s' (id='%s') ; poursuite des autres actions",
                     action.id,
                     moment.name,
                     moment.id,

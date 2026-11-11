@@ -17,9 +17,7 @@ from .frontend import FRONTEND_URL
 
 async def async_setup_panel(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Register the panel; hiding the sidebar keeps direct access available."""
-    show_sidebar = entry.options.get(
-        CONF_SHOW_SIDEBAR_PANEL, DEFAULT_SHOW_SIDEBAR_PANEL
-    )
+    show_sidebar = entry.options.get(CONF_SHOW_SIDEBAR_PANEL, DEFAULT_SHOW_SIDEBAR_PANEL)
     await panel_custom.async_register_panel(
         hass=hass,
         webcomponent_name=PANEL_COMPONENT_NAME,

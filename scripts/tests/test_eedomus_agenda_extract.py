@@ -165,14 +165,9 @@ def test_extract_full_valid_export_with_conditional_macro_unknown_actions():
     assert conditional[0]["conditions"][0]["peripherique"] == "Guirlande"
     assert conditional[0]["conditions"][1]["peripherique"] == "Inconnu (777)"
     assert conditional[0]["conditions"][2]["valeur_libelle"] == "Lever"
-    assert (
-        conditional[0]["actions"][0]["quoi_faire"]
-        == "Exécuter macro Bonne nuit sur Macro"
-    )
+    assert conditional[0]["actions"][0]["quoi_faire"] == "Exécuter macro Bonne nuit sur Macro"
     assert conditional[0]["actions"][1]["quoi_faire"] == "Guirlande → unknown (0)"
-    assert conditional[0]["horaires_ou_crons"] == [
-        {"jour_semaine": "-1", "heure": "7", "minute": "0"}
-    ]
+    assert conditional[0]["horaires_ou_crons"] == [{"jour_semaine": "-1", "heure": "7", "minute": "0"}]
     assert result["parametres_embarques_non_resolus"] == [
         {
             "phase_id": 5,
@@ -194,14 +189,9 @@ def test_extract_full_valid_export_with_conditional_macro_unknown_actions():
 def test_helper_lookups_and_sorting():
     data = export_fixture()
     assert len(agenda_extract.get_table(data, "zb_controller_week")) == 7
-    assert agenda_extract.subtable(
-        rows(data, "zb_controller_rule")[0], "zb_rule_action"
-    )
+    assert agenda_extract.subtable(rows(data, "zb_controller_rule")[0], "zb_rule_action")
     modules = rows(data, "zb_controller_module")
-    assert (
-        agenda_extract.find_module(modules, "JOURNÉE EN COURS", "nonexistent")
-        is modules[0]
-    )
+    assert agenda_extract.find_module(modules, "JOURNÉE EN COURS", "nonexistent") is modules[0]
     assert agenda_extract.find_module(modules, "absent", "34") is modules[1]
     assert agenda_extract.states(modules[0]) == {"1": "Travail", "2": "Repos"}
     sorted_rows = agenda_extract.ordered_rows([{"order_by": "11"}, {"order_by": "2"}])
@@ -209,9 +199,7 @@ def test_helper_lookups_and_sorting():
     assert agenda_extract.hhmmss("09:01:08") == "09:01:08"
 
 
-@pytest.mark.parametrize(
-    "bad", ["not an hour", None, "25:00:00", "12:00:00+02:00", "12:00:00.100000"]
-)
+@pytest.mark.parametrize("bad", ["not an hour", None, "25:00:00", "12:00:00+02:00", "12:00:00.100000"])
 def test_bad_time(bad):
     with pytest.raises(agenda_extract.ExportFormatError, match="Heure"):
         agenda_extract.hhmmss(bad)
@@ -262,15 +250,11 @@ def test_malformed_subtables_and_helper_errors():
     "mutation,pattern",
     [
         (
-            lambda d: rows(d, "zb_controller_module").append(
-                deepcopy(rows(d, "zb_controller_module")[0])
-            ),
+            lambda d: rows(d, "zb_controller_module").append(deepcopy(rows(d, "zb_controller_module")[0])),
             "dupliqués",
         ),
         (
-            lambda d: rows(d, "zb_controller_module")[0].update(
-                custom_name="Autre", utilisation_id="999"
-            ),
+            lambda d: rows(d, "zb_controller_module")[0].update(custom_name="Autre", utilisation_id="999"),
             "identifier",
         ),
         (
@@ -278,39 +262,27 @@ def test_malformed_subtables_and_helper_errors():
             "inconnu",
         ),
         (
-            lambda d: rows(d, "zb_controller_week_day_phase")[0].update(
-                day_type_id="999"
-            ),
+            lambda d: rows(d, "zb_controller_week_day_phase")[0].update(day_type_id="999"),
             "inconnu",
         ),
         (
-            lambda d: rows(d, "zb_controller_week_day_phase")[0].update(
-                start_time="bad"
-            ),
+            lambda d: rows(d, "zb_controller_week_day_phase")[0].update(start_time="bad"),
             "Heure",
         ),
         (
-            lambda d: rows(d, "zb_controller_week_day_phase")[0].update(
-                start_time="06:31:00"
-            ),
+            lambda d: rows(d, "zb_controller_week_day_phase")[0].update(start_time="06:31:00"),
             "introuvable",
         ),
         (
-            lambda d: rows(d, "zb_controller_rule")[0]["subtables"][2]["lines"][
-                0
-            ].update(hour="7"),
+            lambda d: rows(d, "zb_controller_rule")[0]["subtables"][2]["lines"][0].update(hour="7"),
             "introuvable",
         ),
         (
-            lambda d: rows(d, "zb_controller_rule").append(
-                deepcopy(rows(d, "zb_controller_rule")[0])
-            ),
+            lambda d: rows(d, "zb_controller_rule").append(deepcopy(rows(d, "zb_controller_rule")[0])),
             "dupliquée",
         ),
         (
-            lambda d: rows(d, "zb_controller_rule").append(
-                deepcopy(rows(d, "zb_controller_rule")[2])
-            ),
+            lambda d: rows(d, "zb_controller_rule").append(deepcopy(rows(d, "zb_controller_rule")[2])),
             "Plusieurs règles directes",
         ),
         (
@@ -331,15 +303,15 @@ def test_malformed_subtables_and_helper_errors():
         ),
         (lambda d: rows(d, "zb_controller_week").pop(), "sept jours"),
         (
-            lambda d: nested(
-                rows(d, "zb_controller_module")[1], "zb_controller_module_value_descr"
-            )[0].update(http_params='"not-list"'),
+            lambda d: nested(rows(d, "zb_controller_module")[1], "zb_controller_module_value_descr")[0].update(
+                http_params='"not-list"'
+            ),
             "invalides",
         ),
         (
-            lambda d: nested(
-                rows(d, "zb_controller_module")[1], "zb_controller_module_value_descr"
-            )[0].update(http_params='["not-pair"]'),
+            lambda d: nested(rows(d, "zb_controller_module")[1], "zb_controller_module_value_descr")[0].update(
+                http_params='["not-pair"]'
+            ),
             "invalide",
         ),
     ],

@@ -65,12 +65,8 @@ def _namespace(box_name: str) -> str:
     HA entity unique_ids remain a separate namespace and must continue to
     use the eedomus config entry ID to resolve physical devices.
     """
-    if not isinstance(box_name, str) or not re.fullmatch(
-        r"Eedomus \([A-Za-z0-9.:-]+\)", box_name
-    ):
-        raise EedomusImportError(
-            "Nom de box eedomus invalide : attendu Eedomus (adresse de la box)"
-        )
+    if not isinstance(box_name, str) or not re.fullmatch(r"Eedomus \([A-Za-z0-9.:-]+\)", box_name):
+        raise EedomusImportError("Nom de box eedomus invalide : attendu Eedomus (adresse de la box)")
     return f"eedomus_{box_name}_"
 
 
@@ -124,10 +120,7 @@ def get_eedomus_entity_map(hass: Any, source_entry_id: str) -> dict[str, Any]:
 def _convert_service(raw: dict, entity: Any) -> dict:
     """Translate only direct, confidently mapped commands; otherwise fail."""
     if raw.get("type_action") != "direct":
-        raise EedomusImportError(
-            f"Commande eedomus non directe: {raw['peripherique']} "
-            f"({raw['peripherique_id']})"
-        )
+        raise EedomusImportError(f"Commande eedomus non directe: {raw['peripherique']} ({raw['peripherique_id']})")
     domain = entity.entity_id.partition(".")[0]
     value = str(raw["valeur"])
     state = str(raw.get("etat") or "").casefold()
@@ -193,14 +186,11 @@ def _convert_service(raw: dict, entity: Any) -> dict:
             "target": {"entity_id": entity.entity_id},
         }
     raise EedomusImportError(
-        f"Entité {entity.entity_id} non prise en charge pour "
-        f"{raw['peripherique']} [{raw['peripherique_id']}]"
+        f"Entité {entity.entity_id} non prise en charge pour {raw['peripherique']} [{raw['peripherique_id']}]"
     )
 
 
-def _mapped_action(
-    raw: dict, by_device_id: dict[str, list]
-) -> tuple[dict | None, list[tuple[str, str, str]]]:
+def _mapped_action(raw: dict, by_device_id: dict[str, list]) -> tuple[dict | None, list[tuple[str, str, str]]]:
     """Return one safe HA action and all associations that cannot be imported.
 
     A mapped but unsupported domain/service is informational, not fatal.
@@ -211,9 +201,7 @@ def _mapped_action(
     label = f"{raw['peripherique']} [{device_id}]"
     # A macro/non-direct command cannot be translated to a HA service.
     if raw.get("type_action") != "direct":
-        return None, [
-            (label, "—", f"Type d'action non pris en charge : {raw.get('type_action')}")
-        ]
+        return None, [(label, "—", f"Type d'action non pris en charge : {raw.get('type_action')}")]
 
     candidates = by_device_id.get(device_id, [])
     supported = {"climate", "cover", "light", "switch", "input_boolean"}
@@ -233,8 +221,7 @@ def _mapped_action(
         return None, unsupported
     if len(entries) != 1:
         raise EedomusImportError(
-            f"{raw['peripherique']} [{device_id}]: "
-            f"{len(entries)} entité(s) HA utilisable(s) pour la box choisie"
+            f"{raw['peripherique']} [{device_id}]: {len(entries)} entité(s) HA utilisable(s) pour la box choisie"
         )
     if entries[0].disabled_by is not None:
         raise EedomusImportError(f"Entité désactivée : {entries[0].entity_id}")
@@ -255,9 +242,7 @@ def _audit(old: Any | None, actor: str) -> Audit:
     return replace(existing, modified_by=actor, modified_at=now)
 
 
-def _merged(
-    old: tuple, imported: list, prefixes: tuple[str, ...], replace_existing: bool
-) -> tuple:
+def _merged(old: tuple, imported: list, prefixes: tuple[str, ...], replace_existing: bool) -> tuple:
     """Replace this box's current and legacy imports, never manual objects."""
     owned = [item for item in old if item.id.startswith(prefixes)]
     if owned and not replace_existing:
@@ -286,22 +271,15 @@ def create_import_plan(
     legacy_prefix = _legacy_namespace(source_entry_id)
     owned_prefixes = (prefix, legacy_prefix)
     previous = {
-        kind: {item.id: item for item in getattr(existing, kind)}
-        for kind in ("moments", "day_types", "week_schedules")
+        kind: {item.id: item for item in getattr(existing, kind)} for kind in ("moments", "day_types", "week_schedules")
     }
 
     def prior(kind: str, object_id: str) -> Any | None:
         """Find original audit under either the new or the old ID."""
         objects = previous[kind]
-        return objects.get(object_id) or objects.get(
-            legacy_prefix + object_id.removeprefix(prefix)
-        )
+        return objects.get(object_id) or objects.get(legacy_prefix + object_id.removeprefix(prefix))
 
-    had_previous = any(
-        item_id.startswith(owned_prefixes)
-        for objects in previous.values()
-        for item_id in objects
-    )
+    had_previous = any(item_id.startswith(owned_prefixes) for objects in previous.values() for item_id in objects)
     if had_previous and not replace_existing:
         raise EedomusImportError("Import eedomus existant : confirmation nécessaire")
     suffix = f" — {source_name}"
@@ -310,21 +288,14 @@ def create_import_plan(
     max_repeat = {}
     for day in agenda["day_types"]:
         seen = {}
-        for moment in sorted(
-            day["moments"], key=lambda item: (item["heure"], item["phase_id"])
-        ):
+        for moment in sorted(day["moments"], key=lambda item: (item["heure"], item["phase_id"])):
             if not moment["regle_horaire_active"]:
-                raise EedomusImportError(
-                    f"Règle horaire désactivée : {moment['regle_horaire_id']}"
-                )
+                raise EedomusImportError(f"Règle horaire désactivée : {moment['regle_horaire_id']}")
             phase = str(moment["phase_id"])
             actions = moment["actions"] if moment["regle_actions_active"] else []
             # Even a phase with no active or compatible actions remains a
             # scheduled Day Planner moment; it may be completed manually.
-            signature = tuple(
-                (str(a["peripherique_id"]), a["type_action"], str(a["valeur"]))
-                for a in actions
-            )
+            signature = tuple((str(a["peripherique_id"]), a["type_action"], str(a["valeur"])) for a in actions)
             if phase in phase_actions and phase_actions[phase][0] != signature:
                 raise EedomusImportError(f"Actions incohérentes pour la phase {phase}")
             phase_actions[phase] = (signature, actions)
@@ -342,10 +313,7 @@ def create_import_plan(
             unsupported_associations.update(skipped)
             if service is None:
                 continue
-            mapped_entities.add(
-                f"{raw['peripherique']} [{raw['peripherique_id']}] → "
-                f"{service['target']['entity_id']}"
-            )
+            mapped_entities.add(f"{raw['peripherique']} [{raw['peripherique_id']}] → {service['target']['entity_id']}")
             actions.append(
                 Action(
                     id=f"{prefix}phase_{phase}_action_{len(actions) + 1}",
@@ -357,16 +325,11 @@ def create_import_plan(
             moment_id = f"{prefix}phase_{phase}"
             if occurrence > 1:
                 moment_id += f"_repeat_{occurrence}"
-            moment_name = (
-                name
-                + (f" (occurrence {occurrence})" if occurrence > 1 else "")
-                + suffix
-            )
+            moment_name = name + (f" (occurrence {occurrence})" if occurrence > 1 else "") + suffix
             # Repeated moments must receive distinct action instances with
             # distinct IDs, though commands remain identical.
             indexed_actions = tuple(
-                replace(action, id=f"{moment_id}_action_{index}")
-                for index, action in enumerate(actions, 1)
+                replace(action, id=f"{moment_id}_action_{index}") for index, action in enumerate(actions, 1)
             )
             previous_moment = prior("moments", moment_id)
             moments.append(
@@ -392,9 +355,7 @@ def create_import_plan(
             scheduled.append(
                 ScheduledMoment(
                     moment_id=moment_id,
-                    time_definition=TimeDefinition(
-                        fixed_time=time.fromisoformat(item["heure"])
-                    ),
+                    time_definition=TimeDefinition(fixed_time=time.fromisoformat(item["heure"])),
                 )
             )
         day_types.append(
@@ -406,40 +367,26 @@ def create_import_plan(
             )
         )
 
-    by_weekday = {
-        int(item["jour_numero"]): int(item["type_journee_id"])
-        for item in agenda["week"]
-    }
+    by_weekday = {int(item["jour_numero"]): int(item["type_journee_id"]) for item in agenda["week"]}
     if sorted(by_weekday) != list(range(1, 8)):
-        raise EedomusImportError(
-            "La semaine eedomus ne contient pas sept jours distincts"
-        )
+        raise EedomusImportError("La semaine eedomus ne contient pas sept jours distincts")
     week_id = f"{prefix}week"
     week = WeekSchedule(
         id=week_id,
         name=source_name,
-        **{
-            day: f"{prefix}day_{by_weekday[index]}"
-            for index, day in enumerate(WEEKDAYS, 1)
-        },
+        **{day: f"{prefix}day_{by_weekday[index]}" for index, day in enumerate(WEEKDAYS, 1)},
         audit=_audit(prior("week_schedules", week_id), actor),
     )
     merged = replace(
         existing,
         moments=_merged(existing.moments, moments, owned_prefixes, replace_existing),
-        day_types=_merged(
-            existing.day_types, day_types, owned_prefixes, replace_existing
-        ),
-        week_schedules=_merged(
-            existing.week_schedules, [week], owned_prefixes, replace_existing
-        ),
+        day_types=_merged(existing.day_types, day_types, owned_prefixes, replace_existing),
+        week_schedules=_merged(existing.week_schedules, [week], owned_prefixes, replace_existing),
     )
     try:
         PlannerValidator.validate_configuration(merged, max_cycles=max_cycles)
     except (ValueError, ValidationError) as exc:
-        raise EedomusImportError(
-            f"Configuration Day Planner incompatible : {exc}"
-        ) from exc
+        raise EedomusImportError(f"Configuration Day Planner incompatible : {exc}") from exc
     return ImportPlan(
         configuration=merged,
         source_entry_id=source_entry_id,
@@ -450,8 +397,7 @@ def create_import_plan(
         scheduled=sum(len(d.scheduled_moments) for d in day_types),
         actions=sum(len(m.actions) for m in moments),
         conditional_rules_not_imported=sum(
-            bool(rule["active"])
-            for rule in agenda["regles_conditionnelles_liees_agenda"]
+            bool(rule["active"]) for rule in agenda["regles_conditionnelles_liees_agenda"]
         ),
         unresolved_embedded_parameters=len(agenda["parametres_embarques_non_resolus"]),
         mapped_entities=tuple(sorted(mapped_entities)),

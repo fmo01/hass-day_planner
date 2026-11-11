@@ -333,11 +333,7 @@ def websocket_get_calendar(
             {
                 "date": target_date.isoformat(),
                 "day_type": (day_type.to_dict() if day_type is not None else None),
-                "base_day_type": (
-                    base_context.day_type.to_dict()
-                    if base_context.day_type is not None
-                    else None
-                ),
+                "base_day_type": (base_context.day_type.to_dict() if base_context.day_type is not None else None),
                 "cycle_id": context.cycle_id,
                 "week_schedule_id": (context.week_schedule_id),
                 "calendar_exception_id": (context.calendar_exception_id),
@@ -1333,10 +1329,7 @@ async def websocket_update_moment_action(
             sequence=list(msg["sequence"]),
         )
 
-        actions = tuple(
-            updated_action if action.id == msg["action_id"] else action
-            for action in moment.actions
-        )
+        actions = tuple(updated_action if action.id == msg["action_id"] else action for action in moment.actions)
 
         updated_moment = Moment(
             id=moment.id,
@@ -1405,9 +1398,7 @@ async def websocket_remove_moment_action(
             )
             return
 
-        actions = tuple(
-            action for action in moment.actions if action.id != msg["action_id"]
-        )
+        actions = tuple(action for action in moment.actions if action.id != msg["action_id"])
 
         updated_moment = Moment(
             id=moment.id,

@@ -56,7 +56,9 @@ export class DayPlannerI18n {
       return;
     }
 
-    this._translations = await loadTranslations(language);
+    const translations = await loadTranslations(language);
+    if (language !== normalizeLanguage(this._hass?.language || this._hass?.locale?.language)) return;
+    this._translations = translations;
 
     this._language = language;
   }
@@ -65,3 +67,5 @@ export class DayPlannerI18n {
     return getNestedValue(this._translations, key) ?? fallback;
   }
 }
+
+console.info('i18n.js v0.1.1');

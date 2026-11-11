@@ -360,5 +360,130 @@
       "eedomus_not_configured": "Aucune intégration eedomus n’est configurée.",
       "eedomus_not_active": "Aucune box eedomus active et chargée dans Home Assistant. Activez une box et attendez sa connexion."
     }
+  },
+  "entity": {
+    "binary_sensor": {
+      "location": {
+        "name": "Day Planner — Localisation",
+        "state_attributes": {
+          "integration": {
+            "name": "Intégration"
+          },
+          "integration_version": {
+            "name": "Version de l’intégration"
+          },
+          "release_url": {
+            "name": "Adresse de la publication"
+          },
+          "last_evaluated": {
+            "name": "Dernière évaluation"
+          },
+          "country_code": {
+            "name": "Code pays"
+          },
+          "country_name": {
+            "name": "Pays"
+          },
+          "subdivision_code": {
+            "name": "Code de subdivision"
+          },
+          "subdivision_name": {
+            "name": "Subdivision"
+          },
+          "locality": {
+            "name": "Localité"
+          },
+          "subdivisions": {
+            "name": "Subdivisions identifiées"
+          },
+          "source": {
+            "name": "Source"
+          },
+          "attribution": {
+            "name": "Attribution"
+          },
+          "from_cache": {
+            "name": "Résultat issu du cache"
+          },
+          "resolved_at": {
+            "name": "Date de résolution"
+          },
+          "status": {
+            "name": "Statut",
+            "state": {
+              "resolved": "Résolu",
+              "unresolved": "Non résolu",
+              "unsupported": "Non pris en charge"
+            }
+          },
+          "reason": {
+            "name": "Motif",
+            "state": {
+              "invalid_coordinates": "Les coordonnées du domicile HA sont absentes ou invalides.",
+              "invalid_country": "Le code pays configuré dans HA est invalide.",
+              "invalid_response": "Le service géographique a renvoyé une réponse inexploitable.",
+              "no_result": "Aucun lieu n’a été trouvé à proximité des coordonnées du domicile.",
+              "unknown_country": "Le pays renvoyé n’est pas reconnu dans le référentiel ISO.",
+              "country_mismatch": "Le pays du résultat géographique diffère du pays configuré dans HA.",
+              "ambiguous_subdivision": "Plusieurs subdivisions correspondent ; aucun choix automatique n’a été fait.",
+              "subdivision_not_resolved": "Le pays est connu, mais la subdivision n’a pas pu être identifiée.",
+              "ambiguous_location": "Les lieux proches correspondent à des zones administratives différentes.",
+              "http_error": "Le service géographique a renvoyé une erreur HTTP.",
+              "request_failed": "Le service géographique est inaccessible ou sa réponse ne peut pas être lue."
+            }
+          },
+          "reason_detail": {
+            "name": "Explication"
+          }
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "public_holidays_location_unresolved": {
+      "message": "La localisation de l’installation n’est pas encore exploitable. Consultez l’entité de localisation Day Planner."
+    },
+    "public_holidays_invalid_year": {
+      "message": "L’année doit être un entier compris entre 1 et 9999."
+    },
+    "public_holidays_country_not_supported": {
+      "message": "Ce pays n’est pas pris en charge par la bibliothèque de jours fériés installée."
+    },
+    "public_holidays_year_not_supported": {
+      "message": "Cette année est hors de la plage prise en charge pour ce pays."
+    },
+    "public_holidays_subdivision_missing": {
+      "message": "Seul le calendrier national est disponible : la subdivision régionale n’a pas été déterminée."
+    },
+    "public_holidays_subdivision_not_supported": {
+      "message": "Seul le calendrier national est disponible : la subdivision géographique ne correspond pas à un calendrier régional pris en charge."
+    },
+    "public_holidays_ambiguous_subdivision": {
+      "message": "Seul le calendrier national est disponible : plusieurs calendriers régionaux correspondent à la localisation."
+    },
+    "public_holidays_calculation_failed": {
+      "message": "Le calendrier des jours fériés n’a pas pu être calculé pour cette demande."
+    },
+    "public_holidays_location_changed": {
+      "message": "La localisation de l’installation a changé pendant le calcul. Relancez la consultation."
+    },
+    "public_holidays_local_applicability_unverified": {
+      "message": "L’application locale de ce jour férié est à vérifier."
+    },
+    "public_holidays_planner_not_ready": {
+      "message": "Day Planner n’est pas prêt à fournir le calendrier des jours fériés."
+    }
+  },
+  "services": {
+    "get_public_holidays": {
+      "name": "Consulter les jours fériés",
+      "description": "Retourner le calendrier national ou régional du lieu de l’installation HA, sans créer d’exception ni modifier le planning.",
+      "fields": {
+        "year": {
+          "name": "Année",
+          "description": "Année à consulter. La plage prise en charge dépend du pays."
+        }
+      }
+    }
   }
 }

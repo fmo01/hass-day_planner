@@ -212,9 +212,7 @@ def test_missing_entities_are_logged_as_day_planner_errors(caplog):
 
     with patch("custom_components.day_planner.action_executor.Script") as script_class:
         script_class.return_value.async_run = AsyncMock()
-        with caplog.at_level(
-            logging.ERROR, logger="custom_components.day_planner.action_executor"
-        ):
+        with caplog.at_level(logging.ERROR, logger="custom_components.day_planner.action_executor"):
             asyncio.run(executor.async_execute_moment(moment))
 
     assert "switch.cmd_5_volet_cuisine_cuisine" in caplog.text
@@ -257,9 +255,7 @@ def test_templates_and_nested_choose_do_not_report_false_missing_targets(caplog)
     )
     with patch("custom_components.day_planner.action_executor.Script") as script_class:
         script_class.return_value.async_run = AsyncMock()
-        with caplog.at_level(
-            logging.ERROR, logger="custom_components.day_planner.action_executor"
-        ):
+        with caplog.at_level(logging.ERROR, logger="custom_components.day_planner.action_executor"):
             asyncio.run(executor.async_execute_action(action))
 
     assert not caplog.records
@@ -278,9 +274,7 @@ def test_action_error_emits_failure_event_and_next_action_runs():
     moment = Moment(id="m", name="Matin", actions=(a, b))
 
     with patch("custom_components.day_planner.action_executor.Script") as script_class:
-        script_class.return_value.async_run = AsyncMock(
-            side_effect=[ValueError("broken"), None]
-        )
+        script_class.return_value.async_run = AsyncMock(side_effect=[ValueError("broken"), None])
         asyncio.run(executor.async_execute_moment(moment))
 
     assert script_class.return_value.async_run.await_count == 2
@@ -291,9 +285,7 @@ def test_action_error_emits_failure_event_and_next_action_runs():
         EVENT_DAY_PLANNER_ACTION_RESULT,
         EVENT_DAY_PLANNER_ACTION,
     ]
-    assert all(
-        "context" in call_.kwargs for call_ in hass.bus.async_fire.call_args_list
-    )
+    assert all("context" in call_.kwargs for call_ in hass.bus.async_fire.call_args_list)
 
 
 def test_home_assistant_target_warning_is_mirrored_as_day_planner_error(caplog):
@@ -316,15 +308,12 @@ def test_home_assistant_target_warning_is_mirrored_as_day_planner_error(caplog):
 
     async def fake_script_run(**kwargs):
         logging.getLogger("homeassistant.helpers.service").warning(
-            "Referenced entities switch.cmd_5_volet_cuisine_cuisine "
-            "are missing or not currently available"
+            "Referenced entities switch.cmd_5_volet_cuisine_cuisine are missing or not currently available"
         )
 
     with patch("custom_components.day_planner.action_executor.Script") as script_class:
         script_class.return_value.async_run = AsyncMock(side_effect=fake_script_run)
-        with caplog.at_level(
-            logging.ERROR, logger="custom_components.day_planner.action_executor"
-        ):
+        with caplog.at_level(logging.ERROR, logger="custom_components.day_planner.action_executor"):
             asyncio.run(executor.async_execute_action(action))
 
     assert "Referenced entities switch.cmd_5_volet_cuisine_cuisine" in caplog.text
@@ -369,9 +358,7 @@ def test_logbook_origin_precedes_turn_off_and_uses_same_context():
     assert history[0][2]["action_id"] == "XX1"
     assert history[0][2]["status"] == "started"
     assert history[0][2]["moment_name"] == "Retour Travail"
-    assert history[0][2]["requested_service"] == (
-        "input_boolean.turn_off → input_boolean.day_planner_test"
-    )
+    assert history[0][2]["requested_service"] == ("input_boolean.turn_off → input_boolean.day_planner_test")
     assert history[1][0:2] == ("service", "input_boolean.turn_off")
     assert history[0][3] is history[1][2]
 
@@ -382,15 +369,11 @@ def test_origin_remains_first_when_action_fails():
     hass.states = MagicMock()
     hass.bus = MagicMock()
     history = []
-    hass.bus.async_fire.side_effect = lambda event, data, *, context: history.append(
-        (event, context)
-    )
+    hass.bus.async_fire.side_effect = lambda event, data, *, context: history.append((event, context))
     action = Action(id="XX1", sequence=[])
 
     with patch("custom_components.day_planner.action_executor.Script") as script_class:
-        script_class.return_value.async_run = AsyncMock(
-            side_effect=RuntimeError("erreur")
-        )
+        script_class.return_value.async_run = AsyncMock(side_effect=RuntimeError("erreur"))
         import pytest
 
         with pytest.raises(RuntimeError):
@@ -414,9 +397,7 @@ def test_warning_handler_filters_context_logger_and_message():
 
     marker = object()
     handler = _HAServiceWarningHandler(marker, Action(id="XX1", sequence=[]), None)
-    missing_warning = (
-        "Referenced entities switch.cuisine " "are missing or not currently available"
-    )
+    missing_warning = "Referenced entities switch.cuisine are missing or not currently available"
 
     def make_record(logger_name, message):
         return logging.LogRecord(
@@ -442,16 +423,10 @@ def test_warning_handler_filters_context_logger_and_message():
     try:
         handler.emit(make_record("homeassistant.helpers.other", missing_warning))
         handler.emit(make_record("homeassistant.helpers.service", "Service called"))
-        handler.emit(
-            make_record(
-                "homeassistant.helpers.service", "Referenced entities switch.cuisine"
-            )
-        )
+        handler.emit(make_record("homeassistant.helpers.service", "Referenced entities switch.cuisine"))
         assert handler.messages == []
 
-        with patch(
-            "custom_components.day_planner.action_executor._LOGGER.error"
-        ) as error:
+        with patch("custom_components.day_planner.action_executor._LOGGER.error") as error:
             handler.emit(valid_record)
         assert handler.messages == [missing_warning]
         error.assert_called_once()
@@ -505,23 +480,13 @@ def test_static_check_skips_unstructured_steps_and_reports_duplicate_once(caplog
 
     with patch("custom_components.day_planner.action_executor.Script") as script_class:
         script_class.return_value.async_run = AsyncMock()
-        with caplog.at_level(
-            logging.ERROR, logger="custom_components.day_planner.action_executor"
-        ):
+        with caplog.at_level(logging.ERROR, logger="custom_components.day_planner.action_executor"):
             asyncio.run(ActionExecutor(hass).async_execute_action(action))
 
     assert hass.states.get.call_count == 2
     assert (
-        len(
-            [
-                record
-                for record in caplog.records
-                if record.name == "custom_components.day_planner.action_executor"
-            ]
-        )
+        len([record for record in caplog.records if record.name == "custom_components.day_planner.action_executor"])
         == 1
     )
     assert hass.bus.async_fire.call_args.args[0] == EVENT_DAY_PLANNER_ACTION_RESULT
-    assert hass.bus.async_fire.call_args.args[1]["missing_entities"] == [
-        "switch.cuisine"
-    ]
+    assert hass.bus.async_fire.call_args.args[1]["missing_entities"] == ["switch.cuisine"]

@@ -26,11 +26,7 @@ class PlannerResolver:
     ):
         """Return the active cycle for a date."""
 
-        eligible_cycles = (
-            cycle
-            for cycle in self._configuration.cycles
-            if cycle.start_date <= target_date
-        )
+        eligible_cycles = (cycle for cycle in self._configuration.cycles if cycle.start_date <= target_date)
 
         return max(
             eligible_cycles,
@@ -61,11 +57,7 @@ class PlannerResolver:
 
         week_schedule_id = cycle.week_schedule_ids[week_index]
 
-        week_schedule = next(
-            item
-            for item in self._configuration.week_schedules
-            if item.id == week_schedule_id
-        )
+        week_schedule = next(item for item in self._configuration.week_schedules if item.id == week_schedule_id)
 
         day_type_id = getattr(
             week_schedule,
@@ -97,11 +89,7 @@ class PlannerResolver:
         base_context = self._resolve_base_day_context(target_date)
 
         calendar_exception = next(
-            (
-                item
-                for item in self._configuration.calendar_exceptions
-                if item.date == target_date
-            ),
+            (item for item in self._configuration.calendar_exceptions if item.date == target_date),
             None,
         )
 
@@ -129,9 +117,7 @@ class PlannerResolver:
     ) -> DayType:
         """Find a day type."""
 
-        return next(
-            item for item in self._configuration.day_types if item.id == day_type_id
-        )
+        return next(item for item in self._configuration.day_types if item.id == day_type_id)
 
     def resolve_scheduled_moments(
         self,
@@ -152,9 +138,7 @@ class PlannerResolver:
     ) -> Moment:
         """Resolve a moment by id."""
 
-        return next(
-            item for item in self._configuration.moments if item.id == moment_id
-        )
+        return next(item for item in self._configuration.moments if item.id == moment_id)
 
     def resolve_schedule(
         self,

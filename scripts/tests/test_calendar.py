@@ -1,7 +1,11 @@
 import asyncio
+import shutil
+import subprocess
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
 from homeassistant.components.calendar import CalendarEvent
 from homeassistant.util import dt as dt_util
 
@@ -10,6 +14,25 @@ from custom_components.day_planner.const import SIGNAL_PLANNER_UPDATED
 from custom_components.day_planner.domain.moment import Moment
 from custom_components.day_planner.domain.scheduled_event import ScheduledEvent
 from custom_components.day_planner.integration_info import INTEGRATION_VERSION
+
+
+def test_calendar_frontend():
+    """Run the calendar UI regressions with Node.js 22 or later when available."""
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("Node.js 22+ is required for frontend calendar tests")
+    version = subprocess.check_output([node, "--version"], text=True)
+    if int(version.lstrip("v").split(".")[0]) < 22:
+        pytest.skip("Node.js 22+ is required for frontend calendar tests")
+    root = Path(__file__).resolve().parents[2]
+    result = subprocess.run(
+        [node, "--test", "scripts/tests/frontend/calendar.test.mjs"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_calendar_setup_entry():

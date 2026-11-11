@@ -354,5 +354,130 @@
       "eedomus_not_configured": "No eedomus integration is configured.",
       "eedomus_not_active": "No enabled, loaded eedomus box is available in Home Assistant. Enable a box and wait for it to connect."
     }
+  },
+  "entity": {
+    "binary_sensor": {
+      "location": {
+        "name": "Day Planner — Location",
+        "state_attributes": {
+          "integration": {
+            "name": "Integration"
+          },
+          "integration_version": {
+            "name": "Integration version"
+          },
+          "release_url": {
+            "name": "Release URL"
+          },
+          "last_evaluated": {
+            "name": "Last evaluation"
+          },
+          "country_code": {
+            "name": "Country code"
+          },
+          "country_name": {
+            "name": "Country"
+          },
+          "subdivision_code": {
+            "name": "Subdivision code"
+          },
+          "subdivision_name": {
+            "name": "Subdivision"
+          },
+          "locality": {
+            "name": "Locality"
+          },
+          "subdivisions": {
+            "name": "Identified subdivisions"
+          },
+          "source": {
+            "name": "Source"
+          },
+          "attribution": {
+            "name": "Attribution"
+          },
+          "from_cache": {
+            "name": "From cache"
+          },
+          "resolved_at": {
+            "name": "Resolution time"
+          },
+          "status": {
+            "name": "Status",
+            "state": {
+              "resolved": "Resolved",
+              "unresolved": "Unresolved",
+              "unsupported": "Unsupported"
+            }
+          },
+          "reason": {
+            "name": "Reason",
+            "state": {
+              "invalid_coordinates": "The HA home coordinates are missing or invalid.",
+              "invalid_country": "The country code configured in HA is invalid.",
+              "invalid_response": "The geocoding service returned an unusable response.",
+              "no_result": "No location was found near the home coordinates.",
+              "unknown_country": "The returned country is not recognized in the ISO reference data.",
+              "country_mismatch": "The geocoded country differs from the country configured in HA.",
+              "ambiguous_subdivision": "Multiple subdivisions match; no automatic choice was made.",
+              "subdivision_not_resolved": "The country is known, but the subdivision could not be identified.",
+              "ambiguous_location": "Nearby locations belong to different administrative areas.",
+              "http_error": "The geocoding service returned an HTTP error.",
+              "request_failed": "The geocoding service is unreachable or its response cannot be read."
+            }
+          },
+          "reason_detail": {
+            "name": "Details"
+          }
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "public_holidays_location_unresolved": {
+      "message": "The installation location is not yet usable. Check the Day Planner location entity."
+    },
+    "public_holidays_invalid_year": {
+      "message": "The year must be an integer between 1 and 9999."
+    },
+    "public_holidays_country_not_supported": {
+      "message": "This country is not supported by the installed holidays library."
+    },
+    "public_holidays_year_not_supported": {
+      "message": "This year is outside the supported range for this country."
+    },
+    "public_holidays_subdivision_missing": {
+      "message": "Only the national calendar is available: the regional subdivision has not been determined."
+    },
+    "public_holidays_subdivision_not_supported": {
+      "message": "Only the national calendar is available: the geographical subdivision cannot be matched to a supported holiday calendar."
+    },
+    "public_holidays_ambiguous_subdivision": {
+      "message": "Only the national calendar is available: several regional calendars match the location."
+    },
+    "public_holidays_calculation_failed": {
+      "message": "The public holiday calendar could not be calculated for this request."
+    },
+    "public_holidays_location_changed": {
+      "message": "The installation location changed during calculation. Request the calendar again."
+    },
+    "public_holidays_local_applicability_unverified": {
+      "message": "Local applicability must be checked for this holiday."
+    },
+    "public_holidays_planner_not_ready": {
+      "message": "Day Planner is not ready to provide the public holiday calendar."
+    }
+  },
+  "services": {
+    "get_public_holidays": {
+      "name": "Get public holidays",
+      "description": "Return the national or regional calendar for the HA installation location, without creating exceptions or changing the planning.",
+      "fields": {
+        "year": {
+          "name": "Year",
+          "description": "Year to consult. The supported range depends on the country."
+        }
+      }
+    }
   }
 }
