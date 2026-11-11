@@ -270,7 +270,7 @@ La couverture est suivie sans seuil bloquant. L'objectif de 100 % ne nécessite 
 Les valeurs ci-dessous proviennent de l'exécution GitHub Actions réussie datée dans le tableau. Elles seront actualisées automatiquement lors d'une prochaine exécution.
 
 <!-- COVERAGE-MODULES-START -->
-Dernière mise à jour : **2026-11-11 18:51:29 Europe/Paris**
+Dernière mise à jour : **2026-11-11 19:09:03 Europe/Paris**
 
 | Package | Composant | Instructions | Non couvertes | Couverture |
 |---|---|---:|---:|---:|
@@ -406,10 +406,10 @@ Python 3.14.10
 pytest 9.0.3
 pytest-cov 7.1.0
 pytest-homeassistant-custom-component 0.13.375
-Tests exécutés : 704
-Tests réussis : 704
+Tests exécutés : 704 
+Tests réussis : 704 
 Couverture totale : 100.00%
-Dernière exécution : 2026-11-11 18:51:29 Europe/Paris
+Dernière exécution : 2026-11-11 19:09:03 Europe/Paris
 ```
 <!-- TEST-ENV-END -->
 
