@@ -1,16 +1,24 @@
 # Day Planner — Planification des journées pour Home Assistant
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/fmo01/hass-day_planner/tests.yml?label=Tests&style=for-the-badge)](https://github.com/fmo01/hass-day_planner/actions/workflows/tests.yml)
-[![Hassfest](https://img.shields.io/github/actions/workflow/status/fmo01/hass-day_planner/hassfest.yml?label=Hassfest&style=for-the-badge)](https://github.com/fmo01/hass-day_planner/actions/workflows/hassfest.yml)
-[![HACS Validation](https://img.shields.io/github/actions/workflow/status/fmo01/hass-day_planner/hacs_validation.yml?label=HACS%20Validation&style=for-the-badge)](https://github.com/fmo01/hass-day_planner/actions/workflows/hacs_validation.yml)
+[![HACS + Hassfest](https://img.shields.io/github/actions/workflow/status/fmo01/hass-day_planner/validate.yml?label=HACS%20%2B%20Hassfest&style=for-the-badge)](https://github.com/fmo01/hass-day_planner/actions/workflows/validate.yml)
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://www.hacs.xyz/)
 [![GitHub Release](https://img.shields.io/github/v/release/fmo01/hass-day_planner?style=for-the-badge&color=blue)](https://github.com/fmo01/hass-day_planner/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/fmo01/hass-day_planner/total?style=for-the-badge&color=green)](https://github.com/fmo01/hass-day_planner/releases)
+[![Téléchargements cumulés](https://img.shields.io/github/downloads/fmo01/hass-day_planner/total?label=Total%20downloads&style=for-the-badge&color=green)](https://github.com/fmo01/hass-day_planner/releases)
 [![License](https://img.shields.io/badge/license-GPL--3.0-lightgrey.svg?style=for-the-badge)](LICENSE)
 
 **Day Planner** est une intégration Home Assistant qui permet de construire des plannings réutilisables et de déclencher des actions aux moments prévus de la journée.
 
 Elle s'organise autour de **moments** (avec leurs actions), de **types de journée** (avec leurs horaires), de **semaines types**, de **cycles** et d'**exceptions de calendrier**. Un panneau de gestion, accessible depuis le menu latéral de Home Assistant, permet de consulter et de modifier ces éléments.
+
+## Migration d’eedomus vers Home Assistant
+
+Si tu migres d’eedomus vers Home Assistant, Day Planner peut être utilisé en complément de l’intégration [hass-eedomus de Dan4Jer](https://github.com/Dan4Jer/hass-eedomus) ou de [mon fork de hass-eedomus](https://github.com/fmo01/hass-eedomus), que je maintiens pour faciliter cette migration.
+
+hass-eedomus rend les périphériques eedomus accessibles dans Home Assistant. Day Planner complète cette intégration en permettant de reprendre l’agenda eedomus et de retrouver ses phases et les actions compatibles dans Home Assistant.
+
+Day Planner peut également être utilisé seul pour créer une planification directement dans Home Assistant.
+
 
 ## 📥 Installation
 
