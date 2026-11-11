@@ -1637,12 +1637,8 @@ def test_engine_replace_configuration_validates_all_objects():
     assert engine.configuration is valid
 
 
-@pytest.mark.parametrize(
-    "operation", ["duplicate_date", "unknown_type_add", "unknown_type_update"]
-)
-def test_calendar_exception_rejected_write_preserves_configuration_and_audit(
-    calendar_exception, day_type, operation
-):
+@pytest.mark.parametrize("operation", ["duplicate_date", "unknown_type_add", "unknown_type_update"])
+def test_calendar_exception_rejected_write_preserves_configuration_and_audit(calendar_exception, day_type, operation):
     """A rejected write must not replace the original exception or its audit."""
     engine = PlannerEngine(replace(PlannerConfiguration.empty(), day_types=(day_type,)))
     engine.add_calendar_exception(calendar_exception, modified_by="Utilisateur Initial")
@@ -1656,14 +1652,8 @@ def test_calendar_exception_rejected_write_preserves_configuration_and_audit(
         candidate = replace(candidate, day_type_id="removed_type")
         expected = "Unknown day type"
         if operation == "unknown_type_add":
-            candidate = replace(
-                candidate, id="another_exception", date=date(2030, 1, 1)
-            )
-    save = (
-        engine.update_calendar_exception
-        if operation == "unknown_type_update"
-        else engine.add_calendar_exception
-    )
+            candidate = replace(candidate, id="another_exception", date=date(2030, 1, 1))
+    save = engine.update_calendar_exception if operation == "unknown_type_update" else engine.add_calendar_exception
     with pytest.raises(ValidationError, match=expected):
         save(candidate, modified_by="Utilisateur Secondaire")
     assert engine.configuration is original_configuration

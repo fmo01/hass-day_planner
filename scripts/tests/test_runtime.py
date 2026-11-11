@@ -80,9 +80,7 @@ def location_request():
         ),
         patch(
             "custom_components.day_planner.location.Store",
-            return_value=SimpleNamespace(
-                async_load=AsyncMock(return_value=None), async_save=AsyncMock()
-            ),
+            return_value=SimpleNamespace(async_load=AsyncMock(return_value=None), async_save=AsyncMock()),
         ),
     ):
         yield DayPlannerLocation(hass), hass, response, session
@@ -126,9 +124,7 @@ def test_location_cache_survives_ha_restart(tmp_path):
         assert cached.subdivisions == first.subdivisions
         assert cached.locality == first.locality
 
-        request.return_value = LocationResult(
-            LocationStatus.UNRESOLVED, reason="request_failed"
-        )
+        request.return_value = LocationResult(LocationStatus.UNRESOLVED, reason="request_failed")
         changed = await evaluate(request, longitude=8)
         assert changed.reason == "request_failed"
         request.assert_awaited_with("FR", 48.58, 8)
@@ -205,8 +201,8 @@ def test_location_serializes_writes_across_home_changes(location_request):
     async def run():
         location, hass, _, _ = location_request
         location._entry = MagicMock()
-        location._entry.async_create_background_task.side_effect = (
-            lambda hass, coroutine, name: asyncio.create_task(coroutine)
+        location._entry.async_create_background_task.side_effect = lambda hass, coroutine, name: asyncio.create_task(
+            coroutine
         )
         started, release = asyncio.Event(), asyncio.Event()
         written = []
@@ -239,13 +235,11 @@ def test_location_renewal_and_retry_lifecycle(location_request):
     async def run():
         location, hass, response, _ = location_request
         location._entry = MagicMock()
-        location._entry.async_create_background_task.side_effect = (
-            lambda hass, coroutine, name: asyncio.create_task(coroutine)
+        location._entry.async_create_background_task.side_effect = lambda hass, coroutine, name: asyncio.create_task(
+            coroutine
         )
         now = datetime(2026, 11, 11, 12, tzinfo=UTC)
-        with patch(
-            "custom_components.day_planner.location.dt_util.utcnow", return_value=now
-        ) as utcnow:
+        with patch("custom_components.day_planner.location.dt_util.utcnow", return_value=now) as utcnow:
             await location.async_evaluate()
             assert hass.loop.call_later.call_args.args[0] == 30 * 86400
             renewal = location._timer
