@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.1](https://github.com/fmo01/hass-day_planner/compare/0.4.0...0.4.1) (2026-11-11)
+
+### Bug Fixes
+
+* **hacs:** publish updated compatibility metadata ([c770495](https://github.com/fmo01/hass-day_planner/commit/c770495a54a76060fc689df6dd0909707a96bf3f))
+
 ## [0.4.0](https://github.com/fmo01/hass-day_planner/compare/0.3.1...0.4.0) (2026-11-11)
 
 ### Features
