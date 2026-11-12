@@ -1,105 +1,106 @@
-# Day Planner — Planification des journées pour Home Assistant
+# Day Planner — Daily scheduling for Home Assistant
+
+**English** | [Français](README.fr.md)
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/fmo01/hass-day_planner/tests.yml?label=Tests&style=for-the-badge)](https://github.com/fmo01/hass-day_planner/actions/workflows/tests.yml)
 [![HACS + Hassfest](https://img.shields.io/github/actions/workflow/status/fmo01/hass-day_planner/validate.yml?label=HACS%20%2B%20Hassfest&style=for-the-badge)](https://github.com/fmo01/hass-day_planner/actions/workflows/validate.yml)
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://www.hacs.xyz/)
 [![GitHub Release](https://img.shields.io/github/v/release/fmo01/hass-day_planner?style=for-the-badge&color=blue)](https://github.com/fmo01/hass-day_planner/releases/latest)
-[![Téléchargements cumulés](https://img.shields.io/github/downloads/fmo01/hass-day_planner/total?label=Total%20downloads&style=for-the-badge&color=green)](https://github.com/fmo01/hass-day_planner/releases)
+[![Total downloads](https://img.shields.io/github/downloads/fmo01/hass-day_planner/total?label=Total%20downloads&style=for-the-badge&color=green)](https://github.com/fmo01/hass-day_planner/releases)
 [![License](https://img.shields.io/badge/license-GPL--3.0-lightgrey.svg?style=for-the-badge)](LICENSE)
 
-**Day Planner** est une intégration Home Assistant qui permet de construire des plannings réutilisables et de déclencher des actions aux moments prévus de la journée.
+**Day Planner** is a Home Assistant integration that lets you build reusable schedules and trigger actions at planned times throughout the day.
 
-Elle s'organise autour de **moments** (avec leurs actions), de **types de journée** (avec leurs horaires), de **semaines types**, de **cycles** et d'**exceptions de calendrier**. Un panneau de gestion, accessible depuis le menu latéral de Home Assistant, permet de consulter et de modifier ces éléments.
+It uses **moments** with their actions, **day types** with their scheduled times, **week schedules**, **cycles**, and **calendar exceptions**. You can view and edit all of these from the Day Planner panel in the Home Assistant sidebar.
 
-## Migration d’eedomus vers Home Assistant
+## Migrating from eedomus to Home Assistant
 
-Si tu migres d’eedomus vers Home Assistant, Day Planner peut être utilisé en complément de l’intégration [hass-eedomus de Dan4Jer](https://github.com/Dan4Jer/hass-eedomus) ou de [mon fork de hass-eedomus](https://github.com/fmo01/hass-eedomus), que je maintiens pour faciliter cette migration.
+If you are migrating from eedomus to Home Assistant, you can use Day Planner alongside [Dan4Jer’s hass-eedomus integration](https://github.com/Dan4Jer/hass-eedomus) or [my fork of hass-eedomus](https://github.com/fmo01/hass-eedomus), which I maintain to make that migration easier.
 
-hass-eedomus rend les périphériques eedomus accessibles dans Home Assistant. Day Planner complète cette intégration en permettant de reprendre l’agenda eedomus et de retrouver ses phases et les actions compatibles dans Home Assistant.
+hass-eedomus makes your eedomus devices available in Home Assistant. Day Planner lets you import the eedomus agenda, including its phases and compatible actions.
 
-Day Planner peut également être utilisé seul pour créer une planification directement dans Home Assistant.
-
+You can also use Day Planner on its own to create schedules directly in Home Assistant.
 
 ## 📥 Installation
 
-### Prérequis
+### Requirements
 
-- **Home Assistant 2026.10.4 ou version ultérieure**, conformément au fichier `hacs.json` du dépôt.
-- **HACS**, pour l'installation recommandée. Il n'est pas nécessaire pour une installation manuelle.
+- **Home Assistant 2026.10.4 or later**, as specified in the repository’s `hacs.json`.
+- **HACS** for the recommended installation method. Manual installation works without HACS.
 
-Sur Home Assistant **2026.11 et versions ultérieures**, HACS est intégré au **Marketplace**. Pour les versions précédentes, consultez le [guide officiel HACS](https://www.hacs.xyz/docs/use/) afin de l'installer et le configurer.
+On Home Assistant **2026.11 and later**, HACS is available through the **Marketplace**. For earlier versions, follow the [official HACS guide](https://www.hacs.xyz/docs/use/) to install and configure HACS.
 
-### Méthode 1 — Via HACS (recommandée)
+### Method 1 — Install through HACS (recommended)
 
-Cliquez sur le bouton pour ouvrir le dépôt Day Planner dans HACS :
+Use this button to open the Day Planner repository in HACS.
 
-[![Ajouter Day Planner dans HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=fmo01&repository=hass-day_planner&category=integration)
+[![Add Day Planner to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=fmo01&repository=hass-day_planner&category=integration)
 
-Si le bouton ne fonctionne pas :
+If the button does not work:
 
-1. Ouvrez **HACS / Marketplace** dans Home Assistant (selon votre version).
-2. Ajoutez le dépôt personnalisé `https://github.com/fmo01/hass-day_planner` dans la catégorie **Intégration**.
-3. Recherchez **Day Planner** et téléchargez l'intégration.
-4. **Redémarrez Home Assistant**.
+1. Open **HACS** or the **Marketplace** in Home Assistant, depending on your version.
+2. Add `https://github.com/fmo01/hass-day_planner` as a custom repository in the **Integration** category.
+3. Search for **Day Planner** and download the integration.
+4. **Restart Home Assistant**.
 
-### Méthode 2 — Installation manuelle
+### Method 2 — Install manually
 
-1. Téléchargez la [dernière version de Day Planner](https://github.com/fmo01/hass-day_planner/releases/latest).
-2. Copiez le dossier `custom_components/day_planner` de l'archive dans le répertoire de configuration de Home Assistant.
-3. Vérifiez l'arborescence suivante :
+1. Download the [latest Day Planner release](https://github.com/fmo01/hass-day_planner/releases/latest).
+2. Copy the `custom_components/day_planner` folder from the archive into your Home Assistant configuration directory.
+3. Check that the resulting path is:
 
    ```text
    <config>/custom_components/day_planner/
    ```
 
-4. **Redémarrez Home Assistant**.
+4. **Restart Home Assistant**.
 
 ## ⚙️ Configuration
 
-Une fois l'intégration installée et Home Assistant redémarré, cliquez sur le bouton ci-dessous pour ouvrir l'assistant d'ajout :
+Once you have installed the integration and restarted Home Assistant, use this button to open the setup wizard.
 
-[![Ajouter l'intégration Day Planner dans Home Assistant](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=day_planner)
+[![Add the Day Planner integration to Home Assistant](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=day_planner)
 
-Si le bouton ne fonctionne pas :
+If the button does not work:
 
-1. Dans Home Assistant, ouvrez **Paramètres → Appareils et services**.
-2. Sélectionnez **Ajouter une intégration**.
-3. Recherchez **Day Planner**, puis validez l'ajout.
-4. Ouvrez **Day Planner** dans le menu latéral (chemin `/day-planner`) pour accéder au panneau de gestion.
+1. In Home Assistant, go to **Settings → Devices & services**.
+2. Select **Add integration**.
+3. Search for **Day Planner** and confirm.
+4. Open **Day Planner** in the sidebar (path `/day-planner`) to access the management panel.
 
-Dans **Paramètres → Appareils et services → Day Planner → Configurer**, les options permettent notamment de gérer l'affichage du panneau latéral, le nombre maximal de cycles et le comportement des données lors du retrait de l'intégration.
+Under **Settings → Devices & services → Day Planner → Configure**, you can control whether the sidebar panel appears, set the maximum number of cycles, and choose what happens to your data when you remove the integration.
 
-### Premiers pas
+### Getting started
 
-1. Créez des **moments** et associez-leur les actions Home Assistant souhaitées.
-2. Créez des **types de journée** et planifiez les moments aux horaires voulus.
-3. Définissez une **semaine type** en attribuant un type de journée à chacun des sept jours.
-4. Créez un **cycle** à partir d'une ou plusieurs semaines types et définissez sa date de début.
-5. Consultez le **calendrier** et ajoutez les exceptions nécessaires.
+1. Create **moments** and add the Home Assistant actions you want them to run.
+2. Create **day types** and schedule your moments at the desired times.
+3. Create a **week schedule** by assigning a day type to each of the seven days.
+4. Create a **cycle** from one or more week schedules and set its start date.
+5. Review the **calendar** and add any exceptions you need.
 
-Les actions sont déclenchées aux horaires calculés par Day Planner, selon le planning actif.
+Day Planner runs actions at the times determined by the active schedule.
 
-### Mise à jour
+### Updating
 
-- **Via HACS** : installez les versions proposées par HACS, puis redémarrez Home Assistant si nécessaire.
-- **Installation manuelle** : remplacez les fichiers dans `custom_components/day_planner/`, puis redémarrez Home Assistant.
-- Consultez le [journal des modifications](CHANGELOG.md) avant une mise à jour.
+- **HACS** — Install the update in HACS, then restart Home Assistant if needed.
+- **Manual installation** — Replace the files in `custom_components/day_planner/`, then restart Home Assistant.
+- Read the [changelog](CHANGELOG.md) before updating.
 
-## 🗓️ Reprise ponctuelle d’un agenda eedomus
+## 🗓️ One-time eedomus agenda import
 
-L'assistant **Configurer → Reprise agenda eedomus** permet d'importer un export JSON d'une **box eedomus active** déjà configurée dans Home Assistant. Le fichier est choisi directement depuis votre ordinateur ; il n'est pas nécessaire de le déposer dans `/config`.
+Use **Configure → Import eedomus agenda** to import a JSON export from an **active eedomus box** already configured in Home Assistant. Select the file directly from your computer. There is no need to put it in `/config`.
 
-L'assistant présente les correspondances entre périphériques eedomus et entités Home Assistant, ainsi qu'un aperçu des semaines, types de journée, moments, horaires et actions qui seront créés. Les domaines non pris en charge, notamment `sensor`, sont signalés sans empêcher la création des moments concernés. Une association absente ou ambiguë reste une erreur bloquante.
+The wizard shows how eedomus devices map to Home Assistant entities and previews the week schedules, day types, moments, scheduled times, and actions it will create. It flags unsupported domains such as `sensor` and still creates the affected moments. A missing or ambiguous mapping blocks the import.
 
-Les objets créés dans Day Planner utilisent le nom de box **`Eedomus (<hôte>)`** ; les identifiants des entités de l'intégration eedomus dans Home Assistant restent inchangés.
+Day Planner names the imported items **`Eedomus (<host>)`**. The eedomus integration’s entity IDs in Home Assistant stay the same.
 
-Cette opération est **ponctuelle** : elle ne met pas en place de synchronisation, ne crée pas automatiquement de cycle ou d'exception et ne déclenche aucune action Home Assistant pendant la reprise. La confirmation permet également de copier les associations et de télécharger un rapport CSV ou **Excel (.xlsx) à sept onglets**.
+This is a one-time import. It runs without ongoing synchronization, automatic creation of cycles or exceptions, or execution of Home Assistant actions. On the confirmation screen, you can also copy the mappings or download a CSV report or a **seven-sheet Excel (.xlsx) workbook**.
 
-**Documentation détaillée :** [guide de reprise eedomus](docs/reprise_eedomus.md) et [contenu du classeur Excel](docs/export_xlsx_eedomus.md).
+See the [eedomus import guide](docs/reprise_eedomus.md) and [Excel workbook contents](docs/export_xlsx_eedomus.md) in French.
 
-## 🧪 Tests et validation
+## 🧪 Tests and validation
 
-Les tests automatisés sont exécutés par les workflows GitHub Actions indiqués dans le bandeau. Pour lancer localement la suite avec le rapport de couverture :
+The GitHub Actions workflows linked above run the automated tests. To run the suite locally with a coverage report, use:
 
 ```bash
 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest \
@@ -107,17 +108,17 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest \
   --cov=custom_components/day_planner --cov-report=term-missing -q
 ```
 
-Voir [la documentation des tests](scripts/tests/README.md) et [le suivi de la couverture](docs/qualification_couverture.md).
+See the [test documentation](scripts/tests/README.md) and [coverage tracking](docs/qualification_couverture.md).
 
 ## 📚 Documentation
 
-- [Documentation fonctionnelle](docs/day_planner_fonctionnel.md)
-- [Documentation technique](docs/day_planner_technique.md)
-- [Reprise eedomus : guide utilisateur et limites](docs/reprise_eedomus.md)
-- [Export Excel eedomus : structure des sept onglets](docs/export_xlsx_eedomus.md)
-- [Tests et validation](docs/qualification_couverture.md)
-- [Roadmap](docs/ROADMAP.md)
+- [Functional documentation (French)](docs/day_planner_fonctionnel.md)
+- [Technical documentation (French)](docs/day_planner_technique.md)
+- [eedomus import guide and limitations (French)](docs/reprise_eedomus.md)
+- [eedomus Excel export and its seven worksheets (French)](docs/export_xlsx_eedomus.md)
+- [Tests and validation (French)](docs/qualification_couverture.md)
+- [Roadmap (French)](docs/ROADMAP.md)
 
-## Licence
+## License
 
-Distribué sous licence [GPL-3.0](LICENSE).
+Distributed under the [GPL-3.0 license](LICENSE).
