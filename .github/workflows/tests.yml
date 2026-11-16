@@ -58,7 +58,7 @@ jobs:
           python --version
           python -m pytest --version
           python -m pip show pytest-cov
-          python -m pip show pytest-homeassistant-custom-component
+          python -m pip show pytest-homeassistant
           python -m pip show async-timeout
 
       - name: Run tests with coverage
@@ -130,7 +130,7 @@ jobs:
           pytest_version = importlib.metadata.version("pytest")
           pytest_cov_version = importlib.metadata.version("pytest-cov")
           pytest_ha_version = importlib.metadata.version(
-              "pytest-homeassistant-custom-component"
+              "pytest-homeassistant"
           )
 
           # =========================================================
@@ -342,7 +342,7 @@ jobs:
               Python {python_version}
               pytest {pytest_version}
               pytest-cov {pytest_cov_version}
-              pytest-homeassistant-custom-component {pytest_ha_version}
+              pytest-homeassistant {pytest_ha_version}
               Tests exécutés : {tests} 
               Tests réussis : {passed} 
               Couverture totale : {coverage:.2f}%
