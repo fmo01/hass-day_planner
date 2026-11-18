@@ -1,11 +1,12 @@
 import asyncio
 from datetime import date, time
+from functools import partial
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.core import Context, HomeAssistant, ServiceCall
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, Unauthorized
 
 from custom_components.day_planner.const import (
     DOMAIN,
@@ -93,9 +94,10 @@ def get_registered_service(
     hass,
     service_name,
 ):
-    """Return a registered service handler by name."""
+    """Return the domain handler for unit tests; registry tests exercise auth."""
 
-    return next(call.args[2] for call in hass.services.async_register.call_args_list if call.args[1] == service_name)
+    handler = next(call.args[2] for call in hass.services.async_register.call_args_list if call.args[1] == service_name)
+    return handler.args[1].target if isinstance(handler, partial) else handler
 
 
 def test_execute_success():
@@ -1372,11 +1374,7 @@ def test_service_add_scheduled_moment():
     async def run():
         await async_setup_services(hass)
 
-        service = next(
-            call.args[2]
-            for call in hass.services.async_register.call_args_list
-            if call.args[1] == SERVICE_ADD_SCHEDULED_MOMENT
-        )
+        service = get_registered_service(hass, SERVICE_ADD_SCHEDULED_MOMENT)
 
         call = ServiceCall(
             hass=hass,
@@ -1710,8 +1708,183 @@ def test_public_holidays_native_ha_service_response(tmp_path):
                     {"year": 2027},
                     blocking=True,
                     return_response=True,
+                    context=Context(user_id="reader"),
                 )
                 assert result == {"year": 2027, "status": "ready", "days": []}
+            finally:
+                await hass.async_stop()
+
+    asyncio.run(run())
+
+
+WRITE_SERVICES = [
+    f"{operation}_{kind}"
+    for kind in ("moment", "day_type", "scheduled_moment", "week_schedule", "cycle", "calendar_exception")
+    for operation in ("add", "update", "remove")
+]
+
+
+def security_service_data(service):
+    """Supply valid data so schema failures cannot masquerade as access denial."""
+    if service.endswith("scheduled_moment"):
+        data = {"day_type_id": "work", "moment_id": "wake"}
+        if not service.startswith("remove_"):
+            data["time"] = "07:00"
+        return data
+    data = {"id": "test"}
+    if service.startswith("remove_"):
+        return data
+    if service.endswith("calendar_exception"):
+        return {**data, "date": "17/11/2026", "day_type_id": "work", "description": "Test"}
+    data["name"] = "Test"
+    if service.endswith("week_schedule"):
+        data.update(
+            dict.fromkeys(("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"), "work")
+        )
+    elif service.endswith("cycle"):
+        data.update(start_date="2026-11-16", week_schedule_ids=["week"])
+    elif service.endswith("moment"):
+        data["actions"] = [{"id": "probe", "sequence": [{"action": "security_probe.run"}]}]
+    return data
+
+
+@pytest.mark.parametrize("service", WRITE_SERVICES)
+@pytest.mark.parametrize("user_kind", ["non-admin", "deleted-user", "admin", "internal"])
+def test_registered_write_services_permissions(tmp_path, service, user_kind):
+    """Call HA's real registry, keeping runtime untouched when access is denied."""
+
+    async def run():
+        hass = HomeAssistant(str(tmp_path))
+        user = (
+            None
+            if user_kind == "deleted-user"
+            else SimpleNamespace(id="test-user", name="Test", is_admin=user_kind == "admin")
+        )
+        runtime = MagicMock()
+        runtime.async_configuration_updated = AsyncMock()
+        runtime.engine.get_day_type.return_value = DayType(id="test", name="Test", scheduled_moments=())
+        with (
+            patch.object(hass, "auth", create=True) as auth,
+            patch("custom_components.day_planner.services._get_runtime", return_value=runtime) as get_runtime,
+        ):
+            auth.async_get_user = AsyncMock(return_value=user)
+            try:
+                await async_setup_services(hass)
+                assert set(hass.services.async_services()[DOMAIN]) == {*WRITE_SERVICES, "get_public_holidays"}
+                context = Context(user_id=None if user_kind == "internal" else "test-user")
+                if user_kind in ("non-admin", "deleted-user"):
+                    with pytest.raises(Unauthorized):
+                        await hass.services.async_call(
+                            DOMAIN, service, security_service_data(service), blocking=True, context=context
+                        )
+                    get_runtime.assert_not_called()
+                    assert runtime.mock_calls == []
+                else:
+                    await hass.services.async_call(
+                        DOMAIN, service, security_service_data(service), blocking=True, context=context
+                    )
+                    runtime.async_configuration_updated.assert_awaited_once()
+            finally:
+                await hass.async_stop()
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("transport", ["websocket", "service"])
+@pytest.mark.parametrize("operation", ["add", "update"])
+@pytest.mark.parametrize("is_admin", [False, True], ids=["non-admin", "admin"])
+def test_scheduled_admin_action_permissions(tmp_path, transport, operation, is_admin):
+    """A harmless admin-only probe must never execute from a reader's write."""
+    from homeassistant.helpers.service import async_register_admin_service
+
+    from custom_components.day_planner.action_executor import ActionExecutor
+    from custom_components.day_planner.domain.planner_configuration import PlannerConfiguration
+    from custom_components.day_planner.planner.engine import PlannerEngine
+    from custom_components.day_planner.websocket_api import async_setup_websocket_api
+
+    async def run():
+        hass = HomeAssistant(str(tmp_path))
+        probe = AsyncMock()
+        reader = SimpleNamespace(id="reader", name="Reader", is_admin=is_admin)
+        sequence = [{"action": "security_probe.run"}]
+        initial_actions = (
+            (Action(id="probe", sequence=[{"delay": {"milliseconds": 1}}]),) if operation == "update" else ()
+        )
+        initial_moments = (
+            (Moment(id="test", name="Test", actions=initial_actions),)
+            if transport == "websocket" or operation == "update"
+            else ()
+        )
+        engine = PlannerEngine(
+            PlannerConfiguration(
+                moments=initial_moments, day_types=(), week_schedules=(), cycles=(), calendar_exceptions=()
+            )
+        )
+        runtime = SimpleNamespace(engine=engine, async_configuration_updated=AsyncMock())
+        before = engine.configuration.to_dict()
+        connection = MagicMock()
+        connection.user = reader
+        with (
+            patch.object(hass, "auth", create=True) as auth,
+            patch.object(hass, "config_entries", create=True) as entries,
+        ):
+            auth.async_get_user = AsyncMock(return_value=reader)
+            entries.async_entries.return_value = [SimpleNamespace(runtime_data=runtime)]
+            try:
+                async_register_admin_service(hass, "security_probe", "run", probe)
+                if not is_admin:
+                    with pytest.raises(Unauthorized):
+                        await hass.services.async_call(
+                            "security_probe", "run", {}, blocking=True, context=Context(user_id="reader")
+                        )
+                await async_setup_services(hass)
+                denied = False
+                try:
+                    if transport == "service":
+                        await hass.services.async_call(
+                            DOMAIN,
+                            f"{operation}_moment",
+                            security_service_data(f"{operation}_moment"),
+                            blocking=True,
+                            context=Context(user_id="reader"),
+                        )
+                    else:
+                        with patch(
+                            "custom_components.day_planner.websocket_api.websocket_api.async_register_command"
+                        ) as reg:
+                            async_setup_websocket_api(hass)
+                        handler = next(
+                            call.args[1]
+                            for call in reg.call_args_list
+                            if call.args[1].__name__ == f"websocket_{operation}_moment_action"
+                        )
+                        msg = handler._ws_schema(
+                            {
+                                "id": 1,
+                                "type": f"day_planner/{operation}_moment_action",
+                                "moment_id": "test",
+                                "action_id": "probe",
+                                "sequence": sequence,
+                            }
+                        )
+                        handler(hass, connection, msg)
+                        await hass.async_block_till_done()
+                except Unauthorized:
+                    denied = True
+                if not denied:
+                    for moment in engine.configuration.moments:
+                        for action in moment.actions:
+                            await ActionExecutor(hass).async_execute_action(action, moment=moment)
+                if is_admin:
+                    assert not denied
+                    probe.assert_awaited_once()
+                    runtime.async_configuration_updated.assert_awaited_once()
+                    assert engine.configuration.to_dict() != before
+                else:
+                    assert denied, f"Non-admin {transport} {operation} accepted; admin probe calls: {probe.await_count}"
+                    probe.assert_not_awaited()
+                    assert engine.configuration.to_dict() == before
+                    runtime.async_configuration_updated.assert_not_awaited()
             finally:
                 await hass.async_stop()
 

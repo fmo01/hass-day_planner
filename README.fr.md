@@ -73,6 +73,8 @@ Dans **Paramètres → Appareils et services → Day Planner → Configurer**, l
 
 ### Premiers pas
 
+Seuls les administrateurs Home Assistant peuvent créer, modifier ou supprimer la configuration de Day Planner, y compris les actions programmées et les exceptions du calendrier. Les autres utilisateurs connectés peuvent consulter le planning depuis le panneau ou la carte. Cette restriction s’applique également aux appels directs WebSocket et aux services.
+
 1. Créez des **moments** et associez-leur les actions Home Assistant souhaitées.
 2. Créez des **types de journée** et planifiez les moments aux horaires voulus.
 3. Définissez une **semaine type** en attribuant un type de journée à chacun des sept jours.

@@ -1,5 +1,6 @@
 {
   "common": {
+    "read_only": "Read only — configuration is restricted to administrators.",
     "back": "Back",
     "cancel": "Cancel",
     "save": "Save",

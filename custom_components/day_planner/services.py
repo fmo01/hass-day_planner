@@ -8,6 +8,7 @@ from typing import Any
 
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
+from homeassistant.helpers.service import async_register_admin_service
 
 from .const import (
     DOMAIN,
@@ -674,124 +675,142 @@ async def async_setup_services(
     # Enregistrement des services
     #
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_ADD_MOMENT,
         add_moment,
         schema=ADD_MOMENT_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_UPDATE_MOMENT,
         update_moment,
         schema=UPDATE_MOMENT_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_REMOVE_MOMENT,
         remove_moment,
         schema=REMOVE_MOMENT_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_ADD_DAY_TYPE,
         add_day_type,
         schema=ADD_DAY_TYPE_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_UPDATE_DAY_TYPE,
         update_day_type,
         schema=UPDATE_DAY_TYPE_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_REMOVE_DAY_TYPE,
         remove_day_type,
         schema=REMOVE_DAY_TYPE_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_ADD_SCHEDULED_MOMENT,
         add_scheduled_moment,
         schema=ADD_SCHEDULED_MOMENT_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_UPDATE_SCHEDULED_MOMENT,
         update_scheduled_moment,
         schema=UPDATE_SCHEDULED_MOMENT_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_REMOVE_SCHEDULED_MOMENT,
         remove_scheduled_moment,
         schema=REMOVE_SCHEDULED_MOMENT_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_ADD_WEEK_SCHEDULE,
         add_week_schedule,
         schema=ADD_WEEK_SCHEDULE_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_UPDATE_WEEK_SCHEDULE,
         update_week_schedule,
         schema=UPDATE_WEEK_SCHEDULE_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_REMOVE_WEEK_SCHEDULE,
         remove_week_schedule,
         schema=REMOVE_WEEK_SCHEDULE_SCHEMA,
     )
     #
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_ADD_CYCLE,
         add_cycle,
         schema=ADD_CYCLE_SCHEMA,
     )
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_UPDATE_CYCLE,
         update_cycle,
         schema=UPDATE_CYCLE_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_REMOVE_CYCLE,
         remove_cycle,
         schema=REMOVE_CYCLE_SCHEMA,
     )
     #
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_ADD_CALENDAR_EXCEPTION,
         add_calendar_exception,
         schema=ADD_CALENDAR_EXCEPTION_SCHEMA,
     )
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_UPDATE_CALENDAR_EXCEPTION,
         update_calendar_exception,
         schema=UPDATE_CALENDAR_EXCEPTION_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_REMOVE_CALENDAR_EXCEPTION,
         remove_calendar_exception,

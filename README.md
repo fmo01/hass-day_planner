@@ -72,6 +72,8 @@ Under **Settings → Devices & services → Day Planner → Configure**, you can
 
 ### Getting started
 
+Only Home Assistant administrators can create, change or delete Day Planner configuration, including scheduled actions and calendar exceptions. Other signed-in users can view the planning through the panel or card. This restriction also applies to direct WebSocket and service calls.
+
 1. Create **moments** and add the Home Assistant actions you want them to run.
 2. Create **day types** and schedule your moments at the desired times.
 3. Create a **week schedule** by assigning a day type to each of the seven days.

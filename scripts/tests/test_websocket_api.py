@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.components import websocket_api
+from homeassistant.exceptions import Unauthorized
 
 from custom_components.day_planner.domain.action import Action
 from custom_components.day_planner.domain.day_type import DayType
@@ -411,6 +412,86 @@ async def run_websocket_handler(
     await asyncio.gather(*tasks)
 
 
+WRITE_COMMANDS = [
+    f"{operation}_{kind}"
+    for kind in (
+        "moment",
+        "moment_action",
+        "day_type",
+        "scheduled_moment",
+        "week_schedule",
+        "cycle",
+        "calendar_exception",
+    )
+    for operation in ("add", "update", "remove")
+]
+
+
+@pytest.mark.parametrize("command", WRITE_COMMANDS)
+@pytest.mark.parametrize("user_kind", ["missing-user", "non-admin", "admin"])
+def test_registered_write_commands_require_admin(command, user_kind):
+    """Exercise the registered wrapper before it can access or change runtime."""
+    hass = MagicMock()
+    with patch("custom_components.day_planner.websocket_api.websocket_api.async_register_command") as register:
+        async_setup_websocket_api(hass)
+    handlers = {call.args[1].__name__.removeprefix("websocket_"): call.args[1] for call in register.call_args_list}
+    assert set(handlers) == {*WRITE_COMMANDS, "get_configuration", "get_calendar"}
+    connection = MagicMock()
+    connection.user = None if user_kind == "missing-user" else SimpleNamespace(id="test", is_admin=user_kind == "admin")
+    handler = handlers[command]
+    values = dict.fromkeys(
+        ("name", "moment_id", "action_id", "day_type_id", "week_schedule_id", "cycle_id", "calendar_exception_id"),
+        "test",
+    )
+    values.update(dict.fromkeys(("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"), "work"))
+    values.update(
+        id=1,
+        type=f"day_planner/{command}",
+        time="07:00",
+        date="2026-11-17",
+        start_date="2026-11-16",
+        sequence=[{"action": "security_probe.run"}],
+        week_schedule_ids=["week"],
+    )
+    msg = handler._ws_schema({str(key): values[str(key)] for key in handler._ws_schema.schema if str(key) in values})
+
+    async def run():
+        with patch("custom_components.day_planner.websocket_api._get_runtime", return_value=None) as get_runtime:
+            if user_kind == "admin":
+                await run_websocket_handler(hass, handler, connection, msg)
+                get_runtime.assert_called_once_with(hass)
+                connection.send_error.assert_called_once_with(
+                    1, websocket_api.ERR_NOT_FOUND, "Day Planner is not configured"
+                )
+            else:
+                with pytest.raises(Unauthorized):
+                    await run_websocket_handler(hass, handler, connection, msg)
+                get_runtime.assert_not_called()
+        connection.send_result.assert_not_called()
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("command", ["get_configuration", "get_calendar"])
+def test_registered_read_commands_allow_non_admin(command):
+    runtime = MagicMock()
+    runtime.engine.configuration.to_dict.return_value = {"moments": []}
+    hass = create_hass_with_runtime(runtime)
+    with patch("custom_components.day_planner.websocket_api.websocket_api.async_register_command") as register:
+        async_setup_websocket_api(hass)
+    handler = next(call.args[1] for call in register.call_args_list if call.args[1].__name__ == f"websocket_{command}")
+    connection = MagicMock()
+    connection.user = SimpleNamespace(id="reader", is_admin=False)
+    handler(
+        hass,
+        connection,
+        {"id": 1, "type": f"day_planner/{command}", "start_date": "2026-11-17", "end_date": "2026-11-17"},
+    )
+    connection.send_result.assert_called_once()
+    connection.send_error.assert_not_called()
+    runtime.async_configuration_updated.assert_not_called()
+
+
 def test_websocket_update_scheduled_moment():
     runtime = MagicMock()
 
@@ -421,6 +502,7 @@ def test_websocket_update_scheduled_moment():
     connection.user = SimpleNamespace(
         id="test_user_123",
         name="Utilisateur Test",
+        is_admin=True,
     )
 
     asyncio.run(
