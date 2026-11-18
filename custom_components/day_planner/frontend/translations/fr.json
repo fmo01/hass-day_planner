@@ -1,5 +1,6 @@
 {
   "common": {
+    "read_only": "Lecture seule — la configuration est réservée aux administrateurs.",
     "back": "Retour",
     "cancel": "Annuler",
     "save": "Enregistrer",

@@ -47,6 +47,40 @@ function deferred() {
   return { promise, resolve };
 }
 
+test('configuration editing requires an explicit administrator user', () => {
+  const card = cardFixture();
+  for (const user of [undefined, {}, { is_admin: false }, { is_admin: 'true' }]) {
+    card._hass.user = user;
+    assert.equal(card._canEdit, false);
+  }
+  card._hass.user = { is_admin: true };
+  assert.equal(card._canEdit, true);
+});
+
+for (const isAdmin of [false, true]) {
+  test(`${isAdmin ? 'admin' : 'reader'} controls keep navigation and respect editing rights`, () => {
+    const card = cardFixture(); card._hass.user = { is_admin: isAdmin };
+    const button = (id, classes = []) => ({ id, removed: false,
+      classList: Object.assign(classes, { contains: (name) => classes.includes(name) }),
+      remove() { this.removed = true; } });
+    const editControls = [button('add-moment'), button('', ['edit-cycle']),
+      button('', ['duplicate-day-type']), button('', ['delete-calendar-exception']),
+      button('', ['manage-moment-actions']), button('save-create-moment')];
+    const readControls = [button('previous-month'), button('next-month'),
+      button('', ['toggle-moment-details']), button('', ['tab'])];
+    const dialog = button('dialog');
+    let editableTimeline = true;
+    const marker = { classList: { remove: (name) => { assert.equal(name, 'editable'); editableTimeline = false; } } };
+    card.shadowRoot.querySelectorAll = (selector) => ({ button: [...editControls, ...readControls],
+      '.timeline-marker.editable': [marker], '.modal-backdrop': [dialog] })[selector];
+    card._applyReadOnlyMode();
+    assert.ok(editControls.every((control) => control.removed === !isAdmin));
+    assert.ok(readControls.every((control) => !control.removed));
+    assert.equal(dialog.removed, !isAdmin);
+    assert.equal(editableTimeline, isAdmin);
+  });
+}
+
 test('uses the existing response-only HA service', async () => {
   let request;
   const api = new DayPlannerApi({ callWS: async (msg) => { request = msg; return { response: holidayYear() }; } });

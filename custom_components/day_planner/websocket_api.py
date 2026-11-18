@@ -196,6 +196,7 @@ def websocket_get_configuration(
         vol.Required("time"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_update_scheduled_moment(
     hass: HomeAssistant,
@@ -360,6 +361,7 @@ def websocket_get_calendar(
         vol.Required("name"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_update_day_type(
     hass: HomeAssistant,
@@ -418,6 +420,7 @@ async def websocket_update_day_type(
         vol.Required("name"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_add_day_type(
     hass: HomeAssistant,
@@ -470,6 +473,7 @@ async def websocket_add_day_type(
         vol.Required("day_type_id"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_remove_day_type(
     hass: HomeAssistant,
@@ -517,6 +521,7 @@ async def websocket_remove_day_type(
         vol.Required("time"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_add_scheduled_moment(
     hass: HomeAssistant,
@@ -586,6 +591,7 @@ async def websocket_add_scheduled_moment(
         vol.Required("moment_id"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_remove_scheduled_moment(
     hass: HomeAssistant,
@@ -644,6 +650,7 @@ async def websocket_remove_scheduled_moment(
         vol.Required("sunday"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_add_week_schedule(
     hass: HomeAssistant,
@@ -720,6 +727,7 @@ async def websocket_add_week_schedule(
         vol.Required("sunday"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_update_week_schedule(
     hass: HomeAssistant,
@@ -788,6 +796,7 @@ async def websocket_update_week_schedule(
         vol.Required("week_schedule_id"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_remove_week_schedule(
     hass: HomeAssistant,
@@ -836,6 +845,7 @@ async def websocket_remove_week_schedule(
         vol.Required("week_schedule_ids"): [str],
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_add_cycle(
     hass: HomeAssistant,
@@ -912,6 +922,7 @@ async def websocket_add_cycle(
         vol.Required("week_schedule_ids"): [str],
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_update_cycle(
     hass: HomeAssistant,
@@ -985,6 +996,7 @@ async def websocket_update_cycle(
         vol.Required("cycle_id"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_remove_cycle(
     hass: HomeAssistant,
@@ -1033,6 +1045,7 @@ async def websocket_remove_cycle(
         vol.Optional("description"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_add_calendar_exception(
     hass: HomeAssistant,
@@ -1099,6 +1112,7 @@ async def websocket_add_calendar_exception(
         vol.Optional("description"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_update_calendar_exception(
     hass: HomeAssistant,
@@ -1162,6 +1176,7 @@ async def websocket_update_calendar_exception(
         vol.Required("calendar_exception_id"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_remove_calendar_exception(
     hass: HomeAssistant,
@@ -1210,6 +1225,7 @@ async def websocket_remove_calendar_exception(
         vol.Required("sequence"): list,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_add_moment_action(
     hass: HomeAssistant,
@@ -1291,6 +1307,7 @@ async def websocket_add_moment_action(
         vol.Required("sequence"): list,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_update_moment_action(
     hass: HomeAssistant,
@@ -1369,6 +1386,7 @@ async def websocket_update_moment_action(
         vol.Required("action_id"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_remove_moment_action(
     hass: HomeAssistant,
@@ -1439,6 +1457,7 @@ async def websocket_remove_moment_action(
         vol.Optional("icon", default=None): vol.Any(str, None),
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_add_moment(
     hass: HomeAssistant,
@@ -1494,6 +1513,7 @@ async def websocket_add_moment(
         vol.Optional("icon", default=None): vol.Any(str, None),
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_update_moment(
     hass: HomeAssistant,
@@ -1553,6 +1573,7 @@ async def websocket_update_moment(
         vol.Required("moment_id"): str,
     }
 )
+@websocket_api.require_admin
 @websocket_api.async_response
 async def websocket_remove_moment(
     hass: HomeAssistant,

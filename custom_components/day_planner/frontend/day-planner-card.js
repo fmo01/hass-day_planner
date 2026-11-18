@@ -135,6 +135,7 @@ class DayPlannerCard extends HTMLElement {
   }
 
   set hass(hass) {
+    const couldEdit = this._canEdit;
     this._hass = hass;
 
     if (!this._api) {
@@ -180,6 +181,11 @@ class DayPlannerCard extends HTMLElement {
         });
     } else {
       this._i18n.setHass(hass);
+    }
+
+    if (couldEdit && !this._canEdit) {
+      this.render();
+      return;
     }
 
     const monthKey = `${this._displayYear}-${String(this._displayMonth + 1).padStart(2, '0')}`;
@@ -3761,6 +3767,27 @@ class DayPlannerCard extends HTMLElement {
     requestAnimationFrame(() => requestAnimationFrame(focusFirstField));
   }
 
+  get _canEdit() {
+    return this._hass?.user?.is_admin === true;
+  }
+
+  _applyReadOnlyMode() {
+    if (this._canEdit) return;
+
+    // The server enforces permissions. Keep the interface consistent with them.
+    this.shadowRoot.querySelectorAll('button').forEach((button) => {
+      const tokens = [button.id, ...button.classList];
+      if (tokens.some((token) => /^(add|edit|duplicate|delete|save|confirm-delete)-/.test(token)) ||
+          button.classList.contains('manage-moment-actions')) {
+        button.remove();
+      }
+    });
+    this.shadowRoot.querySelectorAll('.timeline-marker.editable').forEach((marker) => {
+      marker.classList.remove('editable');
+    });
+    this.shadowRoot.querySelectorAll('.modal-backdrop').forEach((dialog) => dialog.remove());
+  }
+
   render() {
     if (!this._hass) {
       return;
@@ -3812,6 +3839,10 @@ class DayPlannerCard extends HTMLElement {
         ${this._renderTabs()}
 
         <div class="container">
+          ${!this._canEdit ? `<p role="status">${escapeHtml(
+            this._i18n?.t('common.read_only', 'Lecture seule — la configuration est réservée aux administrateurs.')
+            ?? 'Lecture seule — la configuration est réservée aux administrateurs.'
+          )}</p>` : ''}
           ${
             this._activeTab === 'calendar'
               ? `
@@ -3902,6 +3933,7 @@ ${
 
     `;
 
+    this._applyReadOnlyMode();
     this._bindEvents();
     this._setupModalAccessibility(hadModal);
   }
@@ -5829,7 +5861,7 @@ if (!customElements.get('day-planner-card')) {
 }
 
 console.info(
-  '%c DAY-PLANNER-CARD %c v0.2.12',
+  '%c DAY-PLANNER-CARD %c v0.2.13',
   'color: orange; font-weight: bold; background: black',
   'color: white; font-weight: bold; background: dimgray'
 );
