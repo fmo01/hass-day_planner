@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.2](https://github.com/fmo01/hass-day_planner/compare/0.4.1...0.4.2) (2026-11-18)
+
+### Bug Fixes
+
+* **security:** restrict configuration changes to administrators.  Configuration limité aux administrateurs ([ac37cde](https://github.com/fmo01/hass-day_planner/commit/ac37cde6d62edf38f1cb2422ae576365a9eb3ecb))
+
 ## [0.4.1](https://github.com/fmo01/hass-day_planner/compare/0.4.0...0.4.1) (2026-11-11)
 
 ### Bug Fixes
