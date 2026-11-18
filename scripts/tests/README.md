@@ -20,9 +20,9 @@ Les trois blocs automatiques `TEST-STATS`, `COVERAGE-MODULES` et `TEST-ENV` sont
 La **dernière exécution complète transmise manuellement** le 7 novembre 2026 est plus récente : **517 tests réussis, 2 990 instructions, 243 manquantes, 92 %, 5 avertissements, Python 3.14.3**. Les chiffres anciens ne représentent pas le dernier état du développement v5.16.
 
 <!-- TEST-STATS-START -->
-- Tests réussis : **704**
-- Lignes mesurées : **3407**
-- Lignes couvertes : **3407**
+- Tests réussis : **849**
+- Lignes mesurées : **3429**
+- Lignes couvertes : **3429**
 - Lignes non couvertes : **0**
 - Couverture : **100.00%**
 <!-- TEST-STATS-END -->
@@ -270,7 +270,7 @@ La couverture est suivie sans seuil bloquant. L'objectif de 100 % ne nécessite 
 Les valeurs ci-dessous proviennent de l'exécution GitHub Actions réussie datée dans le tableau. Elles seront actualisées automatiquement lors d'une prochaine exécution.
 
 <!-- COVERAGE-MODULES-START -->
-Dernière mise à jour : **2026-11-17 01:20:01 Europe/Paris**
+Dernière mise à jour : **2026-11-18 14:33:14 Europe/Paris**
 
 | Package | Composant | Instructions | Non couvertes | Couverture |
 |---|---|---:|---:|---:|
@@ -295,9 +295,9 @@ Dernière mise à jour : **2026-11-17 01:20:01 Europe/Paris**
 |  | `runtime.py` | 22 | 0 | 100.00% |
 |  | `schemas.py` | 26 | 0 | 100.00% |
 |  | `sensor.py` | 99 | 0 | 100.00% |
-|  | `services.py` | 161 | 0 | 100.00% |
+|  | `services.py` | 162 | 0 | 100.00% |
 |  | `storage.py` | 16 | 0 | 100.00% |
-|  | `websocket_api.py` | 449 | 0 | 100.00% |
+|  | `websocket_api.py` | 470 | 0 | 100.00% |
 | `domain` | `__init__.py` | 11 | 0 | 100.00% |
 | `domain` | `action.py` | 13 | 0 | 100.00% |
 | `domain` | `calendar_exception.py` | 16 | 0 | 100.00% |
@@ -317,7 +317,7 @@ Dernière mise à jour : **2026-11-17 01:20:01 Europe/Paris**
 | `planner` | `resolver.py` | 45 | 0 | 100.00% |
 | `planner` | `scheduler.py` | 67 | 0 | 100.00% |
 | `planner` | `validator.py` | 106 | 0 | 100.00% |
-| **TOTAL** | | **3407** | **0** | **100.00%** |
+| **TOTAL** | | **3429** | **0** | **100.00%** |
 <!-- COVERAGE-MODULES-END -->
 
 ---
@@ -406,10 +406,10 @@ Python 3.14.10
 pytest 9.0.3
 pytest-cov 7.1.0
 pytest-homeassistant 2026.11.1
-Tests exécutés : 704 
-Tests réussis : 704 
+Tests exécutés : 849 
+Tests réussis : 849 
 Couverture totale : 100.00%
-Dernière exécution : 2026-11-17 01:20:01 Europe/Paris
+Dernière exécution : 2026-11-18 14:33:14 Europe/Paris
 ```
 <!-- TEST-ENV-END -->
 
